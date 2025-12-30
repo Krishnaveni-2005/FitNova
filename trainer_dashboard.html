@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trainer Dashboard - FitNova</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Professional Color Palette - Trainer focused */
+            --primary-color: #0F2C59;
+            /* Deep Navy Blue */
+            --secondary-color: #DAC0A3;
+            /* Warm Beige/Champagne */
+            --accent-color: #E63946;
+            /* Professional Red */
+            --bg-color: #F8F9FA;
+            --sidebar-bg: #ffffff;
+            --text-color: #333333;
+            --text-light: #6C757D;
+            --border-color: #E9ECEF;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+            transition: var(--transition);
+        }
+
+        .sidebar-brand {
+            padding: 30px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .brand-logo {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: 24px;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-logo span {
+            color: var(--secondary-color);
+        }
+
+        .sidebar-menu {
+            padding: 20px 0;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .menu-item {
+            display: block;
+            padding: 12px 30px;
+            color: var(--text-light);
+            text-decoration: none;
+            transition: var(--transition);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-item:hover {
+            color: var(--primary-color);
+            background-color: rgba(15, 44, 89, 0.05);
+        }
+
+        .menu-item.active {
+            color: var(--primary-color);
+            background-color: rgba(15, 44, 89, 0.05);
+            border-left-color: var(--primary-color);
+        }
+
+        .menu-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .trainer-badge {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            margin-left: auto;
+            text-transform: uppercase;
+        }
+
+        .user-profile-preview {
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(to right, rgba(15, 44, 89, 0.03), transparent);
+        }
+
+        .user-avatar-sm {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            position: relative;
+        }
+
+        .user-info-sm h4 {
+            font-size: 14px;
+            color: var(--primary-color);
+            margin-bottom: 2px;
+        }
+
+        .user-info-sm p {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            flex: 1;
+            padding: 30px 40px;
+        }
+
+        /* Header */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .welcome-text h1 {
+            font-size: 28px;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .welcome-text p {
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .btn-icon .badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 18px;
+            height: 18px;
+            background-color: var(--accent-color);
+            color: white;
+            border-radius: 50%;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+        }
+
+        .btn-icon:hover {
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 24px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+        }
+
+        .btn-primary:hover {
+            background-color: #0a1f3f;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(15, 44, 89, 0.2);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 3px solid transparent;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-card.blue {
+            border-bottom-color: var(--primary-color);
+        }
+
+        .stat-card.gold {
+            border-bottom-color: var(--secondary-color);
+        }
+
+        .stat-card.red {
+            border-bottom-color: var(--accent-color);
+        }
+
+        .stat-card.green {
+            border-bottom-color: var(--success-color);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        .blue .stat-icon {
+            background: rgba(15, 44, 89, 0.1);
+            color: var(--primary-color);
+        }
+
+        .gold .stat-icon {
+            background: rgba(218, 192, 163, 0.2);
+            color: #8F7250;
+        }
+
+        .red .stat-icon {
+            background: rgba(230, 57, 70, 0.1);
+            color: var(--accent-color);
+        }
+
+        .green .stat-icon {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--success-color);
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-color);
+            font-family: 'Outfit', sans-serif;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: var(--text-light);
+            font-size: 14px;
+        }
+
+        /* Dashboard Layout */
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        .section-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            color: var(--primary-color);
+        }
+
+        .view-all {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Client List */
+        .client-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+
+        .client-item:hover {
+            background-color: #fcfcfc;
+        }
+
+        .client-item:last-child {
+            border-bottom: none;
+        }
+
+        .client-img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 15px;
+        }
+
+        .client-info {
+            flex: 1;
+        }
+
+        .client-name {
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 4px;
+        }
+
+        .client-status {
+            font-size: 13px;
+            color: var(--text-light);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        .status-dot.active {
+            background-color: var(--success-color);
+        }
+
+        .status-dot.pending {
+            background-color: var(--warning-color);
+        }
+
+        .client-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+            background: white;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .action-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Schedule List */
+        .schedule-item {
+            display: flex;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .schedule-time {
+            width: 60px;
+            text-align: center;
+        }
+
+        .time-start {
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 15px;
+        }
+
+        .time-ampm {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .schedule-content {
+            flex: 1;
+            background-color: var(--bg-color);
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .schedule-title {
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 4px;
+        }
+
+        .schedule-client {
+            font-size: 13px;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Mobile View */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .dashboard-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <a href="home.html" class="brand-logo">
+                <i class="fas fa-dumbbell"></i> FitNova
+            </a>
+        </div>
+
+        <nav class="sidebar-menu">
+            <a href="#" class="menu-item active">
+                <i class="fas fa-th-large"></i> Dashboard
+            </a>
+            <a href="#" class="menu-item">
+                <i class="fas fa-users"></i> Clients <span class="trainer-badge">24</span>
+            </a>
+            <a href="#" class="menu-item">
+                <i class="fas fa-calendar-alt"></i> Schedule
+            </a>
+            <a href="#" class="menu-item">
+                <i class="fas fa-clipboard-list"></i> Workout Plans
+            </a>
+            <a href="#" class="menu-item">
+                <i class="fas fa-utensils"></i> Diet Plans
+            </a>
+            <a href="#" class="menu-item">
+                <i class="fas fa-chart-bar"></i> Analytics
+            </a>
+            <a href="#" class="menu-item">
+                <i class="fas fa-envelope"></i> Messages
+            </a>
+            <a href="#" class="menu-item">
+                <i class="fas fa-wallet"></i> Earnings
+            </a>
+        </nav>
+
+        <div class="user-profile-preview">
+            <div class="user-avatar-sm">CM</div>
+            <div class="user-info-sm">
+                <h4>Coach Mike</h4>
+                <p>Senior Trainer</p>
+            </div>
+            <a href="logout.php" style="margin-left: auto; color: var(--text-light);"><i
+                    class="fas fa-sign-out-alt fa-flip-horizontal"></i></a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="welcome-text">
+                <h1>Hello, Coach Mike!</h1>
+                <p>You have 3 upcoming sessions today.</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-icon">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge">5</span>
+                </button>
+                <a href="#" class="btn-primary">
+                    <i class="fas fa-plus"></i> Create Plan
+                </a>
+            </div>
+        </header>
+
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+            <div class="stat-card blue">
+                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                <div class="stat-value">24</div>
+                <div class="stat-label">Active Clients</div>
+            </div>
+            <div class="stat-card gold">
+                <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+                <div class="stat-value">12</div>
+                <div class="stat-label">Sessions this Week</div>
+            </div>
+            <div class="stat-card green">
+                <div class="stat-icon"><i class="fas fa-wallet"></i></div>
+                <div class="stat-value">$3.2k</div>
+                <div class="stat-label">Monthly Earnings</div>
+            </div>
+            <div class="stat-card red">
+                <div class="stat-icon"><i class="fas fa-star"></i></div>
+                <div class="stat-value">4.9</div>
+                <div class="stat-label">Client Rating</div>
+            </div>
+        </div>
+
+        <div class="dashboard-layout">
+            <!-- Left Column: Upcoming Sessions -->
+            <div class="col-left">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">Today's Schedule</h3>
+                        <a href="#" class="view-all">View Calendar</a>
+                    </div>
+
+                    <div class="schedule-list">
+                        <div class="schedule-item">
+                            <div class="schedule-time">
+                                <div class="time-start">09:00</div>
+                                <div class="time-ampm">AM</div>
+                            </div>
+                            <div class="schedule-content">
+                                <h4 class="schedule-title">1-on-1 Training Session</h4>
+                                <div class="schedule-client">
+                                    <i class="far fa-user"></i> Sarah Williams • Upper Body Focus
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="schedule-item">
+                            <div class="schedule-time">
+                                <div class="time-start">11:00</div>
+                                <div class="time-ampm">AM</div>
+                            </div>
+                            <div class="schedule-content" style="border-left-color: var(--secondary-color);">
+                                <h4 class="schedule-title">New Client Consultation</h4>
+                                <div class="schedule-client">
+                                    <i class="far fa-user"></i> David Miller • Initial Assessment
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="schedule-item">
+                            <div class="schedule-time">
+                                <div class="time-start">02:00</div>
+                                <div class="time-ampm">PM</div>
+                            </div>
+                            <div class="schedule-content" style="border-left-color: var(--success-color);">
+                                <h4 class="schedule-title">Group HIIT Class</h4>
+                                <div class="schedule-client">
+                                    <i class="fas fa-users"></i> Live Stream • 45 Participants
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">Recent Client Activity</h3>
+                        <a href="#" class="view-all">View All</a>
+                    </div>
+                    <div class="client-item">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
+                            alt="Client" class="client-img">
+                        <div class="client-info">
+                            <h4 class="client-name">Emma Thompson</h4>
+                            <p class="client-status">Completed "Leg Day Power" workout</p>
+                        </div>
+                        <span style="font-size: 12px; color: var(--text-light);">2m ago</span>
+                    </div>
+                    <div class="client-item">
+                        <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
+                            alt="Client" class="client-img">
+                        <div class="client-info">
+                            <h4 class="client-name">James Wilson</h4>
+                            <p class="client-status">Logged meal: "Grilled Salmon"</p>
+                        </div>
+                        <span style="font-size: 12px; color: var(--text-light);">15m ago</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Quick Actions & Pending -->
+            <div class="col-right">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">Pending Requests</h3>
+                    </div>
+                    <div class="client-item" style="padding: 10px 0;">
+                        <div class="client-info">
+                            <h4 class="client-name" style="font-size: 14px;">Plan Renewal</h4>
+                            <p class="client-status">John Doe requested Month 2 Plan</p>
+                        </div>
+                        <div class="client-actions">
+                            <button class="action-btn"
+                                style="color: var(--success-color); border-color: var(--success-color);"><i
+                                    class="fas fa-check"></i></button>
+                        </div>
+                    </div>
+                    <div class="client-item" style="padding: 10px 0;">
+                        <div class="client-info">
+                            <h4 class="client-name" style="font-size: 14px;">New Message</h4>
+                            <p class="client-status">Sarah: "Can we reschedule?"</p>
+                        </div>
+                        <div class="client-actions">
+                            <button class="action-btn"
+                                style="color: var(--primary-color); border-color: var(--primary-color);"><i
+                                    class="fas fa-reply"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-card"
+                    style="background: linear-gradient(135deg, var(--primary-color) 0%, #1A3C6B 100%); color: white;">
+                    <div class="section-header">
+                        <h3 class="section-title" style="color: white;">Trainer Tip</h3>
+                        <i class="fas fa-lightbulb" style="color: var(--secondary-color);"></i>
+                    </div>
+                    <p style="font-size: 14px; opacity: 0.9; line-height: 1.6;">Remember to check on clients who haven't
+                        logged activity in 3+ days to boost retention.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>
+
+
