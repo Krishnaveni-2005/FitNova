@@ -1,9 +1,11 @@
+<?php session_start(); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FitNova - Health & Wellness Ecosystem</title>
+    <meta name="description" content="FitNova is a comprehensive health and wellness ecosystem offering expert guidance, curated fitness equipment, and personalized training plans.">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     <!-- Font Awesome -->
@@ -53,12 +55,27 @@
         /* Hero Cards (Floating) */
         .hero-cards-section { margin-top: -160px; padding-bottom: 80px; position: relative; z-index: 10; }
         .hero-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
-        .h-card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.08); transition: var(--transition); display: flex; flex-direction: column; align-items: center; text-align: center; padding-bottom: 30px; }
+        
+        .h-card { 
+            background: white; 
+            border-radius: 20px; 
+            overflow: hidden; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08); 
+            transition: var(--transition); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            text-align: center; 
+            padding-bottom: 30px; 
+            height: 480px; /* Keep height for consistency */
+        }
+        
         .h-card:hover { transform: translateY(-10px); box-shadow: 0 30px 60px rgba(0,0,0,0.12); }
-        .h-card img { width: 100%; height: 220px; object-fit: cover; margin-bottom: 25px; }
+        .h-card img { width: 100%; height: 240px; object-fit: cover; margin-bottom: 25px; }
         .h-card h3 { font-size: 1.4rem; font-weight: 700; margin-bottom: 10px; color: var(--text-dark); }
         .h-card p { font-size: 0.95rem; color: var(--text-light); margin-bottom: 25px; padding: 0 25px; line-height: 1.6; }
-        .btn-view { display: inline-block; background: var(--text-dark); color: white; padding: 10px 30px; border-radius: 50px; font-size: 0.9rem; font-weight: 600; transition: var(--transition); }
+        
+        .btn-view { display: inline-block; background: var(--text-dark); color: white; padding: 10px 30px; border-radius: 50px; font-size: 0.9rem; font-weight: 600; transition: var(--transition); margin-top: auto; }
         .btn-view:hover { background: var(--primary-color); transform: translateY(-2px); }
 
         /* Features */
@@ -115,18 +132,7 @@
 </head>
 <body>
 
-    <!-- Nav -->
-    <nav class="navbar">
-        <div class="container nav-container">
-            <div class="logo">FitNova</div>
-            <div class="nav-links">
-                <a href="home.php" class="nav-link">Home</a>
-                <a href="#" class="nav-link" onclick="handleTalkToExperts(event)">Talk to Experts</a>
-                <a href="fitshop.html" class="nav-link">Fitshop</a>
-                <a href="signup.html" class="btn-signup">Sign up</a>
-            </div>
-        </div>
-    </nav>
+    <?php $isHomePage = true; include 'header.php'; ?>
 
     <!-- Hero -->
     <header class="hero">
@@ -145,21 +151,21 @@
                 <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&q=80&w=800" alt="Fitness & Nutrition">
                 <h3>Fitness & Nutrition</h3>
                 <p>Unlock your dream body with the right diet & workouts.</p>
-                <a href="#" class="btn-view">View Coaches</a>
+                <a href="fitness_nutrition.php" class="btn-view">View</a>
             </div>
             <!-- Card 2 -->
             <div class="h-card">
                 <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&q=80&w=800" alt="Online Personal Training">
                 <h3>Online Personal Training</h3>
                 <p>1-on-1 online sessions for Yoga, Zumba & more!</p>
-                <a href="#" class="btn-view">View Coaches</a>
+                <a href="trainers.php" class="btn-view">View</a>
             </div>
             <!-- Card 3 -->
             <div class="h-card">
                 <img src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&q=80&w=800" alt="Learn">
                 <h3>Learn</h3>
                 <p>Discover fitness articles, insights, and wellness tips.</p>
-                <a href="#" class="btn-view">View</a>
+                <a href="learn.php" class="btn-view">View</a>
             </div>
         </div>
     </section>
@@ -235,43 +241,7 @@
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-top">
-                <div>
-                    <div class="f-logo">FitNova</div>
-                    <p class="f-desc">A unified digital ecosystem for your health and wellness journey.</p>
-                    <div class="f-socials">
-                        <a href="#"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                    </div>
-                </div>
-                <div>
-                    <h4>Platform</h4>
-                    <ul class="f-links">
-                        <li><a href="#">Talk to Experts</a></li>
-                        <li><a href="#">Fitshop</a></li>
-                        <li><a href="#">Learn Resources</a></li>
-                        <li><a href="#">Live Classes</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4>Support</h4>
-                    <ul class="f-links">
-                        <li><a href="#">Help Center</a></li>
-                        <li><a href="#">FAQs</a></li>
-                        <li><a href="#">Contact Us</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                &copy; 2025 FitNova. All rights reserved.
-            </div>
-        </div>
-    </footer>
+    <?php include 'footer.php'; ?>
 
     <script>
         function handleTalkToExperts(event) {

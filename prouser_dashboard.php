@@ -1,33 +1,49 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id'])) {
+if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'pro') {
     header('Location: login.php');
     exit();
 }
-$userName = $_SESSION['user_name'] ?? 'User';
-$userEmail = $_SESSION['user_email'] ?? '';
+require "db_connect.php";
+$userId = $_SESSION['user_id'];
+$userName = $_SESSION['user_name'] ?? 'Pro User';
 $initials = strtoupper(substr($userName, 0, 1) . substr($userName, strpos($userName, ' ') + 1, 1));
 if (strlen($initials) < 2) $initials = strtoupper(substr($userName, 0, 2));
 
-require "db_connect.php";
-$userId = $_SESSION['user_id'];
-$profileCheck = $conn->query("SELECT weight_kg FROM client_profiles WHERE user_id = $userId");
-$hasProfile = ($profileCheck->num_rows > 0);
-$profileWeight = "72kg"; // default
-if ($hasProfile) {
-    $pData = $profileCheck->fetch_assoc();
-    $profileWeight = $pData['weight_kg'] . "kg";
+// Fetch profile info for personalized stats
+$profileSql = "SELECT * FROM client_profiles WHERE user_id = ?";
+$stmt = $conn->prepare($profileSql);
+$stmt->bind_param("i", $userId);
+if ($stmt->execute()) {
+    $profile = $stmt->get_result()->fetch_assoc();
+}
+$stmt->close();
+
+// Fetch Assigned Workouts
+$workoutSql = "SELECT * FROM trainer_workouts WHERE client_name = ? ORDER BY created_at DESC LIMIT 3";
+$stmt = $conn->prepare($workoutSql);
+if ($stmt) {
+    $stmt->bind_param("s", $userName);
+    $stmt->execute();
+    $assignedWorkouts = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+} else {
+    $assignedWorkouts = []; // Fallback
 }
 
-// Fetch Common Resources (added by trainers but not specific to any client)
-// Fetch Common Resources (added by trainers but not specific to any client)
-$commonWorkoutsSql = "SELECT * FROM trainer_workouts WHERE client_name = 'Personal Template' OR client_name = '' OR client_name IS NULL LIMIT 2";
-$cwResult = $conn->query($commonWorkoutsSql);
-$commonWorkouts = $cwResult ? $cwResult->fetch_all(MYSQLI_ASSOC) : [];
-
-$commonDietsSql = "SELECT * FROM trainer_diet_plans WHERE client_name = 'Personal Template' OR client_name = '' OR client_name IS NULL LIMIT 1";
-$cdResult = $conn->query($commonDietsSql);
-$commonDiets = $cdResult ? $cdResult->fetch_all(MYSQLI_ASSOC) : [];
+// Fetch Assigned Diets
+$dietSql = "SELECT * FROM trainer_diet_plans WHERE client_name = ? ORDER BY created_at DESC LIMIT 1";
+$stmt = $conn->prepare($dietSql);
+if ($stmt) {
+    $stmt->bind_param("s", $userName);
+    $stmt->execute();
+    $assignedDiets = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+} else {
+    // Log error or fallback
+    error_log("Diet Prepare Error: " . $conn->error);
+    $assignedDiets = [];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -35,7 +51,7 @@ $commonDiets = $cdResult ? $cdResult->fetch_all(MYSQLI_ASSOC) : [];
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Dashboard - FitNova</title>
+    <title>Pro Dashboard - FitNova</title>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -158,30 +174,68 @@ $commonDiets = $cdResult ? $cdResult->fetch_all(MYSQLI_ASSOC) : [];
             text-align: center;
         }
 
+        /* Pro Badge in Sidebar */
+        .pro-badge-sidebar {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            margin-left: auto;
+            text-transform: uppercase;
+        }
+
         .user-profile-preview {
             padding: 20px;
             border-top: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             gap: 12px;
+            background: linear-gradient(to right, rgba(15, 44, 89, 0.03), transparent);
         }
 
         .user-avatar-sm {
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background-color: var(--secondary-color);
-            color: var(--primary-color);
+            background-color: var(--primary-color);
+            color: var(--secondary-color);
+            border: 2px solid var(--secondary-color);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
+            position: relative;
+        }
+
+        .user-avatar-sm::after {
+            content: '\f005';
+            /* Star icon */
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            position: absolute;
+            bottom: -5px;
+            right: -5px;
+            background: var(--secondary-color);
+            color: var(--primary-color);
+            width: 18px;
+            height: 18px;
+            font-size: 10px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
         }
 
         .user-info-sm h4 {
             font-size: 14px;
             color: var(--primary-color);
             margin-bottom: 2px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         .user-info-sm p {
@@ -212,6 +266,21 @@ $commonDiets = $cdResult ? $cdResult->fetch_all(MYSQLI_ASSOC) : [];
 
         .welcome-text p {
             color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .trainer-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 13px;
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--success-color);
+            padding: 2px 8px;
+            border-radius: 50px;
+            font-weight: 500;
         }
 
         .header-actions {
@@ -231,6 +300,23 @@ $commonDiets = $cdResult ? $cdResult->fetch_all(MYSQLI_ASSOC) : [];
             color: var(--text-light);
             cursor: pointer;
             transition: var(--transition);
+            position: relative;
+        }
+
+        .btn-icon .badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 18px;
+            height: 18px;
+            background-color: var(--accent-color);
+            color: white;
+            border-radius: 50%;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
         }
 
         .btn-icon:hover {
@@ -370,6 +456,14 @@ $commonDiets = $cdResult ? $cdResult->fetch_all(MYSQLI_ASSOC) : [];
             color: var(--primary-color);
         }
 
+        .section-subtitle {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-top: -15px;
+            margin-bottom: 20px;
+            display: block;
+        }
+
         .view-all {
             color: var(--accent-color);
             text-decoration: none;
@@ -377,12 +471,22 @@ $commonDiets = $cdResult ? $cdResult->fetch_all(MYSQLI_ASSOC) : [];
             font-weight: 500;
         }
 
-        /* Workout List */
+        /* Workout List - Pro Style */
         .workout-item {
             display: flex;
             align-items: center;
             padding: 15px 0;
             border-bottom: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .workout-item.live {
+            background-color: rgba(230, 57, 70, 0.03);
+            padding: 15px;
+            margin: 0 -15px;
+            border-radius: 8px;
+            border-bottom: none;
+            margin-bottom: 10px;
         }
 
         .workout-item:last-child {
@@ -397,6 +501,10 @@ $commonDiets = $cdResult ? $cdResult->fetch_all(MYSQLI_ASSOC) : [];
             margin-right: 15px;
         }
 
+        .workout-item.live .workout-img {
+            border: 2px solid var(--accent-color);
+        }
+
         .workout-info {
             flex: 1;
         }
@@ -405,6 +513,34 @@ $commonDiets = $cdResult ? $cdResult->fetch_all(MYSQLI_ASSOC) : [];
             font-weight: 600;
             color: var(--text-color);
             margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .live-tag {
+            font-size: 10px;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
+
+            100% {
+                opacity: 1;
+            }
         }
 
         .workout-meta {
@@ -437,6 +573,75 @@ $commonDiets = $cdResult ? $cdResult->fetch_all(MYSQLI_ASSOC) : [];
             color: white;
         }
 
+        .btn-join {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: var(--transition);
+            box-shadow: 0 4px 10px rgba(230, 57, 70, 0.3);
+        }
+
+        .btn-join:hover {
+            background-color: #d62828;
+            transform: translateY(-2px);
+        }
+
+        /* Trainer Card */
+        .trainer-card {
+            background: linear-gradient(135deg, white 0%, #f8f9fa 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .trainer-img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--secondary-color);
+        }
+
+        .trainer-info h4 {
+            color: var(--primary-color);
+            margin-bottom: 2px;
+            font-size: 1rem;
+        }
+
+        .trainer-info p {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+
+        .btn-chat {
+            background: white;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            font-size: 0.8rem;
+            padding: 5px 12px;
+            border-radius: 50px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: var(--transition);
+        }
+
+        .btn-chat:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
         /* Progress Circle */
         .progress-container {
             display: flex;
@@ -449,7 +654,7 @@ $commonDiets = $cdResult ? $cdResult->fetch_all(MYSQLI_ASSOC) : [];
             width: 150px;
             height: 150px;
             border-radius: 50%;
-            background: conic-gradient(var(--accent-color) 70%, #f0f0f0 0);
+            background: conic-gradient(var(--success-color) 85%, #f0f0f0 0);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -526,19 +731,20 @@ $commonDiets = $cdResult ? $cdResult->fetch_all(MYSQLI_ASSOC) : [];
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
             <a href="home.php" class="brand-logo">
-                <i class="fas fa-dumbbell"></i> FitNova <span style="font-size: 10px; background: var(--secondary-color); color: var(--primary-color); padding: 2px 6px; border-radius: 4px; margin-left: 5px; font-weight: 700;">FREE</span>
+                <i class="fas fa-dumbbell"></i> FitNova <span
+                    style="font-size: 10px; background: var(--secondary-color); color: var(--primary-color); padding: 2px 5px; border-radius: 4px; margin-left: 5px;">PRO</span>
             </a>
         </div>
 
         <nav class="sidebar-menu">
-            <a href="freeuser_dashboard.php" class="menu-item active">
-                <i class="fas fa-home"></i> Dashboard
+            <a href="prouser_dashboard.php" class="menu-item active">
+                <i class="fas fa-home"></i> Premium Dashboard
             </a>
             <a href="free_workouts.php" class="menu-item">
-                <i class="fas fa-dumbbell"></i> Free Workouts
+                <i class="fas fa-dumbbell"></i> Workout Videos
             </a>
             <a href="healthy_recipes.php" class="menu-item">
-                <i class="fas fa-carrot"></i> Healthy Recipes
+                <i class="fas fa-utensils"></i> Healthy Recipes
             </a>
             <a href="my_progress.php" class="menu-item">
                 <i class="fas fa-chart-line"></i> My Progress
@@ -546,22 +752,20 @@ $commonDiets = $cdResult ? $cdResult->fetch_all(MYSQLI_ASSOC) : [];
             <a href="client_profile_setup.php" class="menu-item">
                 <i class="fas fa-user-circle"></i> Profile
             </a>
-            <a href="#" class="menu-item">
-                <i class="fas fa-user-friends"></i> Community
-            </a>
             <a href="fitshop.php" class="menu-item">
                 <i class="fas fa-store"></i> FitShop
             </a>
             <a href="subscription_plans.php" class="menu-item" style="color: var(--accent-color);">
-                <i class="fas fa-crown"></i> Upgrade to Pro
+                <i class="fas fa-gem"></i> Upgrade Plan
             </a>
         </nav>
 
         <div class="user-profile-preview">
             <div class="user-avatar-sm"><?php echo $initials; ?></div>
             <div class="user-info-sm">
-                <h4><?php echo htmlspecialchars($userName); ?></h4>
-                <p>Free Member</p>
+                <h4><?php echo htmlspecialchars($userName); ?> <i class="fas fa-check-circle"
+                        style="color: var(--secondary-color); font-size: 12px;"></i></h4>
+                <p>Pro Member</p>
             </div>
             <a href="logout.php" style="margin-left: auto; color: var(--text-light);"><i
                     class="fas fa-sign-out-alt fa-flip-horizontal"></i></a>
@@ -573,94 +777,90 @@ $commonDiets = $cdResult ? $cdResult->fetch_all(MYSQLI_ASSOC) : [];
         <!-- Header -->
         <header class="dashboard-header">
             <div class="welcome-text">
-                <h1>Welcome back, <?php echo htmlspecialchars($userName); ?>! 👋</h1>
-                <p>Ready to crush your goals today?</p>
+                <h1>Welcome back, <?php echo htmlspecialchars(explode(' ', $userName)[0]); ?>! 👋</h1>
+                <p>
+                    <span class="trainer-status"><i class="fas fa-circle" style="font-size: 8px;"></i> Coach Mike is
+                        online</span>
+                    Ready for your transformation?
+                </p>
             </div>
             <div class="header-actions">
-                <button class="btn-icon"><i class="fas fa-bell"></i></button>
+                <button class="btn-icon">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge">3</span>
+                </button>
                 <button class="btn-icon"><i class="fas fa-envelope"></i></button>
                 <a href="#" class="btn-primary">
-                    <i class="fas fa-plus"></i> Log Activity
+                    <i class="fas fa-calendar-plus"></i> Book Session
                 </a>
             </div>
         </header>
 
-        <?php if (!$hasProfile): ?>
-        <div class="section-card" style="background: #fff9db; border: 1px solid #ffe066; color: #856404; display: flex; align-items: center; justify-content: space-between; padding: 20px; border-radius: 12px; margin-bottom: 30px;">
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <i class="fas fa-user-circle" style="font-size: 24px;"></i>
-                <div>
-                    <h4 style="margin-bottom: 5px;">Incomplete Profile</h4>
-                    <p style="font-size: 14px; opacity: 0.9;">Please complete your fitness assessment to get personalized workout and diet plans.</p>
-                </div>
-            </div>
-            <a href="client_profile_setup.php" class="btn-primary" style="background: #f08c00; color: white;">Setup Profile</a>
-        </div>
-        <?php endif; ?>
-
-        <!-- Stats Overview -->
         <!-- Stats Overview -->
         <div class="stats-grid">
             <div class="stat-card blue">
                 <div class="stat-icon"><i class="fas fa-fire"></i></div>
-                <div class="stat-value" id="dashCalories">1,250</div>
-                <div class="stat-label">Calories Burned</div>
+                <div class="stat-value">2,450</div>
+                <div class="stat-label">Calories (Weekly Avg)</div>
             </div>
             <div class="stat-card gold">
-                <div class="stat-icon"><i class="fas fa-clock"></i></div>
-                <div class="stat-value" id="dashTime">4.5h</div>
-                <div class="stat-label">Workout Time</div>
-            </div>
-            <div class="stat-card red">
-                <div class="stat-icon"><i class="fas fa-trophy"></i></div>
-                <div class="stat-value" id="dashWorkouts">12</div>
-                <div class="stat-label">Completed Workouts</div>
+                <div class="stat-icon"><i class="fas fa-dumbbell"></i></div>
+                <div class="stat-value"><?php echo $profile['weight_kg'] ?? '72'; ?>kg</div>
+                <div class="stat-label">Current Weight</div>
             </div>
             <div class="stat-card green">
-                <div class="stat-icon"><i class="fas fa-weight"></i></div>
-                <div class="stat-value" id="dashWeight"><?php echo $profileWeight; ?></div>
-                <div class="stat-label">Current Weight</div>
+                <div class="stat-icon"><i class="fas fa-check-double"></i></div>
+                <div class="stat-value">98%</div>
+                <div class="stat-label">Plan Adherence</div>
             </div>
         </div>
 
         <div class="dashboard-layout">
-            <!-- Left Column: Recommendations -->
+            <!-- Left Column: Custom Plan -->
             <div class="col-left">
-                <!-- Upgrade Banner for Free Members -->
-                <div class="section-card"
-                    style="background: linear-gradient(135deg, #1A3C6B 0%, #0F2C59 100%); color: white; display: flex; align-items: center; justify-content: space-between; padding: 20px;">
-                    <div>
-                        <h3 style="margin-bottom: 5px; font-size: 1.1rem; color: white;">Unlock Your Full Potential</h3>
-                        <p style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 0; color: rgba(255,255,255,0.8);">Get
-                            a personal trainer & custom meal plans.</p>
+                <!-- My Trainer Section -->
+                <div class="trainer-card">
+                    <img src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
+                        alt="Coach Mike" class="trainer-img">
+                    <div class="trainer-info">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                            <div>
+                                <h4>Coach Mike</h4>
+                                <p>Head of Strength & Conditioning</p>
+                                <button class="btn-chat"><i class="far fa-comment-alt"></i> Chat Now</button>
+                            </div>
+                            <div style="text-align: right;">
+                                <span style="font-size: 0.8rem; color: var(--text-light); display: block;">Next
+                                    Session:</span>
+                                <span style="font-weight: 600; color: var(--primary-color);">Tomorrow, 10:00 AM</span>
+                            </div>
+                        </div>
                     </div>
-                    <button onclick="window.location.href='subscription_plans.php'"
-                        style="background: var(--accent-color); color: white; border: none; padding: 8px 16px; border-radius: 50px; font-weight: 600; cursor: pointer; white-space: nowrap;">Go
-                        Premium</button>
                 </div>
 
                 <div class="section-card">
                     <div class="section-header">
-                        <h3 class="section-title">Recommended for You</h3>
-                        <a href="free_workouts.php" class="view-all">Free Workouts</a>
+                        <h3 class="section-title">Your Assigned Plans</h3>
+                        <a href="#" class="view-all">View Full Plan</a>
                     </div>
 
                     <div class="workout-list">
-                        <?php if (empty($commonWorkouts)): ?>
-                            <p style="color: var(--text-light); font-size: 0.9rem; text-align: center; padding: 20px;">Check back later for new workout recommendations!</p>
+                        <?php if (empty($assignedWorkouts)): ?>
+                            <p style="color: var(--text-light); padding: 20px; text-align: center;">No workout routines assigned by your trainer yet.</p>
                         <?php else: ?>
-                            <?php foreach ($commonWorkouts as $workout): ?>
+                            <?php foreach($assignedWorkouts as $w): ?>
                             <div class="workout-item">
-                                <img src="https://images.unsplash.com/photo-1599058945522-28d584b6f0ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
-                                    alt="Workout" class="workout-img">
+                                <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
+                                    alt="Strength" class="workout-img">
                                 <div class="workout-info">
-                                    <h4 class="workout-name"><?php echo htmlspecialchars($workout['plan_name']); ?></h4>
+                                    <h4 class="workout-name"><?php echo htmlspecialchars($w['plan_name']); ?></h4>
                                     <div class="workout-meta">
-                                        <span><i class="far fa-clock"></i> <?php echo $workout['duration_weeks']; ?> weeks</span>
-                                        <span><i class="fas fa-tag"></i> <?php echo ucfirst($workout['difficulty']); ?></span>
+                                        <span><i class="far fa-clock"></i> <?php echo $w['duration_weeks']; ?> Weeks</span>
+                                        <span><i class="fas fa-layer-group"></i> <?php echo ucfirst($w['difficulty']); ?></span>
                                     </div>
                                 </div>
-                                <button class="btn-action">Start</button>
+                                <button class="btn-action">Start Log</button>
                             </div>
                             <?php endforeach; ?>
                         <?php endif; ?>
@@ -669,13 +869,14 @@ $commonDiets = $cdResult ? $cdResult->fetch_all(MYSQLI_ASSOC) : [];
 
                 <div class="section-card">
                     <div class="section-header">
-                        <h3 class="section-title">Diet Plan of the Day</h3>
-                        <a href="#" class="view-all">View All</a>
+                        <h3 class="section-title">Assigned Diet Plan</h3>
+                        <a href="#" class="view-all">View Details</a>
                     </div>
-                    <?php if (empty($commonDiets)): ?>
-                        <p style="color: var(--text-light); font-size: 0.9rem; text-align: center; padding: 20px;">Healthy recipes are being cooked up!</p>
-                    <?php else: ?>
-                        <?php foreach($commonDiets as $diet): ?>
+                    <?php if (empty($assignedDiets)): ?>
+                        <p style="color: var(--text-light); padding: 20px; text-align: center;">Your custom diet plan will appear here once assigned.</p>
+                    <?php else: 
+                        $diet = $assignedDiets[0];
+                    ?>
                         <div class="workout-item">
                             <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
                                 alt="Meal" class="workout-img">
@@ -683,13 +884,54 @@ $commonDiets = $cdResult ? $cdResult->fetch_all(MYSQLI_ASSOC) : [];
                                 <h4 class="workout-name"><?php echo htmlspecialchars($diet['plan_name']); ?></h4>
                                 <div class="workout-meta">
                                     <span><i class="fas fa-utensils"></i> <?php echo $diet['target_calories']; ?> kcal/day</span>
-                                    <span><i class="fas fa-leaf"></i> <?php echo ucfirst($diet['diet_type']); ?></span>
+                                    <span><i class="fas fa-bullseye"></i> Type: <?php echo ucfirst($diet['diet_type']); ?></span>
                                 </div>
                             </div>
                             <button class="btn-action">View</button>
                         </div>
-                        <?php endforeach; ?>
                     <?php endif; ?>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">Today's Macros</h3>
+                        <a href="#" class="view-all">Log Meal</a>
+                    </div>
+                    <div style="display: flex; gap: 20px; align-items: center; justify-content: space-around;">
+                        <div style="text-align: center;">
+                            <span
+                                style="display: block; font-size: 24px; font-weight: 700; color: var(--primary-color);">165g</span>
+                            <span style="font-size: 13px; color: var(--text-light);">Protein</span>
+                            <div
+                                style="width: 60px; height: 4px; background: #e9ecef; margin: 5px auto; border-radius: 2px;">
+                                <div
+                                    style="width: 80%; height: 100%; background: var(--primary-color); border-radius: 2px;">
+                                </div>
+                            </div>
+                        </div>
+                        <div style="text-align: center;">
+                            <span
+                                style="display: block; font-size: 24px; font-weight: 700; color: var(--accent-color);">240g</span>
+                            <span style="font-size: 13px; color: var(--text-light);">Carbs</span>
+                            <div
+                                style="width: 60px; height: 4px; background: #e9ecef; margin: 5px auto; border-radius: 2px;">
+                                <div
+                                    style="width: 60%; height: 100%; background: var(--accent-color); border-radius: 2px;">
+                                </div>
+                            </div>
+                        </div>
+                        <div style="text-align: center;">
+                            <span
+                                style="display: block; font-size: 24px; font-weight: 700; color: var(--secondary-color);">75g</span>
+                            <span style="font-size: 13px; color: var(--text-light);">Fats</span>
+                            <div
+                                style="width: 60px; height: 4px; background: #e9ecef; margin: 5px auto; border-radius: 2px;">
+                                <div
+                                    style="width: 45%; height: 100%; background: var(--secondary-color); border-radius: 2px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -697,68 +939,53 @@ $commonDiets = $cdResult ? $cdResult->fetch_all(MYSQLI_ASSOC) : [];
             <div class="col-right">
                 <div class="section-card">
                     <div class="section-header">
-                        <h3 class="section-title">Weekly Goal</h3>
+                        <h3 class="section-title">Phase Progress</h3>
                     </div>
                     <div class="progress-container">
                         <div class="progress-circle">
                             <div class="progress-value">
-                                70%
-                                <span class="progress-label">Completed</span>
+                                85%
+                                <span class="progress-label">On Track</span>
                             </div>
                         </div>
-                        <p style="color: var(--text-light); font-size: 14px; margin-bottom: 20px;">You're doing great!
-                            Keep up the momentum to hit your weekly target.</p>
+                        <p style="color: var(--text-light); font-size: 14px; margin-bottom: 20px; text-align: center;">
+                            "Great consistent effort this week. Let's push hard on the legs tomorrow." - Coach Mike</p>
 
-                        <div class="daily-goals-list">
-                            <div class="goal-item">
-                                <span>Calories</span>
-                                <strong>1,250 / 2,000</strong>
-                            </div>
-                            <div class="goal-item">
-                                <span>Water Intake</span>
-                                <strong>1.5L / 3L</strong>
-                            </div>
-                            <div class="goal-item">
-                                <span>Sleep</span>
-                                <strong>6.5h / 8h</strong>
-                            </div>
-                        </div>
+                        <button
+                            style="width: 100%; padding: 12px; background: var(--bg-color); color: var(--primary-color); border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">View
+                            Detailed Analytics</button>
                     </div>
                 </div>
 
-                <div class="section-card"
-                    style="background: linear-gradient(135deg, var(--primary-color) 0%, #1A3C6B 100%); color: white;">
+                <div class="section-card">
                     <div class="section-header">
-                        <h3 class="section-title" style="color: white;">Pro Tip</h3>
-                        <i class="fas fa-lightbulb" style="color: var(--secondary-color);"></i>
+                        <h3 class="section-title">Equipment Store</h3>
+                        <a href="#" class="view-all">Shop</a>
                     </div>
-                    <p style="font-size: 14px; opacity: 0.9; line-height: 1.6;">Consistency is key! Try to maintain a
-                        regular workout schedule, even if it's just 20 minutes a day. Small steps lead to big changes.
-                    </p>
+                    <div class="workout-item" style="border: none;">
+                        <img src="https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
+                            alt="Supplements" class="workout-img">
+                        <div class="workout-info">
+                            <h4 class="workout-name">Pro Whey Isolate</h4>
+                            <div class="workout-meta">
+                                <span style="color: var(--success-color); font-weight: 600;">₹3,450.00</span>
+                                <span
+                                    style="font-size: 11px; background: var(--secondary-color); color: var(--primary-color); padding: 1px 4px; border-radius: 2px;">PRO
+                                    15% OFF</span>
+                            </div>
+                        </div>
+                        <button class="btn-action"><i class="fas fa-shopping-cart"></i></button>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 
     <script>
-        // Simple script to handle mobile sidebar toggle if we add a hamburger later
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('Dashboard Loaded');
-            
-            // Sync Stats from LocalStorage
-            const calories = localStorage.getItem('fitnova_calories');
-            const workouts = localStorage.getItem('fitnova_workouts');
-            const time = localStorage.getItem('fitnova_time');
-            const weight = localStorage.getItem('fitnova_weight');
-
-            if (calories) document.getElementById('dashCalories').innerText = parseInt(calories).toLocaleString();
-            if (workouts) document.getElementById('dashWorkouts').innerText = workouts;
-            if (time) document.getElementById('dashTime').innerText = parseFloat(time).toFixed(1) + 'h';
-            if (weight) document.getElementById('dashWeight').innerText = weight + 'kg';
+            console.log('Pro Dashboard Loaded');
         });
     </script>
 </body>
 
 </html>
-
-

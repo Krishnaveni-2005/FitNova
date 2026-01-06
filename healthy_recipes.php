@@ -1,0 +1,395 @@
+<?php session_start(); include 'header.php'; ?>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthy Recipes - FitNova</title>
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0F2C59;
+            --accent-color: #3498DB;
+            /* Blue */
+            --bg-color: #F8F9FA;
+            --text-color: #333333;
+            --text-light: #6C757D;
+            --white: #FFFFFF;
+            --border-radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #0F2C59 0%, #3498DB 100%);
+            color: white;
+            padding: 80px 20px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border-radius: 0 0 30px 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 20px rgba(52, 152, 219, 0.3);
+        }
+
+        .hero::before {
+            content: ''; position: absolute; width: 300px; height: 300px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); top: -100px; left: -50px;
+        }
+
+        .hero-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.95;
+            max-width: 600px;
+            margin: 0 auto 30px;
+            position: relative;
+            z-index: 1;
+            font-weight: 500;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 40px;
+        }
+
+        /* Tabs */
+        .tabs-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .tabs {
+            display: inline-flex;
+            background: white;
+            padding: 5px;
+            border-radius: 50px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .tab-btn {
+            padding: 12px 30px;
+            border: none;
+            background: none;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-light);
+            cursor: pointer;
+            border-radius: 50px;
+            transition: var(--transition);
+        }
+
+        .tab-btn.active {
+            background: var(--accent-color);
+            color: white;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+        }
+
+        /* Recipe Grid */
+        .recipe-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 30px;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .recipe-grid.active {
+            display: grid;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .recipe-card {
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            cursor: pointer;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .recipe-card:hover { transform: translateY(-8px); box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12); }
+
+        .recipe-thumbnail {
+            width: 100%;
+            height: 220px;
+            background-color: #EEE;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .badge-group {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: rgba(255, 255, 255, 0.9);
+            color: #0F2C59;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(4px);
+        }
+
+        .recipe-info {
+            padding: 25px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .recipe-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+            line-height: 1.3;
+        }
+
+        .recipe-desc {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .recipe-meta {
+            margin-top: auto;
+            padding-top: 15px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .meta-item { display: flex; align-items: center; gap: 6px; }
+        .meta-item i { color: var(--accent-color); }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-card {
+            width: 90%;
+            max-width: 600px;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-header-img { width: 100%; height: 250px; background-size: cover; background-position: center; }
+        .modal-body { padding: 30px; }
+        .modal-title { font-family: 'Outfit', sans-serif; font-size: 1.8rem; margin-bottom: 10px; color: var(--primary-color); }
+        .close-modal-btn { position: absolute; top: 20px; right: 20px; background: rgba(0, 0, 0, 0.5); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; }
+
+        .ingredient-list { list-style: none; margin-bottom: 25px; }
+        .ingredient-list li { padding: 8px 0; border-bottom: 1px solid #f0f0f0; display: flex; gap: 10px; align-items: center; }
+        .ingredient-list li i { color: var(--accent-color); font-size: 0.8rem; }
+
+        @media (max-width: 768px) {
+            .recipe-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="hero">
+        <h1 class="hero-title">Healthy Recipes</h1>
+        <p class="hero-subtitle">Fuel your body with delicious, nutritious meals designed for performance.</p>
+    </div>
+
+    <div class="container">
+        <div class="tabs-container">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="openTab('breakfast')">Breakfast</button>
+                <button class="tab-btn" onclick="openTab('lunch')">Lunch/Dinner</button>
+                <button class="tab-btn" onclick="openTab('snacks')">Snacks</button>
+            </div>
+        </div>
+
+        <!-- Breakfast -->
+        <div id="breakfast" class="recipe-grid active">
+            <div class="recipe-card" onclick="openModal('Avocado Toast', 'https://images.unsplash.com/photo-1541519227354-08fa5d50c44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')">
+                <div class="recipe-thumbnail" style="background-image: url('https://images.unsplash.com/photo-1541519227354-08fa5d50c44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')">
+                    <div class="badge-group">
+                        <span class="badge">Vegan</span>
+                        <span class="badge">Quick</span>
+                    </div>
+                </div>
+                <div class="recipe-info">
+                    <h3 class="recipe-title">Smashed Avocado Toast</h3>
+                    <p class="recipe-desc">Whole grain toast topped with seasoned avocado, chili flakes, and sesame seeds.</p>
+                    <div class="recipe-meta">
+                        <div class="meta-item"><i class="far fa-clock"></i> 5 min</div>
+                        <div class="meta-item"><i class="fas fa-fire"></i> 320 kcal</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="recipe-card" onclick="openModal('Berry Power Oatmeal', 'https://images.unsplash.com/photo-1517673132405-a56a62b18caf?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')">
+                <div class="recipe-thumbnail" style="background-image: url('https://images.unsplash.com/photo-1517673132405-a56a62b18caf?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')">
+                    <div class="badge-group">
+                        <span class="badge">High Fiber</span>
+                    </div>
+                </div>
+                <div class="recipe-info">
+                    <h3 class="recipe-title">Berry Power Oatmeal</h3>
+                    <p class="recipe-desc">Warm rolled oats with almond milk, topped with fresh mixed berries and seeds.</p>
+                    <div class="recipe-meta">
+                        <div class="meta-item"><i class="far fa-clock"></i> 10 min</div>
+                        <div class="meta-item"><i class="fas fa-fire"></i> 350 kcal</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lunch/Dinner -->
+        <div id="lunch" class="recipe-grid">
+            <div class="recipe-card" onclick="openModal('Kale & Quinoa Salad', 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')">
+                <div class="recipe-thumbnail" style="background-image: url('https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')">
+                    <div class="badge-group">
+                        <span class="badge">Gluten Free</span>
+                        <span class="badge">Protein</span>
+                    </div>
+                </div>
+                <div class="recipe-info">
+                    <h3 class="recipe-title">Kale & Quinoa Salad</h3>
+                    <p class="recipe-desc">Nutrient-dense salad with chickpeas, cherry tomatoes, and lemon tahini dressing.</p>
+                    <div class="recipe-meta">
+                        <div class="meta-item"><i class="far fa-clock"></i> 20 min</div>
+                        <div class="meta-item"><i class="fas fa-fire"></i> 450 kcal</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Snacks -->
+        <div id="snacks" class="recipe-grid">
+            <div class="recipe-card" onclick="openModal('Date & Nut Energy Balls', 'https://images.unsplash.com/photo-1604423043492-c0e0b5f1361c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')">
+                <div class="recipe-thumbnail" style="background-image: url('https://images.unsplash.com/photo-1604423043492-c0e0b5f1361c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')">
+                    <div class="badge-group">
+                        <span class="badge">Raw</span>
+                        <span class="badge">Sweet</span>
+                    </div>
+                </div>
+                <div class="recipe-info">
+                    <h3 class="recipe-title">Date & Nut Energy Balls</h3>
+                    <p class="recipe-desc">No-bake energy bites made with dates, walnuts, cocoa, and coconut.</p>
+                    <div class="recipe-meta">
+                        <div class="meta-item"><i class="far fa-clock"></i> 10 min</div>
+                        <div class="meta-item"><i class="fas fa-fire"></i> 120 kcal</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recipe Modal -->
+    <div class="modal" id="recipeModal">
+        <div class="modal-card">
+            <button class="close-modal-btn" onclick="closeModal()"><i class="fas fa-times"></i></button>
+            <div class="modal-header-img" id="modalImg"></div>
+            <div class="modal-body">
+                <h2 class="modal-title" id="modalTitle">Recipe Title</h2>
+                <div class="modal-tags">
+                    <span class="badge" style="background:var(--accent-color); color:white;">Healthy</span>
+                    <span class="badge" style="background:#eee; color:#333;">Simple</span>
+                </div>
+                <h4 style="margin-bottom: 10px; color: #555;">Ingredients</h4>
+                <ul class="ingredient-list">
+                    <li><i class="fas fa-check-circle"></i> High-quality fresh ingredients</li>
+                    <li><i class="fas fa-check-circle"></i> Nutrient-dense supplements</li>
+                    <li><i class="fas fa-check-circle"></i> Natural sweeteners or spices</li>
+                </ul>
+                <p style="color: #666; line-height: 1.6;">Instructions: Mix all components together. Cook or assemble according to your preference. Serve immediate for best taste!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openTab(tabName) {
+            document.querySelectorAll('.recipe-grid').forEach(Grid => Grid.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        function openModal(title, imgUrl) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalImg').style.backgroundImage = `url('${imgUrl}')`;
+            document.getElementById('recipeModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('recipeModal').style.display = 'none';
+        }
+
+        window.onclick = function (event) {
+            const modal = document.getElementById('recipeModal');
+            if (event.target == modal) closeModal();
+        }
+    </script>
+    <?php include 'footer.php'; ?>
+</body>
+
+</html>

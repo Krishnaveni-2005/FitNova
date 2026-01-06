@@ -89,7 +89,7 @@ try {
     file_put_contents('mail_log.txt', "Attempting to send OTP to $email at " . date('Y-m-d H:i:s') . "\n", FILE_APPEND);
     $mail->send();
     file_put_contents('mail_log.txt', "Success sending OTP to $email\n", FILE_APPEND);
-    echo json_encode(['status' => 'success', 'message' => 'OTP sent successfully', 'redirect' => 'verify_otp.html?email=' . urlencode($email)]);
+    echo json_encode(['status' => 'success', 'message' => 'OTP sent successfully', 'redirect' => 'verify_otp.php?email=' . urlencode($email)]);
 } catch (Exception $e) {
     file_put_contents('mail_log.txt', "FAILED sending to $email: " . $mail->ErrorInfo . "\n", FILE_APPEND);
     echo json_encode(['status' => 'error', 'message' => "SMTP Error: " . $mail->ErrorInfo]);

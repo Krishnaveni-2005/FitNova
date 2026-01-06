@@ -10,7 +10,7 @@ if (!$data) {
     $data = $_POST;
 }
 
-$email = $conn->real_escape_string($data["email"] ?? "");
+$email = $data["email"] ?? "";
 $password = $data["password"] ?? "";
 
 if (empty($email) || empty($password)) {
@@ -18,8 +18,11 @@ if (empty($email) || empty($password)) {
     exit();
 }
 
-$sql = "SELECT * FROM users WHERE email = \"$email\"";
-$result = $conn->query($sql);
+// Prepared Statement for Login
+$stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
+$stmt->bind_param("s", $email);
+$stmt->execute();
+$result = $stmt->get_result();
 
 if ($result->num_rows > 0) {
     $user = $result->fetch_assoc();
@@ -28,21 +31,31 @@ if ($result->num_rows > 0) {
         $_SESSION["user_name"] = $user["first_name"];
         $_SESSION["user_email"] = $user["email"];
         
-        // Gracefully handle missing role column
-        $role = isset($user["role"]) ? $user["role"] : "free";
+        $role = $user["role"] ?? "free";
         $_SESSION["user_role"] = $role;
         
         $redirect = "freeuser_dashboard.php"; 
         
         switch ($role) {
             case "admin":
-                $redirect = "admin_dashboard.html";
+                $redirect = "admin_dashboard.php";
                 break;
             case "trainer":
-                $redirect = "trainer_dashboard.html";
+                if (isset($user['account_status']) && $user['account_status'] === 'pending') {
+                    echo json_encode(["status" => "error", "message" => "Your trainer account is pending approval."]);
+                    exit();
+                }
+                if (isset($user['account_status']) && $user['account_status'] === 'inactive') {
+                    echo json_encode(["status" => "error", "message" => "Your account is inactive."]);
+                    exit();
+                }
+                $redirect = "trainer_dashboard.php";
                 break;
             case "pro":
-                $redirect = "prouser_dashboard.html";
+                $redirect = "prouser_dashboard.php";
+                break;
+            case "elite":
+                $redirect = "eliteuser_dashboard.php";
                 break;
             default:
                 $redirect = "freeuser_dashboard.php";
