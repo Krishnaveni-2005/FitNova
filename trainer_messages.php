@@ -15,10 +15,12 @@ $trainerInitials = strtoupper(substr($trainerName, 0, 1) . substr(explode(' ', $
 $contactsSql = "SELECT DISTINCT u.user_id, u.first_name, u.last_name, u.role
                 FROM users u
                 JOIN messages m ON (u.user_id = m.sender_id OR u.user_id = m.receiver_id)
-                WHERE (m.sender_id = ? OR m.receiver_id = ?) AND u.user_id != ?
+                WHERE (m.sender_id = ? OR m.receiver_id = ?) 
+                AND u.user_id != ?
+                AND (u.assigned_trainer_id = ? AND u.assignment_status = 'approved')
                 ORDER BY m.created_at DESC";
 $stmt = $conn->prepare($contactsSql);
-$stmt->bind_param("iii", $trainerId, $trainerId, $trainerId);
+$stmt->bind_param("iiii", $trainerId, $trainerId, $trainerId, $trainerId);
 $stmt->execute();
 $contactsResult = $stmt->get_result();
 $contacts = $contactsResult->fetch_all(MYSQLI_ASSOC);
@@ -26,7 +28,7 @@ $stmt->close();
 
 // If no contacts, let's just get assigned clients as potential contacts
 if (empty($contacts)) {
-    $clientsSql = "SELECT user_id, first_name, last_name, role FROM users WHERE assigned_trainer_id = ? LIMIT 5";
+    $clientsSql = "SELECT user_id, first_name, last_name, role FROM users WHERE assigned_trainer_id = ? AND assignment_status = 'approved' LIMIT 5";
     $stmt = $conn->prepare($clientsSql);
     $stmt->bind_param("i", $trainerId);
     $stmt->execute();
@@ -61,11 +63,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message_text'])) {
     $receiverId = $_POST['receiver_id'];
     $text = $conn->real_escape_string($_POST['message_text']);
     if (!empty($text)) {
-        $sendSql = "INSERT INTO messages (sender_id, receiver_id, message_text) VALUES (?, ?, ?)";
-        $stmt = $conn->prepare($sendSql);
-        $stmt->bind_param("iis", $trainerId, $receiverId, $text);
-        $stmt->execute();
-        $stmt->close();
+        // Verify approval
+        $checkSql = "SELECT 1 FROM users WHERE user_id = ? AND assigned_trainer_id = ? AND assignment_status = 'approved'";
+        $chkStmt = $conn->prepare($checkSql);
+        $chkStmt->bind_param("ii", $receiverId, $trainerId);
+        $chkStmt->execute();
+        if ($chkStmt->get_result()->num_rows > 0) {
+            $sendSql = "INSERT INTO messages (sender_id, receiver_id, message_text) VALUES (?, ?, ?)";
+            $stmt = $conn->prepare($sendSql);
+            $stmt->bind_param("iis", $trainerId, $receiverId, $text);
+            $stmt->execute();
+            $stmt->close();
+        }
+        $chkStmt->close();
     }
     header("Location: trainer_messages.php?chat_with=" . $receiverId);
     exit();

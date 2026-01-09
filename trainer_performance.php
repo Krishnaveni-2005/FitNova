@@ -27,6 +27,116 @@ if($row = $res->fetch_assoc()) $stats['total_clients'] = $row['count'];
 $res = $conn->query("SELECT COUNT(*) as count FROM trainer_schedules WHERE trainer_id = $trainerId");
 if($row = $res->fetch_assoc()) $stats['total_sessions'] = $row['count'];
 
+// Fetch Monthly Revenue (INR)
+$revenueSql = "SELECT SUM(amount) as total FROM payments WHERE trainer_id = ? AND MONTH(payment_date) = MONTH(CURRENT_DATE()) AND YEAR(payment_date) = YEAR(CURRENT_DATE())";
+$stmt = $conn->prepare($revenueSql);
+if ($stmt) {
+    $stmt->bind_param("i", $trainerId);
+    $stmt->execute();
+    $res = $stmt->get_result()->fetch_assoc();
+    $stats['revenue'] = $res['total'] ?? 0;
+    $stmt->close();
+}
+
+// Fetch Rating
+$ratingSql = "SELECT AVG(rating) as avg_rating FROM trainer_ratings WHERE trainer_id = ?";
+$stmt = $conn->prepare($ratingSql);
+if ($stmt) {
+    $stmt->bind_param("i", $trainerId);
+    $stmt->execute();
+    $res = $stmt->get_result()->fetch_assoc();
+    if ($res['avg_rating']) {
+        $stats['avg_rating'] = number_format($res['avg_rating'], 1);
+    } else {
+        $stats['avg_rating'] = "0.0";
+    }
+    $stmt->close();
+}
+
+// Fetch Chart Data: Engagement (Sessions per day, last 7 days)
+$engagementLabels = [];
+$engagementData = [];
+for ($i = 6; $i >= 0; $i--) {
+    $date = date('Y-m-d', strtotime("-$i days"));
+    $displayDate = date('D', strtotime("-$i days"));
+    $engagementLabels[] = $displayDate;
+    
+    // Count sessions on this day
+    $countSql = "SELECT COUNT(*) as cnt FROM trainer_schedules WHERE trainer_id = ? AND session_date = ?";
+    $stmt = $conn->prepare($countSql);
+    $stmt->bind_param("is", $trainerId, $date);
+    $stmt->execute();
+    $res = $stmt->get_result()->fetch_assoc();
+    $engagementData[] = $res['cnt'];
+    $stmt->close();
+}
+
+// Fetch Chart Data: Client Breakdown
+$breakdownData = [0, 0, 0]; // Pro, Free, Pending
+$bdSql = "SELECT role, assignment_status FROM users WHERE assigned_trainer_id = ?";
+$stmt = $conn->prepare($bdSql);
+$stmt->bind_param("i", $trainerId);
+$stmt->execute();
+$res = $stmt->get_result();
+while ($row = $res->fetch_assoc()) {
+    if ($row['assignment_status'] === 'pending') {
+        $breakdownData[2]++; // New Leads/Pending
+    } elseif ($row['role'] === 'pro') {
+        $breakdownData[0]++; // Pro Active
+    } else {
+        $breakdownData[1]++; // Free/Other
+    }
+}
+$stmt->close();
+
+// Fetch Goal Success Data
+$goalData = [];
+$goalSql = "SELECT u.first_name, u.last_name, 
+                   cp.primary_goal, cp.target_weight_kg, cp.weight_kg as start_weight,
+                   cprog.current_weight, cprog.status_update
+            FROM users u
+            LEFT JOIN client_profiles cp ON u.user_id = cp.user_id
+            LEFT JOIN (
+                SELECT user_id, current_weight, status_update 
+                FROM client_progress 
+                WHERE (user_id, log_date) IN (
+                    SELECT user_id, MAX(log_date) FROM client_progress GROUP BY user_id
+                )
+            ) cprog ON u.user_id = cprog.user_id
+            WHERE u.assigned_trainer_id = ? AND u.assignment_status = 'approved'";
+
+$stmt = $conn->prepare($goalSql);
+if ($stmt) {
+    $stmt->bind_param("i", $trainerId);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    while ($row = $res->fetch_assoc()) {
+        // Calculate Success Rate %
+        // Logic: variance between current and target vs start and target
+        // If no start weight in profile, use current (0% progress)
+        // This is a naive heuristic for demo purposes
+        
+        $start = floatval($row['start_weight']);
+        $current = floatval($row['current_weight'] ?? $start); // fallback to start if no log
+        $target = floatval($row['target_weight_kg']);
+        
+        $rate = 0;
+        if ($start != $target && $target > 0) {
+            $total_diff = abs($start - $target);
+            $current_diff = abs($current - $target);
+            $progress = $total_diff - $current_diff;
+            $rate = ($progress / $total_diff) * 100;
+        }
+        
+        // Cap rate between 0 and 100
+        $rate = max(0, min(100, $rate));
+        
+        $row['success_rate'] = round($rate);
+        $goalData[] = $row;
+    }
+    $stmt->close();
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -259,7 +369,7 @@ if($row = $res->fetch_assoc()) $stats['total_sessions'] = $row['count'];
             </div>
             <div class="stat-card">
                 <div class="stat-icon" style="background: #fdf2f8; color: #ec4899;"><i class="fas fa-wallet"></i></div>
-                <div class="stat-value">$<?php echo number_format($stats['revenue']); ?></div>
+                <div class="stat-value">₹<?php echo number_format($stats['revenue']); ?></div>
                 <div class="stat-label">Monthly Impact</div>
             </div>
         </div>
@@ -298,33 +408,31 @@ if($row = $res->fetch_assoc()) $stats['total_sessions'] = $row['count'];
                     </tr>
                 </thead>
                 <tbody>
+                    <?php if(empty($goalData)): ?>
                     <tr>
-                        <td><strong>John Smith</strong></td>
-                        <td>Hypertrophy phase</td>
-                        <td style="color: #10b981; font-weight: 600;">On Track</td>
-                        <td>
-                            <div class="calorie-label" style="display:flex; justify-content: space-between; font-size: 11px;"><span>75%</span></div>
-                            <div class="progress-bar-wrap"><div class="progress-bar" style="width: 75%;"></div></div>
+                        <td colspan="4" style="text-align:center; color: var(--text-light); padding: 40px;">
+                            <i class="fas fa-tasks" style="font-size: 24px; margin-bottom: 10px; opacity: 0.5;"></i><br>
+                            No goal tracking data available yet.
                         </td>
                     </tr>
-                    <tr>
-                        <td><strong>Emma Watson</strong></td>
-                        <td>Fat Loss Focus</td>
-                        <td style="color: #4f46e5; font-weight: 600;">Excelling</td>
-                        <td>
-                            <div class="calorie-label" style="display:flex; justify-content: space-between; font-size: 11px;"><span>92%</span></div>
-                            <div class="progress-bar-wrap"><div class="progress-bar" style="width: 92%; background: #10b981;"></div></div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><strong>Robert Brown</strong></td>
-                        <td>Endurance Build</td>
-                        <td style="color: #f59e0b; font-weight: 600;">Maintenance</td>
-                        <td>
-                            <div class="calorie-label" style="display:flex; justify-content: space-between; font-size: 11px;"><span>60%</span></div>
-                            <div class="progress-bar-wrap"><div class="progress-bar" style="width: 60%; background: #f59e0b;"></div></div>
-                        </td>
-                    </tr>
+                    <?php else: ?>
+                        <?php foreach($goalData as $client): 
+                            $statusColor = '#10b981'; // Green
+                            if($client['status_update'] == 'Maintenance') $statusColor = '#f59e0b'; // Yellow
+                            if($client['status_update'] == 'Needs Attention') $statusColor = '#ef4444'; // Red
+                            if($client['status_update'] == 'Excelling') $statusColor = '#4f46e5'; // Blue
+                        ?>
+                        <tr>
+                            <td><strong><?php echo htmlspecialchars($client['first_name'] . ' ' . $client['last_name']); ?></strong></td>
+                            <td><?php echo htmlspecialchars($client['primary_goal'] ?? 'General Fitness'); ?></td>
+                            <td style="color: <?php echo $statusColor; ?>; font-weight: 600;"><?php echo htmlspecialchars($client['status_update'] ?? 'On Track'); ?></td>
+                            <td>
+                                <div class="calorie-label" style="display:flex; justify-content: space-between; font-size: 11px;"><span><?php echo $client['success_rate']; ?>%</span></div>
+                                <div class="progress-bar-wrap"><div class="progress-bar" style="width: <?php echo $client['success_rate']; ?>%; background: <?php echo $statusColor; ?>;"></div></div>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
@@ -336,10 +444,10 @@ if($row = $res->fetch_assoc()) $stats['total_sessions'] = $row['count'];
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                labels: <?php echo json_encode($engagementLabels); ?>,
                 datasets: [{
-                    label: 'Client Interactions',
-                    data: [12, 19, 15, 25, 22, 30, 20],
+                    label: 'Sessions',
+                    data: <?php echo json_encode($engagementData); ?>,
                     borderColor: '#4f46e5',
                     backgroundColor: 'rgba(79, 70, 229, 0.1)',
                     fill: true,
@@ -348,7 +456,14 @@ if($row = $res->fetch_assoc()) $stats['total_sessions'] = $row['count'];
             },
             options: {
                 plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
+                scales: { 
+                    y: { 
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    } 
+                }
             }
         });
 
@@ -357,9 +472,9 @@ if($row = $res->fetch_assoc()) $stats['total_sessions'] = $row['count'];
         new Chart(ctx2, {
             type: 'doughnut',
             data: {
-                labels: ['Pro Active', 'Free Trial', 'New Leads'],
+                labels: ['Pro Active', 'Free/Other', 'Requests'],
                 datasets: [{
-                    data: [65, 25, 10],
+                    data: <?php echo json_encode($breakdownData); ?>,
                     backgroundColor: ['#4f46e5', '#10b981', '#f59e0b'],
                     borderWidth: 0
                 }]

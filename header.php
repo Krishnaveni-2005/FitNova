@@ -132,6 +132,7 @@ if ($isLoggedIn) {
             <a href="gym.php" class="nav-link">Gym</a>
             <a href="fitshop.php" class="nav-link">Fitshop</a>
             <?php if ($isLoggedIn): ?>
+                <?php if (in_array(basename($_SERVER['PHP_SELF']), ['fitshop.php', 'shop_checkout.php'])): ?>
                 <a href="#" class="nav-link" id="ordersIcon" title="My Orders" style="margin-right: 15px;">
                     <i class="fas fa-clipboard-list" style="font-size: 1.2rem;"></i>
                 </a>
@@ -139,6 +140,7 @@ if ($isLoggedIn) {
                     <i class="fas fa-shopping-cart" style="font-size: 1.2rem;"></i>
                     <span id="cartCount" style="position: absolute; top: -8px; right: -8px; background: var(--accent-color); color: white; font-size: 0.7rem; padding: 2px 6px; border-radius: 50%; display: none;">0</span>
                 </a>
+                <?php endif; ?>
                 <a href="<?php echo $dashboardLink; ?>" class="nav-link">Dashboard</a>
                 <?php if ((isset($isHomePage) && $isHomePage) || basename($_SERVER['PHP_SELF']) == 'home.php'): ?>
                     <a href="signup.php" class="btn-signup">Sign up</a>
@@ -372,39 +374,6 @@ if ($isLoggedIn) {
          form.method = 'POST';
          form.action = 'shop_checkout.php';
 
-    function startCartCheckout() {
-        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-        if (cart.length === 0) {
-            alert("Your cart is empty!");
-            return;
-        }
-        document.getElementById('globalCheckoutModal').style.display = 'block';
-    }
-
-    function submitGlobalCheckout() {
-         const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-         const addr = document.getElementById('gAddr').value;
-         const city = document.getElementById('gCity').value;
-         const zip = document.getElementById('gZip').value;
-
-         if (!addr || !city || !zip) {
-             alert('Please fill all address fields');
-             return;
-         }
-
-         // Calculate date
-         const today = new Date();
-         const deliveryStart = new Date(today);
-         deliveryStart.setDate(today.getDate() + 3);
-         const options = { weekday: 'short', month: 'short', day: 'numeric' };
-         // simplified date range
-         const dateStr = deliveryStart.toLocaleDateString('en-US', options);
-
-         // Post to shop_checkout.php
-         const form = document.createElement('form');
-         form.method = 'POST';
-         form.action = 'shop_checkout.php';
-
          const inputs = {
              'cart_data': JSON.stringify(cart),
              'address': addr,
@@ -429,6 +398,15 @@ if ($isLoggedIn) {
          localStorage.removeItem('cart'); 
 
          form.submit();
+    }
+
+    // Expert Talk Logic (Global)
+    function handleTalkToExperts(event) {
+        if(event) event.preventDefault(); 
+        
+        if (confirm("Are you sure you want to talk to an expert? This will initiate a call.")) {
+            window.location.href = 'tel:9495868854';
+        }
     }
 </script>
 

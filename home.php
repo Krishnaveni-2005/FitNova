@@ -243,18 +243,6 @@
 
     <?php include 'footer.php'; ?>
 
-    <script>
-        function handleTalkToExperts(event) {
-            event.preventDefault(); // Prevent default link behavior
-            
-            if (confirm("Are you sure you want to talk to an expert? This will initiate a connection.")) {
-                // User clicked OK
-                window.location.href = 'tel:9495868854';
-            } else {
-                // User clicked Cancel
-                // Do nothing
-            }
-        }
-    </script>
+
 </body>
 </html>

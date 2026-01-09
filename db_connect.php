@@ -11,8 +11,8 @@ if ($conn->connect_error) {
 }
 
 // Auto-check and add role column if missing to prevent "Unknown column" errors
-$checkColumn = $conn->query("SHOW COLUMNS FROM `users` LIKE 'role'");
-if ($checkColumn->num_rows == 0) {
-    $conn->query("ALTER TABLE `users` ADD COLUMN `role` ENUM('free', 'pro', 'trainer', 'admin') DEFAULT 'free' AFTER email");
-}
-?>
+// Enable error logging but disable display to prevent breaking JSON
+ini_set('display_errors', 0);
+ini_set('log_errors', 1); 
+ini_set('error_log', 'php_errors.log'); 
+

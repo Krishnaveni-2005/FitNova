@@ -69,92 +69,88 @@
             <div class="data-grid">
                 <!-- Recipe/Food 1 -->
                 <div class="data-card">
-                    <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=600');"></div>
+                    <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1630383249896-424e482df921?auto=format&fit=crop&q=80&w=600');"></div>
                     <div class="data-info">
-                        <h3>Superfood Salad Bowl</h3>
-                        <p>Packed with kale, quinoa, avocado, and lean protein sources. Ideal for recovery.</p>
-                        <a href="healthy_recipes.php" class="btn-link">View Full Recipe <i class="fas fa-arrow-right"></i></a>
+                        <h3>Moong Dal Chilla</h3>
+                        <p>High-protein savory pancake made with green gram, loaded with veggies. Perfect post-workout meal.</p>
+                        <a href="recipe_moong_dal_chilla.php" class="btn-link">View Full Recipe <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
                 <!-- Recipe/Food 2 -->
                 <div class="data-card">
-                    <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1598103442097-8b74394b95c6?auto=format&fit=crop&q=80&w=600');"></div>
+                    <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?auto=format&fit=crop&q=80&w=600');"></div>
                     <div class="data-info">
-                        <h3>High-Protein grilled Chicken</h3>
-                        <p>Grilled chicken breast with steamed broccoli and sweet potatoes.</p>
-                        <a href="healthy_recipes.php" class="btn-link">View Full Recipe <i class="fas fa-arrow-right"></i></a>
+                        <h3>Tandoori Chicken Protein Bowl</h3>
+                        <p>Lean tandoori chicken with mint chutney, cucumber raita and brown rice. High in protein.</p>
+                        <a href="recipe_tandoori_chicken.php" class="btn-link">View Full Recipe <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
                 <!-- Recipe/Food 3 -->
                 <div class="data-card">
-                    <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1610348725531-843dff563e2c?auto=format&fit=crop&q=80&w=600');"></div>
+                    <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&q=80&w=600');"></div>
                     <div class="data-info">
-                        <h3>Green Detox Smoothie</h3>
-                        <p>Spinach, apple, kiwi, and ginger blend for a refreshing energy boost.</p>
-                        <a href="healthy_recipes.php" class="btn-link">View Full Recipe <i class="fas fa-arrow-right"></i></a>
+                        <h3>Palak Paneer Power Bowl</h3>
+                        <p>Iron-rich spinach curry with protein-packed cottage cheese. Nutrient-dense and delicious.</p>
+                        <a href="recipe_palak_paneer.php" class="btn-link">View Full Recipe <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
                 <!-- Recipe/Food 4 -->
                 <div class="data-card">
-                    <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&q=80&w=600');"></div>
+                    <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?auto=format&fit=crop&q=80&w=600');"></div>
                     <div class="data-info">
-                        <h3>Quinoa & Veggie Power Bowl</h3>
-                        <p>A nutrient-dense bowl with quinoa, chickpeas, roasted veggies, and tahini dressing.</p>
-                        <a href="healthy_recipes.php" class="btn-link">View Full Recipe <i class="fas fa-arrow-right"></i></a>
+                        <h3>Masala Oats Bowl</h3>
+                        <p>Savory Indian-spiced oats with vegetables. Low-calorie, high-fiber breakfast for energy.</p>
+                        <a href="recipe_masala_oats.php" class="btn-link">View Full Recipe <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
                 <!-- Recipe/Food 5 -->
                 <div class="data-card">
-                    <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&q=80&w=600');"></div>
+                    <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&q=80&w=600');"></div>
                     <div class="data-info">
-                        <h3>Grilled Salmon with Asparagus</h3>
-                        <p>Rich in Omega-3s, this simple grilled salmon dish is perfect for a healthy dinner.</p>
-                        <a href="healthy_recipes.php" class="btn-link">View Full Recipe <i class="fas fa-arrow-right"></i></a>
+                        <h3>Dal Tadka with Brown Rice</h3>
+                        <p>Protein-rich lentils tempered with spices, served with fiber-packed brown rice.</p>
+                        <a href="recipe_dal_tadka.php" class="btn-link">View Full Recipe <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
                 <!-- Recipe/Food 6 -->
                 <div class="data-card">
-                    <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&q=80&w=600');"></div>
+                    <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1623428187969-5da2dcea5ebf?auto=format&fit=crop&q=80&w=600');"></div>
                     <div class="data-info">
-                        <h3>Berry & Yogurt Parfait</h3>
-                        <p>Layers of greek yogurt, granola, and fresh mixed berries for a protein-packed sweet treat.</p>
-                        <a href="healthy_recipes.php" class="btn-link">View Full Recipe <i class="fas fa-arrow-right"></i></a>
+                        <h3>Mixed Sprouts Salad</h3>
+                        <p>Crunchy protein-packed sprouts with tomato, onion, lemon and chaat masala. Fresh and filling.</p>
+                        <a href="recipe_sprouts_salad.php" class="btn-link">View Full Recipe <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
                 <!-- Recipe/Food 7 -->
                 <div class="data-card">
-                    <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1541519227354-08fa5d50c44d?auto=format&fit=crop&q=80&w=600');"></div>
+                    <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1668236543090-82eba5ee5976?auto=format&fit=crop&q=80&w=600');"></div>
                     <div class="data-info">
-                        <h3>Avocado Toast with Egg</h3>
-                        <p>Whole grain toast topped with ripe avocado and a poached egg for healthy fats.</p>
-                        <a href="healthy_recipes.php" class="btn-link">View Full Recipe <i class="fas fa-arrow-right"></i></a>
+                        <h3>Ragi Dosa with Coconut Chutney</h3>
+                        <p>Finger millet crepe rich in calcium and iron. Gluten-free and perfect for weight management.</p>
+                        <a href="recipe_ragi_dosa.php" class="btn-link">View Full Recipe <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
                 <!-- Recipe/Food 8 -->
                 <div class="data-card">
-                    <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1623428187969-5da2dcea5ebf?auto=format&fit=crop&q=80&w=600');"></div>
+                    <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&q=80&w=600');"></div>
                     <div class="data-info">
-                        <h3>Lean Turkey Wrap</h3>
-                        <p>Turkey slices, lettuce, and hummus in a whole wheat wrap for a quick lunch.</p>
-                        <a href="healthy_recipes.php" class="btn-link">View Full Recipe <i class="fas fa-arrow-right"></i></a>
+                        <h3>Paneer Tikka Protein Platter</h3>
+                        <p>Grilled cottage cheese marinated in yogurt and spices. High protein, low carb snack.</p>
+                        <a href="recipe_paneer_tikka.php" class="btn-link">View Full Recipe <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
                 <!-- Recipe/Food 9 -->
                 <div class="data-card">
-                    <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1587080266227-677cc2a4e76e?auto=format&fit=crop&q=80&w=600');"></div>
+                    <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1606491956689-2ea866880c84?auto=format&fit=crop&q=80&w=600');"></div>
                     <div class="data-info">
-                        <h3>Oatmeal with Almonds</h3>
-                        <p>Warm oatmeal topped with almond slices and banana for slow-release energy.</p>
-                        <a href="healthy_recipes.php" class="btn-link">View Full Recipe <i class="fas fa-arrow-right"></i></a>
+                        <h3>Besan Chilla (Gram Flour Pancake)</h3>
+                        <p>Savory chickpea flour pancake loaded with onions and tomatoes. High in protein and fiber.</p>
+                        <a href="recipe_besan_chilla.php" class="btn-link">View Full Recipe <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
                 </div>
             </div>
-            
-            <div style="text-align: center; margin-bottom: 40px;">
-                <a href="healthy_recipes.php" class="hub-tab" style="display:inline-block; background: var(--primary-color); color:white;">See All Recipes</a>
-            </div>
-</div>
+
 
         <!-- Workouts Section -->
         <div id="workouts" class="content-section">
@@ -166,7 +162,7 @@
                     <div class="data-info">
                         <h3>Full Body HIIT</h3>
                         <p>High intensity interval training to burn fat and build endurance in 20 mins.</p>
-                        <a href="free_workouts.php" class="btn-link">Start Workout <i class="fas fa-arrow-right"></i></a>
+                        <a href="workout_full_body_hiit.php" class="btn-link">Start Workout <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
                 <!-- Workout 2 -->
@@ -175,7 +171,7 @@
                     <div class="data-info">
                         <h3>Strength Training 101</h3>
                         <p>Fundamental compound movements for building maximize muscle strength.</p>
-                        <a href="free_workouts.php" class="btn-link">Start Workout <i class="fas fa-arrow-right"></i></a>
+                        <a href="workout_strength_training.php" class="btn-link">Start Workout <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
                 <!-- Workout 3 -->
@@ -184,14 +180,66 @@
                     <div class="data-info">
                         <h3>Yoga for Flexibility</h3>
                         <p>Relaxing flow to improve mobility, reduce stress, and prevent injury.</p>
-                        <a href="free_workouts.php" class="btn-link">Start Workout <i class="fas fa-arrow-right"></i></a>
+                        <a href="workout_yoga_flexibility.php" class="btn-link">Start Workout <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+                <!-- Workout 4 -->
+                <div class="data-card">
+                    <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&q=80&w=600');"></div>
+                    <div class="data-info">
+                        <h3>Core Strength Training</h3>
+                        <p>Target your abs and core muscles with effective exercises for stability and power.</p>
+                        <a href="workout_core_strength.php" class="btn-link">Start Workout <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+                <!-- Workout 5 -->
+                <div class="data-card">
+                    <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?auto=format&fit=crop&q=80&w=600');"></div>
+                    <div class="data-info">
+                        <h3>Cardio Blast</h3>
+                        <p>High-energy cardio session to boost stamina and burn maximum calories in 30 mins.</p>
+                        <a href="workout_cardio_blast.php" class="btn-link">Start Workout <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+                <!-- Workout 6 -->
+                <div class="data-card">
+                    <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&q=80&w=600');"></div>
+                    <div class="data-info">
+                        <h3>Upper Body Power</h3>
+                        <p>Build strength in chest, back, shoulders, and arms with targeted resistance training.</p>
+                        <a href="workout_upper_body.php" class="btn-link">Start Workout <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+                <!-- Workout 7 -->
+                <div class="data-card">
+                    <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&q=80&w=600');"></div>
+                    <div class="data-info">
+                        <h3>Lower Body Sculpt</h3>
+                        <p>Tone and strengthen legs, glutes, and hamstrings for powerful lower body development.</p>
+                        <a href="workout_lower_body.php" class="btn-link">Start Workout <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+                <!-- Workout 8 -->
+                <div class="data-card">
+                    <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&q=80&w=600');"></div>
+                    <div class="data-info">
+                        <h3>Functional Fitness</h3>
+                        <p>Real-world movements to improve daily performance, balance, and overall athleticism.</p>
+                        <a href="workout_functional.php" class="btn-link">Start Workout <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+                <!-- Workout 9 -->
+                <div class="data-card">
+                    <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?auto=format&fit=crop&q=80&w=600');"></div>
+                    <div class="data-info">
+                        <h3>Pilates Core Flow</h3>
+                        <p>Low-impact exercises focusing on core control, posture, and muscle tone.</p>
+                        <a href="workout_pilates.php" class="btn-link">Start Workout <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
             </div>
 
-            <div style="text-align: center; margin-bottom: 40px;">
-                <a href="free_workouts.php" class="hub-tab" style="display:inline-block; background: var(--primary-color); color:white;">See All Workouts</a>
-            </div>
+
         </div>
     </div>
 

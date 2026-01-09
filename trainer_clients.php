@@ -31,14 +31,8 @@ if ($stmt) {
 
 // If no clients are assigned yet, let's show some dummy data for demonstration if we are in "demo mode" 
 // Or just show a message. For this task, I'll add a few dummy ones if the list is empty to show the design.
-if (empty($clients)) {
-    $clients = [
-        ['first_name' => 'John', 'last_name' => 'Smith', 'email' => 'john.smith@example.com', 'role' => 'pro', 'created_at' => '2025-12-15'],
-        ['first_name' => 'Emma', 'last_name' => 'Watson', 'email' => 'emma.w@example.com', 'role' => 'free', 'created_at' => '2025-12-20'],
-        ['first_name' => 'Robert', 'last_name' => 'Brown', 'email' => 'robert.b@example.com', 'role' => 'pro', 'created_at' => '2025-12-22'],
-        ['first_name' => 'Sarah', 'last_name' => 'Miller', 'email' => 'sarah.m@example.com', 'role' => 'free', 'created_at' => '2025-12-25']
-    ];
-}
+// If no clients are assigned, the list remains empty.
+// No dummy data will be displayed.
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -538,6 +532,13 @@ if (empty($clients)) {
             </div>
         </div>
 
+        <?php if (empty($clients)): ?>
+            <div style="text-align: center; padding: 40px; background: white; border-radius: 15px; grid-column: 1 / -1; box-shadow: var(--shadow);">
+                <i class="fas fa-users" style="font-size: 48px; color: var(--text-light); margin-bottom: 20px; opacity: 0.5;"></i>
+                <h3 style="color: var(--text-color); margin-bottom: 10px;">No Clients Assigned Yet</h3>
+                <p style="color: var(--text-light);">When clients are assigned to you, they will appear here.</p>
+            </div>
+        <?php else: ?>
         <div class="clients-grid">
             <?php foreach ($clients as $client): 
                 $initials = strtoupper(substr($client['first_name'], 0, 1) . substr($client['last_name'], 0, 1));
@@ -581,6 +582,7 @@ if (empty($clients)) {
             </div>
             <?php endforeach; ?>
         </div>
+        <?php endif; ?>
     </main>
 
     <script>

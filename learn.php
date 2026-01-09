@@ -42,7 +42,7 @@
                     <span class="a-tag">Training</span>
                     <h3 class="a-title">Why Rest Days Are Crucial for Muscle Growth</h3>
                     <p class="a-desc">Overtraining can stall your progress. Learn why taking time off helps you come back stronger.</p>
-                    <a href="#" class="read-more">Read Article <i class="fas fa-arrow-right"></i></a>
+                    <a href="article.php?id=1" class="read-more">Read Article <i class="fas fa-arrow-right"></i></a>
                 </div>
             </div>
 
@@ -53,7 +53,7 @@
                     <span class="a-tag">Nutrition</span>
                     <h3 class="a-title">The Truth About Intermittent Fasting</h3>
                     <p class="a-desc">Is it just a trend or a sustainable lifestyle? We break down the science and benefits.</p>
-                    <a href="#" class="read-more">Read Article <i class="fas fa-arrow-right"></i></a>
+                    <a href="article.php?id=2" class="read-more">Read Article <i class="fas fa-arrow-right"></i></a>
                 </div>
             </div>
 
@@ -64,7 +64,7 @@
                     <span class="a-tag">Wellness</span>
                     <h3 class="a-title">Incorporating Mindfulness Into Your Routine</h3>
                     <p class="a-desc">Mental fitness is just as important as physical. Simple tips to stay grounded.</p>
-                    <a href="#" class="read-more">Read Article <i class="fas fa-arrow-right"></i></a>
+                    <a href="article.php?id=3" class="read-more">Read Article <i class="fas fa-arrow-right"></i></a>
                 </div>
             </div>
 
@@ -75,7 +75,40 @@
                     <span class="a-tag">Cardio</span>
                     <h3 class="a-title">HIIT vs LISS: Which is Better for Fat Loss?</h3>
                     <p class="a-desc">Comparing High Intensity Interval Training with Low Intensity Steady State cardio.</p>
-                    <a href="#" class="read-more">Read Article <i class="fas fa-arrow-right"></i></a>
+                    <a href="article.php?id=4" class="read-more">Read Article <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+
+            <!-- Article 5 -->
+            <div class="article-card">
+                <img src="https://images.unsplash.com/photo-1512438248247-f0f2a5a8b7f0?auto=format&fit=crop&q=80&w=600" class="a-img">
+                <div class="a-content">
+                    <span class="a-tag">Mobility</span>
+                    <h3 class="a-title">5-Minute Desk Mobility Routine</h3>
+                    <p class="a-desc">Combat sitting all day with these simple, effective stretches you can do anywhere.</p>
+                    <a href="article.php?id=5" class="read-more">Read Article <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+
+            <!-- Article 6 -->
+            <div class="article-card">
+                <img src="https://images.unsplash.com/photo-1511988617509-a57c8a288659?auto=format&fit=crop&q=80&w=600" class="a-img">
+                <div class="a-content">
+                    <span class="a-tag">Recovery</span>
+                    <h3 class="a-title">The Science of Sleep & Performance</h3>
+                    <p class="a-desc">Why getting 8 hours isn't just a luxury—it's your most powerful performance enhancer.</p>
+                    <a href="article.php?id=6" class="read-more">Read Article <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+
+            <!-- Article 7 -->
+            <div class="article-card">
+                <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=600" class="a-img">
+                <div class="a-content">
+                    <span class="a-tag">Nutrition</span>
+                    <h3 class="a-title">Hydration Myths Debunked</h3>
+                    <p class="a-desc">Do you really need 8 glasses a day? We separate fact from fiction regarding water intake.</p>
+                    <a href="article.php?id=7" class="read-more">Read Article <i class="fas fa-arrow-right"></i></a>
                 </div>
             </div>
             

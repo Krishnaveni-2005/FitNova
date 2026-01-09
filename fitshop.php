@@ -1031,6 +1031,41 @@ include 'header.php';
                 document.getElementById('checkoutModal').style.display='none';
             }
         }
+
+        // Search Functionality
+        document.querySelector('.search-input').addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase().trim();
+            const categories = document.querySelectorAll('.category-section');
+
+            /* Search Products */
+            let hasGlobalResults = false;
+
+            categories.forEach(section => {
+                let hasVisibleProduct = false;
+                const cards = section.querySelectorAll('.product-card');
+                
+                cards.forEach(card => {
+                    const title = card.querySelector('.product-title').textContent.toLowerCase();
+                    // Strict search: Only show products starting with the query
+                    if (title.startsWith(query)) {
+                        card.style.display = 'flex'; 
+                        hasVisibleProduct = true;
+                        hasGlobalResults = true;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                // Hide entire category if no products match
+                if (hasVisibleProduct) {
+                    section.style.display = 'block';
+                } else {
+                    section.style.display = 'none';
+                }
+            });
+
+            // Handle "No Results" message if needed
+        });
     </script>
     <?php include 'footer.php'; ?>
 </body>

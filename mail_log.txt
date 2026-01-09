@@ -34,3 +34,5 @@ Attempting to send OTP to alenchacko2028@mca.ajce.in at 2026-01-05 15:39:50
 Success sending OTP to alenchacko2028@mca.ajce.in
 Attempting to send OTP to paulinepaul@amaljyothi.ac.in at 2026-01-05 15:59:34
 Success sending OTP to paulinepaul@amaljyothi.ac.in
+Attempting to send OTP to junaelsamathew2028@mca.ajce.in at 2026-01-07 15:01:09
+Success sending OTP to junaelsamathew2028@mca.ajce.in

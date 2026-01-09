@@ -1,0 +1,156 @@
+[07-Jan-2026 10:21:29 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\signup_handler.php:52
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\signup_handler.php on line 52
+[07-Jan-2026 10:21:55 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\signup_handler.php:52
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\signup_handler.php on line 52
+[08-Jan-2026 05:24:04 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 158
+[08-Jan-2026 05:24:32 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 158
+[08-Jan-2026 05:29:26 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 158
+[08-Jan-2026 05:35:36 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 158
+[08-Jan-2026 05:43:38 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\add_trainers_to_database.php:71
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\add_trainers_to_database.php on line 71
+[08-Jan-2026 05:47:51 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\add_all_trainers.php:376
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\add_all_trainers.php on line 376
+[08-Jan-2026 05:55:26 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 05:56:41 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 05:56:46 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 06:08:13 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 07:38:22 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 07:38:22 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 07:38:22 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 07:38:22 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 07:38:22 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 07:38:22 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 07:38:22 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 07:38:22 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 07:38:30 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 07:38:30 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 07:38:30 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 07:38:30 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 07:38:30 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 07:38:30 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 07:38:30 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 07:38:30 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 07:52:35 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\trainer_dashboard.php:17
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\trainer_dashboard.php on line 17
+[08-Jan-2026 07:52:38 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\trainer_dashboard.php:17
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\trainer_dashboard.php on line 17
+[08-Jan-2026 07:52:46 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\trainer_dashboard.php:17
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\trainer_dashboard.php on line 17
+[08-Jan-2026 07:52:47 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\trainer_dashboard.php:17
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\trainer_dashboard.php on line 17
+[08-Jan-2026 07:52:49 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\trainer_dashboard.php:17
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\trainer_dashboard.php on line 17
+[08-Jan-2026 07:52:51 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\trainer_dashboard.php:17
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\trainer_dashboard.php on line 17
+[08-Jan-2026 07:52:52 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\trainer_dashboard.php:17
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\trainer_dashboard.php on line 17
+[08-Jan-2026 07:52:52 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\trainer_dashboard.php:17
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\trainer_dashboard.php on line 17
+[08-Jan-2026 07:52:52 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\trainer_dashboard.php:17
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\trainer_dashboard.php on line 17
+[08-Jan-2026 07:53:08 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\trainer_dashboard.php:17
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\trainer_dashboard.php on line 17
+[08-Jan-2026 07:53:13 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\trainer_dashboard.php:17
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\trainer_dashboard.php on line 17
+[08-Jan-2026 07:53:41 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\trainer_dashboard.php:17
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\trainer_dashboard.php on line 17
+[08-Jan-2026 07:53:46 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\trainer_dashboard.php:17
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\trainer_dashboard.php on line 17
+[08-Jan-2026 07:53:55 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\trainer_dashboard.php:17
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\trainer_dashboard.php on line 17
+[08-Jan-2026 07:53:58 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\trainer_dashboard.php:17
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\trainer_dashboard.php on line 17
+[08-Jan-2026 07:53:59 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\trainer_dashboard.php:17
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\trainer_dashboard.php on line 17
+[08-Jan-2026 07:54:02 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\trainer_dashboard.php:17
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\trainer_dashboard.php on line 17
+[08-Jan-2026 07:54:57 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\trainer_dashboard.php:17
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\trainer_dashboard.php on line 17
+[08-Jan-2026 07:54:58 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\trainer_dashboard.php:17
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\trainer_dashboard.php on line 17
+[08-Jan-2026 07:54:58 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\trainer_dashboard.php:17
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\trainer_dashboard.php on line 17
+[08-Jan-2026 07:54:58 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\trainer_dashboard.php:17
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\trainer_dashboard.php on line 17
+[08-Jan-2026 19:26:20 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:26:20 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:26:20 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:26:20 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:26:20 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:26:20 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:26:20 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:26:20 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:26:26 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:26:26 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:26:26 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:26:26 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:26:26 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:26:26 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:26:26 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:26:26 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:26:47 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:26:47 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:26:47 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:26:47 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:26:47 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:26:47 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:26:47 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:26:47 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:27:10 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:27:10 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:27:10 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:27:10 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:27:10 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:27:10 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:27:10 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[08-Jan-2026 19:27:10 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72

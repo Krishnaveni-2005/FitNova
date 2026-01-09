@@ -27,6 +27,46 @@ if ($stmt) {
     $clientCount = 0; // Fallback
 }
 
+// Fetch Monthly Revenue (INR)
+$revenueSql = "SELECT SUM(amount) as total FROM payments WHERE trainer_id = ? AND MONTH(payment_date) = MONTH(CURRENT_DATE()) AND YEAR(payment_date) = YEAR(CURRENT_DATE())";
+$stmt = $conn->prepare($revenueSql);
+$revenue = 0;
+if ($stmt) {
+    $stmt->bind_param("i", $trainerId);
+    $stmt->execute();
+    $res = $stmt->get_result()->fetch_assoc();
+    $revenue = $res['total'] ?? 0;
+    $stmt->close();
+}
+
+// Fetch Rating
+$ratingSql = "SELECT AVG(rating) as avg_rating FROM trainer_ratings WHERE trainer_id = ?";
+$stmt = $conn->prepare($ratingSql);
+$rating = "0.0"; // Default
+if ($stmt) {
+    $stmt->bind_param("i", $trainerId);
+    $stmt->execute();
+    $res = $stmt->get_result()->fetch_assoc();
+    if ($res['avg_rating']) {
+        $rating = number_format($res['avg_rating'], 1);
+    }
+    $stmt->close();
+}
+
+// Fetch Pending Requests
+$pendingSql = "SELECT user_id, first_name, last_name, email FROM users WHERE assigned_trainer_id = ? AND assignment_status = 'pending'";
+$stmt = $conn->prepare($pendingSql);
+$pendingRequests = [];
+if ($stmt) {
+    $stmt->bind_param("i", $trainerId);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    while ($row = $res->fetch_assoc()) {
+        $pendingRequests[] = $row;
+    }
+    $stmt->close();
+}
+
 // Fetch today's schedule
 $today = date('Y-m-d');
 $dashboardSchedules = [];
@@ -498,12 +538,12 @@ if ($stmt) {
             </div>
             <div class="stat-card">
                 <div class="stat-icon" style="background: #ecfdf5; color: #10b981;"><i class="fas fa-wallet"></i></div>
-                <div class="stat-value">$2,450</div>
+                <div class="stat-value">₹<?php echo number_format($revenue); ?></div>
                 <div class="stat-label">Monthly Revenue</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon" style="background: #fdf2f8; color: #ec4899;"><i class="fas fa-star"></i></div>
-                <div class="stat-value">4.9</div>
+                <div class="stat-value"><?php echo $rating; ?></div>
                 <div class="stat-label">Coach Rating</div>
             </div>
         </div>
@@ -555,20 +595,48 @@ if ($stmt) {
                     <div class="section-header">
                         <h3 class="section-title">New Requests</h3>
                     </div>
-                    <div class="client-item">
-                        <div class="user-avatar" style="width: 35px; height: 35px; font-size: 12px;">EM</div>
-                        <div class="client-info">
-                            <h5>Emma Watson</h5>
-                            <p>Requested Cardio Plan</p>
+                    <?php if (empty($pendingRequests)): ?>
+                        <p style="padding: 15px; color: var(--text-light); font-size: 13px; text-align: center;">No new requests.</p>
+                    <?php else: ?>
+                        <?php foreach ($pendingRequests as $req): 
+                            $reqInitials = strtoupper(substr($req['first_name'], 0, 1) . substr($req['last_name'], 0, 1));
+                        ?>
+                        <div class="client-item" id="req-<?php echo $req['user_id']; ?>">
+                            <div class="user-avatar" style="width: 35px; height: 35px; font-size: 12px; background: var(--secondary-color); color: var(--primary-color); display: flex; align-items: center; justify-content: center; border-radius: 50%;"><?php echo $reqInitials; ?></div>
+                            <div class="client-info">
+                                <h5><?php echo htmlspecialchars($req['first_name'] . ' ' . $req['last_name']); ?></h5>
+                                <p>Wants to hire you</p>
+                                <div style="margin-top: 5px;">
+                                    <button onclick="handleRequest(<?php echo $req['user_id']; ?>, 'approve')" class="btn-action btn-primary" style="padding: 4px 10px; font-size: 11px;">Approve</button>
+                                    <button onclick="handleRequest(<?php echo $req['user_id']; ?>, 'reject')" class="btn-action btn-outline" style="padding: 4px 10px; font-size: 11px; border: 1px solid #ccc;">Reject</button>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="client-item">
-                        <div class="user-avatar" style="width: 35px; height: 35px; font-size: 12px; background: var(--primary-color);">RB</div>
-                        <div class="client-info">
-                            <h5>Robert Brown</h5>
-                            <p>Wants Strength Coaching</p>
-                        </div>
-                    </div>
+                        <?php endforeach; ?>
+                        
+                        <script>
+                        function handleRequest(clientId, action) {
+                            if(!confirm('Are you sure you want to ' + action + ' this client?')) return;
+                            
+                            fetch('trainer_handle_request.php', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ client_id: clientId, action: action })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    document.getElementById('req-' + clientId).remove();
+                                    // Optionally reload to update valid client count
+                                    // location.reload(); 
+                                } else {
+                                    alert('Error: ' + (data.message || 'Unknown error'));
+                                }
+                            })
+                            .catch(err => console.error(err));
+                        }
+                        </script>
+                    <?php endif; ?>
                     <button class="btn-action btn-outline" style="width: 100%; margin-top: 10px;">Review all Requests</button>
                 </div>
 

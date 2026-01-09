@@ -3,43 +3,15 @@ session_start();
 include 'header.php';
 require 'db_connect.php';
 
-// Fetch trainers from DB
-// We will also try to simulate categorization if 'specialization' column is missing or empty
-// Ideally check if column exists, but for 'Agentic' speed, fetching all fields is safest
-$trainers = [];
-$sql = "SELECT * FROM users WHERE role = 'trainer' AND account_status = 'active'";
+// Fetch all real trainers from database
+$sql = "SELECT * FROM users WHERE role = 'trainer' AND account_status = 'active' ORDER BY first_name";
 $result = $conn->query($sql);
 
+$trainers = [];
 if ($result && $result->num_rows > 0) {
     while($row = $result->fetch_assoc()) {
         $trainers[] = $row;
     }
-}
-
-// Group trainers. If no specialization, assign random for demo.
-$groupedTrainers = [
-    'Strength & Conditioning' => [],
-    'Yoga & Flexibility' => [],
-    'Cardio & HIIT' => [],
-    'Rehabilitation' => []
-];
-
-$cats = array_keys($groupedTrainers);
-
-foreach ($trainers as $t) {
-    // Check if specialization exists in user row (e.g. if we added it before)
-    // If not, assign random
-    $spec = $t['specialization'] ?? '';
-    if (!$spec || !array_key_exists($spec, $groupedTrainers)) {
-        $spec = $cats[array_rand($cats)];
-    }
-    $groupedTrainers[$spec][] = $t;
-}
-
-// If no trainers in DB, add some fake ones for display
-if (empty($trainers)) {
-    $groupedTrainers['Strength & Conditioning'][] = ['first_name'=>'John', 'last_name'=>'Doe', 'bio'=>'Expert in heavy lifting.'];
-    $groupedTrainers['Yoga & Flexibility'][] = ['first_name'=>'Jane', 'last_name'=>'Smith', 'bio'=>'Certified Yoga Instructor.'];
 }
 
 ?>
@@ -83,26 +55,44 @@ if (empty($trainers)) {
     </div>
 
     <div class="container">
-        <?php foreach($groupedTrainers as $category => $list): ?>
-            <?php if(!empty($list)): ?>
+        <?php if(!empty($trainers)): ?>
             <div class="category-section">
-                <h2 class="cat-title"><?php echo htmlspecialchars($category); ?></h2>
+                <h2 class="cat-title">Our Expert Trainers</h2>
                 <div class="trainer-grid">
-                    <?php foreach($list as $trainer): ?>
+                    <?php foreach($trainers as $trainer): 
+                        // Determine image source
+                        $imgSrc = 'https://images.unsplash.com/photo-1548690312-e3b507d17a12?auto=format&fit=crop&q=80&w=400'; // Default
+                        if (!empty($trainer['profile_picture'])) {
+                            $imgSrc = $trainer['profile_picture'];
+                        } elseif (!empty($trainer['image_url'])) {
+                            $imgSrc = $trainer['image_url'];
+                        }
+                        
+                        // Build profile URL - only real trainers now
+                        $profileUrl = 'trainer_profile.php?id=' . $trainer['user_id'];
+                        
+                        // Get specialization or default
+                        $specialization = $trainer['specialization'] ?? 'Personal Trainer';
+                        $bio = $trainer['bio'] ?? 'Expert in guiding clients to achieve their personal fitness goals through customized plans.';
+                    ?>
                         <div class="trainer-card">
-                            <img src="https://images.unsplash.com/photo-1548690312-e3b507d17a12?auto=format&fit=crop&q=80&w=400" alt="Trainer" class="t-img">
+                            <img src="<?php echo htmlspecialchars($imgSrc); ?>" alt="Trainer" class="t-img">
                             <div class="t-info">
                                 <div class="t-name"><?php echo htmlspecialchars($trainer['first_name'] . ' ' . $trainer['last_name']); ?></div>
-                                <span class="t-spec"><?php echo htmlspecialchars($category); ?></span>
-                                <p class="t-bio">Expert in guiding clients to achieve their personal fitness goals through customized plans.</p>
-                                <a href="#" class="btn-book">View Profile</a>
+                                <span class="t-spec"><?php echo htmlspecialchars($specialization); ?></span>
+                                <p class="t-bio"><?php echo htmlspecialchars(substr($bio, 0, 100)); ?><?php echo strlen($bio) > 100 ? '...' : ''; ?></p>
+                                <a href="<?php echo htmlspecialchars($profileUrl); ?>" class="btn-book">View Profile</a>
                             </div>
                         </div>
                     <?php endforeach; ?>
                 </div>
             </div>
-            <?php endif; ?>
-        <?php endforeach; ?>
+        <?php else: ?>
+            <div class="category-section" style="text-align: center; padding: 80px 20px;">
+                <h2 style="color: #999; font-size: 2rem; margin-bottom: 20px;">No Trainers Available</h2>
+                <p style="color: #666; font-size: 1.1rem;">Check back soon for our expert trainers!</p>
+            </div>
+        <?php endif; ?>
     </div>
 
     <?php include 'footer.php'; ?>
