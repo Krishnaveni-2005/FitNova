@@ -154,7 +154,6 @@ if (!$article) {
     exit();
 }
 
-include 'header.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -259,9 +258,7 @@ include 'header.php';
         .share-menu {
             display: none;
             gap: 15px;
-            justify-content: center;
-            margin-top: 20px;
-            animation: fadeIn 0.3s ease;
+            align-items: center;
         }
 
         @keyframes fadeIn {
@@ -290,6 +287,7 @@ include 'header.php';
     </style>
 </head>
 <body>
+    <?php include 'header.php'; ?>
     <div class="article-hero">
         <div class="container hero-content">
             <span class="a-tag"><?php echo htmlspecialchars($article['category']); ?></span>
@@ -303,15 +301,13 @@ include 'header.php';
         
         <div style="margin-top: 50px; padding-top: 30px; border-top: 1px solid #eee; text-align: center;">
             <p>Did you find this helpful?</p>
-            <button onclick="toggleShare()" class="back-link" style="background: var(--primary-color); color: white; border: none; cursor: pointer; font-family: inherit; font-size: 1rem;">Share this Article</button>
-            
-            <div id="shareMenu" class="share-menu" style="display: none;">
-                <a href="#" onclick="shareWhatsApp(); return false;" class="share-btn share-wa" title="Share on WhatsApp">
-                    <i class="fab fa-whatsapp"></i>
-                </a>
-                <a href="#" onclick="shareInstagram(); return false;" class="share-btn share-ig" title="Share on Instagram">
-                    <i class="fab fa-instagram"></i>
-                </a>
+            <div style="display: inline-flex; gap: 15px; align-items: center;">
+                <button onclick="toggleShare()" class="back-link" style="background: var(--primary-color); color: white; border: none; cursor: pointer; font-family: inherit; font-size: 1rem;">Share this Article</button>
+                <div id="shareMenu" class="share-menu" style="display: none; align-items: center; flex-direction: row;">
+                    <a href="#" onclick="shareWhatsApp(); return false;" class="share-btn share-wa" title="Share on WhatsApp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -319,27 +315,18 @@ include 'header.php';
     <script>
         function toggleShare() {
             var menu = document.getElementById('shareMenu');
-            menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
+            menu.style.display = (menu.style.display === 'inline-flex') ? 'none' : 'inline-flex';
         }
 
         function shareWhatsApp() {
-            var url = encodeURIComponent(window.location.href);
-            var text = encodeURIComponent("Check out this article on FitNova: <?php echo addslashes($article['title']); ?>\n");
-            window.open('https://api.whatsapp.com/send?text=' + text + url, '_blank');
+            var articleTitle = "<?php echo addslashes($article['title']); ?>";
+            var articleUrl = window.location.href;
+            var fullMessage = "Check out this article on FitNova: " + articleTitle + " " + articleUrl;
+            var encodedMessage = encodeURIComponent(fullMessage);
+            window.open('https://api.whatsapp.com/send?text=' + encodedMessage, '_blank');
         }
 
-        function shareInstagram() {
-            // Instagram doesn't allow direct web sharing via URL.
-            // Copy link and open Instagram
-            var url = window.location.href;
-            navigator.clipboard.writeText(url).then(function() {
-                alert('Link copied to clipboard! Opening Instagram...');
-                window.open('https://www.instagram.com/', '_blank');
-            }, function() {
-                alert('Could not copy link. Please manually copy the URL.');
-                window.open('https://www.instagram.com/', '_blank');
-            });
-        }
+
     </script>
     
     <?php include 'footer.php'; ?>

@@ -9,6 +9,26 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_role']) || $_SESSION[
 }
 
 $trainerId = $_SESSION['user_id'];
+
+// Check Account Status explicitly
+$statusSql = "SELECT account_status FROM users WHERE user_id = ?";
+$stmt = $conn->prepare($statusSql);
+$stmt->bind_param("i", $trainerId);
+$stmt->execute();
+$resStatus = $stmt->get_result();
+if ($resStatus->num_rows > 0) {
+    $userStatus = $resStatus->fetch_assoc()['account_status'];
+    if ($userStatus === 'pending') {
+        header("Location: trainer_pending.php");
+        exit();
+    }
+    if ($userStatus === 'inactive' || $userStatus === 'rejected') {
+        session_destroy();
+        header("Location: login.php?error=account_inactive");
+        exit();
+    }
+}
+$stmt->close();
 $trainerName = $_SESSION['user_name'];
 $trainerInitials = strtoupper(substr($trainerName, 0, 1) . substr(explode(' ', $trainerName)[1] ?? '', 0, 1));
 

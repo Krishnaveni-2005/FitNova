@@ -757,6 +757,180 @@ $commonDiets = $cdResult ? $cdResult->fetch_all(MYSQLI_ASSOC) : [];
             if (weight) document.getElementById('dashWeight').innerText = weight + 'kg';
         });
     </script>
+    <!-- Upgrade / Subscription Modal -->
+    <div id="subscriptionModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header-img">
+                <i class="fas fa-crown"></i>
+            </div>
+            <h2>Unlock Full Access</h2>
+            <p>You are currently on the <strong>Free Plan</strong>.</p>
+            <p class="highlight-text">Upgrade to <strong>Pro</strong> or <strong>Elite</strong> to access Personal Trainers, Custom Diet Plans, and more!</p>
+            
+            <div class="modal-features">
+                <div class="feature-item"><i class="fas fa-check-circle"></i> Personal Trainer Access</div>
+                <div class="feature-item"><i class="fas fa-check-circle"></i> Customized Workout Plans</div>
+                <div class="feature-item"><i class="fas fa-check-circle"></i> Advanced Progress Tracking</div>
+            </div>
+
+            <div class="modal-actions">
+                <a href="subscription_plans.php" class="btn-upgrade-modal">Choose a Plan</a>
+                <button class="btn-close-modal" onclick="closeSubscriptionModal()">Maybe Later</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.4s ease;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: slideUp 0.4s ease;
+        }
+        
+        .modal-header-img {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #FFD700 0%, #FDB931 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: -60px auto 20px;
+            box-shadow: 0 10px 20px rgba(253, 185, 49, 0.3);
+            font-size: 32px;
+            color: #fff;
+            border: 4px solid #fff;
+        }
+        
+        .modal-content h2 {
+            color: var(--primary-color);
+            font-size: 24px;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+        
+        .modal-content p {
+            color: #666;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        .highlight-text {
+            color: var(--text-color);
+            font-weight: 500;
+        }
+        
+        .modal-features {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .feature-item {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--primary-color);
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .feature-item i {
+            color: var(--success-color);
+        }
+        
+        .feature-item:last-child { margin-bottom: 0; }
+        
+        .modal-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .btn-upgrade-modal {
+            background: var(--accent-color);
+            color: white;
+            padding: 14px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 15px rgba(230, 57, 70, 0.3);
+        }
+        
+        .btn-upgrade-modal:hover {
+            transform: translateY(-2px);
+            background: #d62828;
+        }
+        
+        .btn-close-modal {
+            background: transparent;
+            border: none;
+            color: #999;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 10px;
+            font-size: 14px;
+        }
+        
+        .btn-close-modal:hover {
+            color: #666;
+        }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
+
+    <script>
+        // Check if modal has been shown recently to avoid annoyance (Optional: remove sessionStorage check to show ALWAYS)
+        // For now, showing it based on URL or just on load as requested "pop an message here"
+        
+        document.addEventListener('DOMContentLoaded', () => {
+             // To show only once per session, uncomment below:
+             // if (!sessionStorage.getItem('subscriptionModalShown')) {
+                 const modal = document.getElementById('subscriptionModal');
+                 if(modal) {
+                     setTimeout(() => {
+                        modal.style.display = 'flex';
+                     }, 500); // Small delay for effect
+                 }
+                 // sessionStorage.setItem('subscriptionModalShown', 'true');
+             // }
+        });
+
+        function closeSubscriptionModal() {
+            const modal = document.getElementById('subscriptionModal');
+            modal.style.opacity = '0';
+            setTimeout(() => {
+                modal.style.display = 'none';
+                modal.style.opacity = '1';
+            }, 300);
+        }
+    </script>
 </body>
 
 </html>

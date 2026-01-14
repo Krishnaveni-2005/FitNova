@@ -1,4 +1,4 @@
-<?php session_start(); include 'header.php'; ?>
+<?php session_start(); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -50,6 +50,7 @@
     </style>
 </head>
 <body>
+    <?php include 'header.php'; ?>
     <div class="hero">
         <div class="container">
             <h1>Fitness & Nutrition Hub</h1>

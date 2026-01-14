@@ -31,7 +31,7 @@
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
         
         /* Navbar */
-        .navbar { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 20px 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .navbar { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 15px 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .nav-container { display: flex; justify-content: space-between; align-items: center; }
         .logo { font-size: 28px; font-weight: 900; color: var(--primary-color); letter-spacing: -0.5px; }
         .nav-links { display: flex; align-items: center; gap: 40px; }

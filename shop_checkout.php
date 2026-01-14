@@ -29,6 +29,7 @@ if ($cartData) {
         exit();
     }
     $items[] = [
+        'id' => $productId,
         'name' => $_POST['name'] ?? 'Product',
         'price' => floatval($_POST['price'] ?? 0),
         'image' => $_POST['image'] ?? '',
@@ -169,8 +170,6 @@ $total = $subtotal + $shipping + $tax;
                 </div>
                 <?php endforeach; ?>
 
-                <?php endforeach; ?>
-
                 <div class="address-box">
                     <strong><i class="fas fa-map-marker-alt"></i> Delivery Address:</strong>
                     <?php echo htmlspecialchars($address . ', ' . $city . ' ' . $zip); ?><br>
@@ -267,7 +266,7 @@ $total = $subtotal + $shipping + $tax;
                     localStorage.removeItem('cart');
                     
                     alert('Order Placed Successfully! Your gear is on its way.');
-                    window.location.href = "fitshop.php?order_success=true"; 
+                    window.location.href = "order_confirmation.php?id=" + data.order_id; 
                 } else {
                     alert('Order Failed: ' + data.message);
                     btn.innerHTML = originalText;

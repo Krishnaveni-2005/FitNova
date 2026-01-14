@@ -1,6 +1,6 @@
 <?php
 session_start();
-include 'header.php';
+
 require 'db_connect.php';
 
 // Fetch all real trainers from database
@@ -47,6 +47,7 @@ if ($result && $result->num_rows > 0) {
     </style>
 </head>
 <body>
+    <?php include 'header.php'; ?>
     <div class="hero">
         <div class="container" style="padding:0;">
             <h1>Meet Our Trainers</h1>
@@ -61,11 +62,18 @@ if ($result && $result->num_rows > 0) {
                 <div class="trainer-grid">
                     <?php foreach($trainers as $trainer): 
                         // Determine image source
-                        $imgSrc = 'https://images.unsplash.com/photo-1548690312-e3b507d17a12?auto=format&fit=crop&q=80&w=400'; // Default
-                        if (!empty($trainer['profile_picture'])) {
-                            $imgSrc = $trainer['profile_picture'];
-                        } elseif (!empty($trainer['image_url'])) {
-                            $imgSrc = $trainer['image_url'];
+                        $imgSrc = 'uploads/universal_trainer_profile.png';
+                        $possibleFiles = [
+                            'uploads/profile_' . $trainer['user_id'] . '.jpg',
+                            'uploads/profile_' . $trainer['user_id'] . '.png',
+                            'uploads/profile_' . $trainer['user_id'] . '.jpeg'
+                        ];
+                        
+                        foreach ($possibleFiles as $file) {
+                            if (file_exists($file)) {
+                                $imgSrc = $file;
+                                break;
+                            }
                         }
                         
                         // Build profile URL - only real trainers now

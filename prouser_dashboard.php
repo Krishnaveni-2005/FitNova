@@ -5,6 +5,18 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'pro') {
     exit();
 }
 require "db_connect.php";
+
+// Ensure table exists (Self-healing)
+$conn->query("CREATE TABLE IF NOT EXISTS user_notifications (
+    notification_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    notification_type VARCHAR(50),
+    message TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_read BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+)");
+
 $userId = $_SESSION['user_id'];
 $userName = $_SESSION['user_name'] ?? 'Pro User';
 $initials = strtoupper(substr($userName, 0, 1) . substr($userName, strpos($userName, ' ') + 1, 1));
@@ -44,6 +56,80 @@ if ($stmt) {
     error_log("Diet Prepare Error: " . $conn->error);
     $assignedDiets = [];
 }
+
+// Fetch Trainer Assignment Status
+$trainerStatusSql = "SELECT u.assigned_trainer_id, u.assignment_status, t.first_name as trainer_name, t.last_name as trainer_last 
+                     FROM users u 
+                     LEFT JOIN users t ON u.assigned_trainer_id = t.user_id 
+                     WHERE u.user_id = ?";
+$stmt = $conn->prepare($trainerStatusSql);
+$currentTrainerName = 'Unknown Trainer';
+$currentAssignmentStatus = 'none';
+$assignedTrainerId = 0;
+
+if ($stmt) {
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $res = $stmt->get_result()->fetch_assoc();
+    if ($res) {
+        $currentAssignmentStatus = $res['assignment_status'];
+        if ($res['assigned_trainer_id']) {
+            $currentTrainerName = $res['trainer_name'] . ' ' . $res['trainer_last'];
+            $assignedTrainerId = $res['assigned_trainer_id'];
+        }
+    }
+    $stmt->close();
+}
+
+
+// Sync missing notifications
+if ($currentAssignmentStatus === 'pending' && !empty($currentTrainerName)) {
+    // Check if we have a notification for this
+    $checkSql = "SELECT notification_id FROM user_notifications WHERE user_id = ? AND notification_type = 'trainer_request_pending' LIMIT 1";
+    $cStmt = $conn->prepare($checkSql);
+    $cStmt->bind_param("i", $userId);
+    $cStmt->execute();
+    if ($cStmt->get_result()->num_rows === 0) {
+        // Missing notification, create it
+        $msg = "Request sent to Coach " . $currentTrainerName . ". Approval pending.";
+        $insSql = "INSERT INTO user_notifications (user_id, notification_type, message) VALUES (?, 'trainer_request_pending', ?)";
+        $iStmt = $conn->prepare($insSql);
+        $iStmt->bind_param("is", $userId, $msg);
+        $iStmt->execute();
+        $iStmt->close();
+    }
+    $cStmt->close();
+}
+
+// Fetch all notifications for this user
+$notifSql = "SELECT * FROM user_notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 10";
+$stmt = $conn->prepare($notifSql);
+$notifications = [];
+$unreadCount = 0;
+
+if ($stmt) {
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while ($row = $result->fetch_assoc()) {
+        $notifications[] = $row;
+        if (!$row['is_read']) {
+            $unreadCount++;
+        }
+    }
+    $stmt->close();
+}
+
+$notificationCount = $unreadCount;
+
+// Fetch Gym Membership Status
+$gymSql = "SELECT gym_membership_status FROM users WHERE user_id = ?";
+$gStmt = $conn->prepare($gymSql);
+$gStmt->bind_param("i", $userId);
+$gStmt->execute();
+$gymResult = $gStmt->get_result()->fetch_assoc();
+$gymStatus = $gymResult ? $gymResult['gym_membership_status'] : 'inactive';
+$gStmt->close();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -749,11 +835,17 @@ if ($stmt) {
             <a href="my_progress.php" class="menu-item">
                 <i class="fas fa-chart-line"></i> My Progress
             </a>
+            <a href="messages.php" class="menu-item">
+                <i class="fas fa-envelope"></i> Messages
+            </a>
             <a href="client_profile_setup.php" class="menu-item">
                 <i class="fas fa-user-circle"></i> Profile
             </a>
             <a href="fitshop.php" class="menu-item">
                 <i class="fas fa-store"></i> FitShop
+            </a>
+            <a href="#offline-gym-section" class="menu-item" onclick="document.getElementById('offline-gym-section').scrollIntoView({behavior: 'smooth'})">
+                <i class="fas fa-building"></i> Offline Gym
             </a>
             <a href="subscription_plans.php" class="menu-item" style="color: var(--accent-color);">
                 <i class="fas fa-gem"></i> Upgrade Plan
@@ -779,22 +871,188 @@ if ($stmt) {
             <div class="welcome-text">
                 <h1>Welcome back, <?php echo htmlspecialchars(explode(' ', $userName)[0]); ?>! 👋</h1>
                 <p>
-                    <span class="trainer-status"><i class="fas fa-circle" style="font-size: 8px;"></i> Coach Mike is
+                    <span class="trainer-status"><i class="fas fa-circle" style="font-size: 8px;"></i> Coach <?php echo $currentAssignmentStatus === 'approved' ? htmlspecialchars($currentTrainerName) : 'Mike'; ?> is
                         online</span>
                     Ready for your transformation?
                 </p>
             </div>
             <div class="header-actions">
-                <button class="btn-icon">
-                    <i class="fas fa-bell"></i>
-                    <span class="badge">3</span>
-                </button>
-                <button class="btn-icon"><i class="fas fa-envelope"></i></button>
+                <div style="position: relative;">
+                    <button class="btn-icon" id="notificationBtn" onclick="toggleNotifications()">
+                        <i class="fas fa-bell"></i>
+                        <?php if ($notificationCount > 0): ?>
+                            <span class="badge"><?php echo $notificationCount; ?></span>
+                        <?php endif; ?>
+                    </button>
+                    <!-- Notification Dropdown -->
+                    <div id="notificationDropdown" class="notification-dropdown">
+                        <div class="notification-header">Notifications</div>
+                        <div class="notification-body">
+                            <?php if (empty($notifications)): ?>
+                                <div class="notification-empty">
+                                    <p>No notifications yet</p>
+                                </div>
+                            <?php else: ?>
+                                <?php foreach ($notifications as $notif): 
+                                    $timeAgo = '';
+                                    $timestamp = strtotime($notif['created_at']);
+                                    $diff = time() - $timestamp;
+                                    
+                                    if ($diff < 60) {
+                                        $timeAgo = 'Just now';
+                                    } elseif ($diff < 3600) {
+                                        $mins = floor($diff / 60);
+                                        $timeAgo = $mins . ' minute' . ($mins > 1 ? 's' : '') . ' ago';
+                                    } elseif ($diff < 86400) {
+                                        $hours = floor($diff / 3600);
+                                        $timeAgo = $hours . ' hour' . ($hours > 1 ? 's' : '') . ' ago';
+                                    } else {
+                                        $days = floor($diff / 86400);
+                                        $timeAgo = $days . ' day' . ($days > 1 ? 's' : '') . ' ago';
+                                    }
+                                    
+                                    $unreadClass = !$notif['is_read'] ? 'unread' : '';
+                                ?>
+                                <div class="notification-item <?php echo $unreadClass; ?>">
+                                    <div class="notif-icon"><i class="fas fa-info-circle"></i></div>
+                                    <div class="notif-content">
+                                        <p><?php echo htmlspecialchars($notif['message']); ?></p>
+                                        <span class="notif-time"><?php echo $timeAgo; ?></span>
+                                    </div>
+                                </div>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+                
+                
                 <a href="#" class="btn-primary">
                     <i class="fas fa-calendar-plus"></i> Book Session
                 </a>
             </div>
         </header>
+
+        <style>
+            .notification-dropdown {
+                position: absolute;
+                top: 60px;
+                right: 0;
+                width: 320px;
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+                display: none;
+                z-index: 1000;
+                border: 1px solid var(--border-color);
+                animation: slideDown 0.2s ease;
+            }
+
+            .notification-dropdown.active {
+                display: block;
+            }
+
+            .notification-header {
+                padding: 15px 20px;
+                font-weight: 700;
+                border-bottom: 1px solid var(--border-color);
+                color: var(--primary-color);
+            }
+
+            .notification-body {
+                max-height: 300px;
+                overflow-y: auto;
+            }
+
+            .notification-item {
+                padding: 15px 20px;
+                border-bottom: 1px solid var(--border-color);
+                display: flex;
+                gap: 15px;
+                transition: background 0.2s;
+            }
+
+            .notification-item:hover {
+                background: #f8f9fa;
+            }
+            
+            .notification-item.unread {
+                background: rgba(15, 44, 89, 0.03);
+            }
+
+            .notif-icon {
+                width: 35px;
+                height: 35px;
+                border-radius: 50%;
+                background: #e0e7ff;
+                color: var(--primary-color);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+            }
+
+            .notif-content p {
+                font-size: 13px;
+                margin-bottom: 4px;
+                color: var(--text-color);
+                line-height: 1.4;
+            }
+
+            .notif-time {
+                font-size: 11px;
+                color: var(--text-light);
+            }
+
+            .notification-empty {
+                padding: 30px;
+                text-align: center;
+                color: var(--text-light);
+                font-size: 14px;
+            }
+
+            @keyframes slideDown {
+                from { opacity: 0; transform: translateY(-10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        </style>
+
+        <script>
+            function toggleNotifications() {
+                const dropdown = document.getElementById('notificationDropdown');
+                const badge = document.querySelector('.btn-icon .badge');
+                dropdown.classList.toggle('active');
+
+                // Mark all as read when opened
+                if (dropdown.classList.contains('active') && badge) {
+                    fetch('mark_notifications_read.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && badge) {
+                            badge.style.display = 'none';
+                            // Remove unread styling from all items
+                            document.querySelectorAll('.notification-item.unread').forEach(item => {
+                                item.classList.remove('unread');
+                            });
+                        }
+                    })
+                    .catch(err => console.error('Error marking notifications as read:', err));
+                }
+            }
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                const isClickInside = document.getElementById('notificationBtn').contains(event.target) || 
+                                      document.getElementById('notificationDropdown').contains(event.target);
+                
+                if (!isClickInside) {
+                    document.getElementById('notificationDropdown').classList.remove('active');
+                }
+            });
+        </script>
 
         <!-- Stats Overview -->
         <div class="stats-grid">
@@ -819,25 +1077,51 @@ if ($stmt) {
             <!-- Left Column: Custom Plan -->
             <div class="col-left">
                 <!-- My Trainer Section -->
-                <div class="trainer-card">
-                    <img src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
-                        alt="Coach Mike" class="trainer-img">
-                    <div class="trainer-info">
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
-                            <div>
-                                <h4>Coach Mike</h4>
-                                <p>Head of Strength & Conditioning</p>
-                                <button class="btn-chat"><i class="far fa-comment-alt"></i> Chat Now</button>
-                            </div>
-                            <div style="text-align: right;">
-                                <span style="font-size: 0.8rem; color: var(--text-light); display: block;">Next
-                                    Session:</span>
-                                <span style="font-weight: 600; color: var(--primary-color);">Tomorrow, 10:00 AM</span>
+                <?php if ($currentAssignmentStatus === 'approved' && !empty($currentTrainerName)): ?>
+                    <div class="trainer-card">
+                        <div style="width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, var(--secondary-color), var(--primary-color)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 24px; border: 3px solid var(--secondary-color);">
+                            <?php 
+                                $nameParts = explode(' ', $currentTrainerName);
+                                echo strtoupper(substr($nameParts[0], 0, 1));
+                                if (isset($nameParts[1])) echo strtoupper(substr($nameParts[1], 0, 1));
+                            ?>
+                        </div>
+                        <div class="trainer-info">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                                <div>
+                                    <h4>Coach <?php echo htmlspecialchars($currentTrainerName); ?></h4>
+                                    <p>Your Personal Trainer</p>
+                                    <a href="messages.php?trainer=<?php echo $assignedTrainerId; ?>" class="btn-chat" style="text-decoration:none; display:inline-block; text-align:center;"><i class="far fa-comment-alt"></i> Chat Now</a>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span style="font-size: 0.8rem; color: var(--text-light); display: block;">Status:</span>
+                                    <span style="font-weight: 600; color: var(--success-color);">Active</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                <?php elseif ($currentAssignmentStatus === 'pending'): ?>
+                    <div class="trainer-card" style="background: linear-gradient(135deg, #fff9e6 0%, #ffffff 100%);">
+                        <div style="width: 70px; height: 70px; border-radius: 50%; background: #ffc107; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px;">
+                            <i class="fas fa-hourglass-half"></i>
+                        </div>
+                        <div class="trainer-info">
+                            <h4 style="color: #f59e0b;">Trainer Request Pending</h4>
+                            <p>Waiting for Coach <?php echo htmlspecialchars($currentTrainerName); ?> to approve your request.</p>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <div class="trainer-card" style="background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);">
+                        <div style="width: 70px; height: 70px; border-radius: 50%; background: #e9ecef; display: flex; align-items: center; justify-content: center; color: #6c757d; font-size: 24px;">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="trainer-info">
+                            <h4 style="color: var(--text-color);">No Trainer Assigned</h4>
+                            <p>Select a trainer from our expert team to get personalized guidance.</p>
+                            <a href="trainers.php" class="btn-chat" style="background: var(--primary-color); color: white; text-decoration: none;"><i class="fas fa-search"></i> Browse Trainers</a>
+                        </div>
+                    </div>
+                <?php endif; ?>
 
                 <div class="section-card">
                     <div class="section-header">
@@ -974,8 +1258,58 @@ if ($stmt) {
                                     15% OFF</span>
                             </div>
                         </div>
-                        <button class="btn-action"><i class="fas fa-shopping-cart"></i></button>
+                        <button class="btn-action" onclick="addToCart()"><i class="fas fa-shopping-cart"></i></button>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Offline Gym Section -->
+        <div id="offline-gym-section" class="section-card" style="margin-top: 30px; border-left: 5px solid var(--accent-color);">
+            <div class="section-header">
+                <h3 class="section-title"><i class="fas fa-building" style="margin-right: 10px;"></i>Offline Gym Access</h3>
+                <?php if ($gymStatus === 'active'): ?>
+                    <span class="trainer-status" style="background: rgba(40, 167, 69, 0.1); color: var(--success-color);">Active Member</span>
+                <?php endif; ?>
+            </div>
+
+            <div style="display: flex; gap: 30px; align-items: center; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 300px;">
+                    <?php if ($gymStatus === 'active'): ?>
+                        <h4 style="font-size: 1.2rem; color: var(--primary-color); margin-bottom: 15px;">Your Access Pass</h4>
+                        <p style="color: var(--text-light); margin-bottom: 20px;">
+                            Show this QR code at the reception desk to check in.
+                        </p>
+                        <div style="display: flex; align-items: center; gap: 20px;">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=FitNova-User-<?php echo $userId; ?>-Access" alt="Gym Access QR" style="border-radius: 10px; border: 1px solid #eee;">
+                            <div>
+                                <ul style="list-style: none; color: var(--text-light); font-size: 0.9rem;">
+                                    <li style="margin-bottom: 8px;"><i class="fas fa-check-circle" style="color: var(--success-color); margin-right: 8px;"></i> Unlimited Gym Floor Access</li>
+                                    <li style="margin-bottom: 8px;"><i class="fas fa-check-circle" style="color: var(--success-color); margin-right: 8px;"></i> Locker Room & Showers</li>
+                                    <li style="margin-bottom: 8px;"><i class="fas fa-check-circle" style="color: var(--success-color); margin-right: 8px;"></i> Group Classes Included</li>
+                                </ul>
+                            </div>
+                        </div>
+                    <?php else: ?>
+                        <h4 style="font-size: 1.2rem; color: var(--primary-color); margin-bottom: 15px;">Take Your Training to the Next Level</h4>
+                        <p style="color: var(--text-light); margin-bottom: 20px; line-height: 1.6;">
+                            Combine your digital plan with physical gym access. Get full access to all FitNova locations, premium equipment, and on-site trainers.
+                        </p>
+                        <div style="display: flex; gap: 20px; margin-bottom: 25px;">
+                            <div style="display: flex; align-items: center; gap: 10px; color: var(--text-color); font-weight: 500;">
+                                <i class="fas fa-map-marker-alt" style="color: var(--accent-color);"></i> All Locations
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px; color: var(--text-color); font-weight: 500;">
+                                <i class="fas fa-clock" style="color: var(--accent-color);"></i> 24/7 Access
+                            </div>
+                        </div>
+                        <button onclick="subscribeGym()" class="btn-primary" style="background: var(--accent-color);">
+                            Book now with extra payment ₹10
+                        </button>
+                    <?php endif; ?>
+                </div>
+                <div style="flex: 1; min-width: 300px;">
+                    <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Gym Interior" style="width: 100%; border-radius: 12px; height: 250px; object-fit: cover;">
                 </div>
             </div>
         </div>
@@ -985,6 +1319,60 @@ if ($stmt) {
         document.addEventListener('DOMContentLoaded', () => {
             console.log('Pro Dashboard Loaded');
         });
+
+        function addToCart() {
+            const userId = "<?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : ''; ?>";
+            const cartKey = userId ? `cart_${userId}` : 'cart_guest';
+            
+            const product = {
+                name: 'Pro Whey Isolate',
+                price: 3450,
+                image: 'https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80',
+                size: '1kg',
+                quantity: 1
+            };
+            
+            let cart = JSON.parse(localStorage.getItem(cartKey) || '[]');
+            
+            // Check if product already exists in cart
+            const existingIndex = cart.findIndex(item => item.name === product.name && item.size === product.size);
+            
+            if (existingIndex !== -1) {
+                cart[existingIndex].quantity += 1;
+                alert('Product quantity updated in cart!');
+            } else {
+                cart.push(product);
+                alert('Product added to cart!');
+            }
+            
+            localStorage.setItem(cartKey, JSON.stringify(cart));
+            
+            // Trigger cart update in header if available
+            if (typeof window.updateCartDisplay === 'function') {
+                window.updateCartDisplay();
+            }
+        }
+
+        function subscribeGym() {
+            if (confirm('Confirm subscription to Offline Gym Access for ₹10/month?')) {
+                // In a real app, this would redirect to Stripe/Payment Gateway
+                // Here we verify update directly
+                fetch('subscribe_offline_gym.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'subscribe' })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Subscription Successful! Welcome to FitNova Gyms.');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                });
+            }
+        }
     </script>
 </body>
 

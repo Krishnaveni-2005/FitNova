@@ -74,6 +74,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message_text'])) {
             $stmt->bind_param("iis", $trainerId, $receiverId, $text);
             $stmt->execute();
             $stmt->close();
+            
+            // Notify User of New Message
+            $notifMsg = "You have a new message from Coach " . $trainerName;
+            $notifSql = "INSERT INTO user_notifications (user_id, notification_type, message) VALUES (?, 'new_message', ?)";
+            $nStmt = $conn->prepare($notifSql);
+            $nStmt->bind_param("is", $receiverId, $notifMsg);
+            $nStmt->execute();
+            $nStmt->close();
         }
         $chkStmt->close();
     }

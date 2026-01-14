@@ -49,9 +49,11 @@ if ($is_mock && $trainer_name) {
 
 // Logic for Client Request
 $user_id = $_SESSION['user_id'] ?? 0;
+$user_role = $_SESSION['user_role'] ?? 'guest';
 $current_status = 'none';
 $assigned_id = 0;
 $request_sent = false;
+$msg = isset($_GET['msg']) ? $_GET['msg'] : '';
 
 if ($user_id) {
     // Check current status
@@ -68,15 +70,29 @@ if ($user_id) {
     
     // Handle Hire Request
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['hire_trainer'])) {
-        $updateSql = "UPDATE users SET assigned_trainer_id = ?, assignment_status = 'pending' WHERE user_id = ?";
-        $stmt = $conn->prepare($updateSql);
-        $stmt->bind_param("ii", $trainer_id, $user_id);
-        if ($stmt->execute()) {
-            $request_sent = true;
-            $current_status = 'pending';
-            $assigned_id = $trainer_id;
+        if ($user_role === 'free') {
+           // If user is free, they shouldn't trigger this via POST if UI logic is sound, 
+           // but as a fallback/security layer, we set the msg.
+           $msg = 'upgrade_required';
+        } else {
+            $updateSql = "UPDATE users SET assigned_trainer_id = ?, assignment_status = 'pending' WHERE user_id = ?";
+            $stmt = $conn->prepare($updateSql);
+            $stmt->bind_param("ii", $trainer_id, $user_id);
+            if ($stmt->execute()) {
+                $request_sent = true;
+                $current_status = 'pending';
+                $assigned_id = $trainer_id;
+                
+                // Add notification for the user
+                $notifMsg = "You sent a request to Coach " . ($trainer['first_name'] ?? 'Trainer') . " and it is pending.";
+                $notifSql = "INSERT INTO user_notifications (user_id, notification_type, message) VALUES (?, 'trainer_request_sent', ?)";
+                $nStmt = $conn->prepare($notifSql);
+                $nStmt->bind_param("is", $user_id, $notifMsg);
+                $nStmt->execute();
+                $nStmt->close();
+            }
+            $stmt->close();
         }
-        $stmt->close();
     }
 }
 
@@ -96,6 +112,7 @@ include 'header.php';
     <title><?php echo htmlspecialchars($trainer['first_name'] . ' ' . $trainer['last_name']); ?> - FitNova Trainer</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
             --primary-color: #0F2C59;
@@ -334,6 +351,32 @@ include 'header.php';
     </style>
 </head>
 <body>
+
+    <?php if ($msg === 'upgrade_required'): ?>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    title: 'Premium Feature',
+                    text: 'Make payment for any subscription then only you can access the trainers.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Upgrade Now',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#0F2C59',
+                    cancelButtonColor: '#d33'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = 'subscription_plans.php';
+                    }
+                });
+            });
+        </script>
+    <?php endif; ?>
+
+    <div class="modal-buttons">
+        <button class="btn-ignore" onclick="closeModal()">Ignore</button>
+        <a href="subscription_plans.php?msg=upgrade_required&trainer_id=<?php echo $trainer_id; ?>" class="btn-upgrade">Upgrade Now</a>
+    </div>
     <div class="profile-hero">
         <div class="container">
             <a href="trainers.php" class="btn-back">
@@ -341,7 +384,7 @@ include 'header.php';
             </a>
             
             <div class="profile-header">
-                <img src="<?php echo htmlspecialchars($trainer['image_url'] ?? $trainer['profile_picture'] ?? 'https://images.unsplash.com/photo-1548690312-e3b507d17a12?auto=format&fit=crop&q=80&w=400'); ?>" 
+                <img src="uploads/universal_trainer_profile.png" 
                      alt="<?php echo htmlspecialchars($trainer['first_name']); ?>" 
                      class="profile-image">
                 
@@ -390,6 +433,10 @@ include 'header.php';
                             <li><?php echo htmlspecialchars(trim($cert)); ?></li>
                         <?php endforeach; ?>
                     </ul>
+                    <div style="margin-top: 20px; border-top: 1px dashed #eee; padding-top: 15px;">
+                        <h4 style="font-size: 0.9rem; color: #888; margin-bottom: 10px; font-weight: 600;">Certificate of Appreciation</h4>
+                        <img src="assets/certificate.jpg" alt="Trainer Certificate" style="width: 100%; max-width: 100%; border: 4px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-radius: 4px; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                    </div>
                 </div>
                 
                 <div class="info-card">
@@ -423,12 +470,17 @@ include 'header.php';
                     <?php elseif ($assigned_id == $trainer_id && $current_status === 'pending'): ?>
                          <button class="btn-book" style="background: #e0e0e0; color: #555; cursor: default;" disabled>Request Pending</button>
                          <p style="margin-top: 10px; font-size: 0.9rem;">Waiting for trainer approval.</p>
+
                     <?php elseif ($current_status === 'approved' || $current_status === 'pending'): ?>
                         <p>You already have an assigned trainer or a pending request.</p>
                         <a href="trainer_profile.php?id=<?php echo $assigned_id; ?>" style="color: white; text-decoration: underline;">View My Trainer</a>
                     <?php else: ?>
                         <form method="POST">
-                            <button type="submit" name="hire_trainer" class="btn-book" style="border:none; cursor:pointer;">Send Hire Request</button>
+                             <?php if (isset($user_role) && $user_role === 'free'): ?>
+                                <button type="button" onclick="window.location.href='?id=<?php echo $trainer_id; ?>&msg=upgrade_required'" class="btn-book" style="background: #E63946; border: none; cursor: pointer;">Send Hire Request</button>
+                             <?php else: ?>
+                                <button type="submit" name="hire_trainer" class="btn-book" style="border:none; cursor:pointer;">Send Hire Request</button>
+                             <?php endif; ?>
                         </form>
                     <?php endif; ?>
                 <?php endif; ?>

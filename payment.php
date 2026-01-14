@@ -352,30 +352,45 @@ if (!isset($_SESSION['user_id'])) {
     <script>
         // Parse URL params
         const urlParams = new URLSearchParams(window.location.search);
-        const plan = urlParams.get('plan') || 'pro';
+        let plan = (urlParams.get('plan') || '').toLowerCase(); // Normalizing to lowercase
         const cycle = urlParams.get('billing') || 'monthly';
-
+        
         // Setup Data (INR)
         const plans = {
             pro: { name: 'Pro Member', monthly: 2499, yearly: 7999 },
             elite: { name: 'Elite Member', monthly: 4999, yearly: 8999 }
         };
 
+        // Validate Plan
+        if (!plan || !plans[plan]) {
+             // Default to 'pro' if invalid or missing, OR redirect. 
+             // To be safe and avoid crash, let's default to 'pro' if invalid, 
+             // or redirect if that's preferred. 
+             // Given the user wants it to work, redirecting to options is safer UX.
+             window.location.href = 'subscription_plans.php';
+             // return; // Stop execution (though href redirect will handle it)
+        }
+
         const selectedPlan = plans[plan];
-        const basePrice = cycle === 'yearly' ? selectedPlan.yearly : selectedPlan.monthly;
-        const tax = basePrice * 0.18;
-        const total = basePrice + tax;
+        // Ensure selectedPlan exists before accessing properties
+        if (selectedPlan) {
+            const basePrice = cycle === 'yearly' ? selectedPlan.yearly : selectedPlan.monthly;
+            const tax = basePrice * 0.18;
+            const total = basePrice + tax;
+            
+            // Formatting currency
+            const formatINR = (amt) => '₹' + amt.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    
+            // Render Data
+            document.getElementById('planName').innerText = selectedPlan.name;
+            document.getElementById('billingCycle').innerText = cycle.charAt(0).toUpperCase() + cycle.slice(1) + ' Plan';
+            document.getElementById('planPrice').innerText = formatINR(basePrice);
+            document.getElementById('taxAmount').innerText = formatINR(tax);
+            document.getElementById('totalPrice').innerText = formatINR(total);
+            document.getElementById('payBtn').innerText = 'Pay ' + formatINR(total);
+        }
 
-        // Formatting currency
-        const formatINR = (amt) => '₹' + amt.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-        // Render Data
-        document.getElementById('planName').innerText = selectedPlan.name;
-        document.getElementById('billingCycle').innerText = cycle.charAt(0).toUpperCase() + cycle.slice(1) + ' Plan';
-        document.getElementById('planPrice').innerText = formatINR(basePrice);
-        document.getElementById('taxAmount').innerText = formatINR(tax);
-        document.getElementById('totalPrice').innerText = formatINR(total);
-        document.getElementById('payBtn').innerText = 'Pay ' + formatINR(total);
 
         // Toggle Payment Method
         function selectMethod(method) {
@@ -404,7 +419,8 @@ if (!isset($_SESSION['user_id'])) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     plan: plan,
-                    billing: cycle
+                    billing: cycle,
+                    trainer_id: urlParams.get('trainer_id')
                 })
             })
                 .then(response => response.json())

@@ -70,7 +70,7 @@ if ($stmt->execute()) {
     }
     $stmtItem->close();
 
-    echo json_encode(['status' => 'success', 'message' => 'Order placed successfully']);
+    echo json_encode(['status' => 'success', 'message' => 'Order placed successfully', 'order_id' => $orderId]);
 } else {
     echo json_encode(['status' => 'error', 'message' => 'Database error: ' . $conn->error]);
 }

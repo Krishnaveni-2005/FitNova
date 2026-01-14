@@ -350,7 +350,12 @@ $currentRole = $_SESSION['user_role'] ?? 'guest';
     </div>
 
     <script>
-        const toggle = document.getElementById('billingToggle');
+        // Capture trainer ID if present
+        const urlParams = new URLSearchParams(window.location.search);
+        const trainerId = urlParams.get('trainer_id');
+
+        // Select elements
+        const billingToggle = document.getElementById('billingToggle');
         const proPrice = document.getElementById('proPrice');
         const elitePrice = document.getElementById('elitePrice');
         const proBilling = document.getElementById('proBilling');
@@ -360,28 +365,32 @@ $currentRole = $_SESSION['user_role'] ?? 'guest';
 
         let isYearly = false;
 
-        toggle.addEventListener('change', function () {
-            isYearly = this.checked;
-            if (isYearly) {
-                // Yearly (approx 20% off)
-                if (proPrice) proPrice.innerText = '₹7,999';
-                if (elitePrice) elitePrice.innerText = '₹8,999';
-                if (proBilling) proBilling.innerText = 'per year (save 20%)';
-                if (eliteBilling) eliteBilling.innerText = 'per year (save 20%)';
-            } else {
-                // Monthly
-                if (proPrice) proPrice.innerText = '₹2,499';
-                if (elitePrice) elitePrice.innerText = '₹4,999';
-                if (proBilling) proBilling.innerText = 'per month';
-                if (eliteBilling) eliteBilling.innerText = 'per month';
-            }
-        });
+        if (billingToggle) {
+            billingToggle.addEventListener('change', function () {
+                isYearly = this.checked;
+                if (isYearly) {
+                    // Yearly (approx 20% off)
+                    if (proPrice) proPrice.innerText = '₹7,999';
+                    if (elitePrice) elitePrice.innerText = '₹8,999';
+                    if (proBilling) proBilling.innerText = 'per year (save 20%)';
+                    if (eliteBilling) eliteBilling.innerText = 'per year (save 20%)';
+                } else {
+                    // Monthly
+                    if (proPrice) proPrice.innerText = '₹2,499';
+                    if (elitePrice) elitePrice.innerText = '₹4,999';
+                    if (proBilling) proBilling.innerText = 'per month';
+                    if (eliteBilling) eliteBilling.innerText = 'per month';
+                }
+            });
+        }
 
         if (btnPro) {
             btnPro.addEventListener('click', (e) => {
                 e.preventDefault();
                 const billing = isYearly ? 'yearly' : 'monthly';
-                window.location.href = `payment.php?plan=pro&billing=${billing}`;
+                let redirectUrl = `payment.php?plan=pro&billing=${billing}`;
+                if (trainerId) redirectUrl += `&trainer_id=${trainerId}`;
+                window.location.href = redirectUrl;
             });
         }
 
@@ -389,7 +398,9 @@ $currentRole = $_SESSION['user_role'] ?? 'guest';
             btnElite.addEventListener('click', (e) => {
                 e.preventDefault();
                 const billing = isYearly ? 'yearly' : 'monthly';
-                window.location.href = `payment.php?plan=elite&billing=${billing}`;
+                let redirectUrl = `payment.php?plan=elite&billing=${billing}`;
+                if (trainerId) redirectUrl += `&trainer_id=${trainerId}`;
+                window.location.href = redirectUrl;
             });
         }
     </script>

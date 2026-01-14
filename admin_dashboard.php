@@ -30,9 +30,9 @@ if ($result->num_rows > 0) {
     }
 }
 
-// Fetch Active Trainers
+// Fetch Active Trainers (All users with role='trainer' and status!='pending')
 $activeTrainers = [];
-$sqlActive = "SELECT * FROM users WHERE role = 'trainer' AND account_status = 'active' ORDER BY created_at DESC";
+$sqlActive = "SELECT * FROM users WHERE role = 'trainer' AND account_status != 'pending' ORDER BY created_at DESC";
 $resultActive = $conn->query($sqlActive);
 if ($resultActive->num_rows > 0) {
     while($row = $resultActive->fetch_assoc()) {
@@ -40,9 +40,23 @@ if ($resultActive->num_rows > 0) {
     }
 }
 
-// Fetch Clients (Free, Pro, Elite)
+// Fetch Specific Offline Trainers (Joshua, David, Elis)
+$offlineTrainers = [];
+$offlineNames = ["Joshua Joseph", "David John", "Elis Reji"];
+// Create a safe string for IN clause or construct OR checks. Using CONCAT for full name search
+$sqlOffline = "SELECT * FROM users 
+               WHERE role = 'trainer' 
+               AND CONCAT(first_name, ' ', last_name) IN ('Joshua Joseph', 'David John', 'Elis Reji')";
+$resultOffline = $conn->query($sqlOffline);
+if ($resultOffline && $resultOffline->num_rows > 0) {
+    while($row = $resultOffline->fetch_assoc()) {
+        $offlineTrainers[] = $row;
+    }
+}
+
+// Fetch Clients (All Statuses)
 $clients = [];
-$sqlClients = "SELECT * FROM users WHERE role IN ('free', 'pro', 'elite') AND account_status = 'active' ORDER BY created_at DESC";
+$sqlClients = "SELECT * FROM users WHERE role IN ('free', 'pro', 'elite') ORDER BY created_at DESC";
 $resultClients = $conn->query($sqlClients);
 if ($resultClients->num_rows > 0) {
     while($row = $resultClients->fetch_assoc()) {
@@ -810,6 +824,13 @@ $conn->close();
             font-weight: 500;
             text-align: right;
         }
+        .editable-input {
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 5px 10px;
+            font-family: inherit;
+            font-size: 14px;
+        }
     </style>
 
 </head>
@@ -854,9 +875,7 @@ $conn->close();
             <a href="#" class="nav-item" onclick="showSection('orders')">
                 <i class="fas fa-shopping-cart"></i><span>Orders</span>
             </a>
-            <a href="#" class="nav-item" onclick="showSection('site')">
-                <i class="fas fa-server"></i><span>Site Ops</span>
-            </a>
+
             <a href="#" class="nav-item" onclick="showSection('offline')">
                 <i class="fas fa-building"></i><span>Offline Gym</span>
             </a>
@@ -937,13 +956,7 @@ $conn->close();
                     <div class="hub-desc">Track and process customer orders and shipments.</div>
                 </div>
 
-                <div class="hub-card" onclick="showSection('site')">
-                    <div class="hub-icon" style="background: #fffbeb; color: #f59e0b;">
-                        <i class="fas fa-server"></i>
-                    </div>
-                    <div class="hub-title">Site Administration</div>
-                    <div class="hub-desc">Configure system settings, backups, and platform maintenance.</div>
-                </div>
+
 
                 <div class="hub-card" onclick="showSection('offline')">
                     <div class="hub-icon" style="background: #fff7ed; color: #c2410c;">
@@ -961,21 +974,7 @@ $conn->close();
                     <div class="hub-desc">Generate detailed reports and monitor security audit logs.</div>
                 </div>
 
-                <div class="hub-card" onclick="showSection('orders')">
-                    <div class="hub-icon" style="background: #fff0f6; color: #db2777;">
-                        <i class="fas fa-shopping-bag"></i>
-                    </div>
-                    <div class="hub-title">Shop Orders</div>
-                    <div class="hub-desc">Manage customer orders, track payments, and update shipping status.</div>
-                </div>
 
-                <div class="hub-card" onclick="showSection('offline')">
-                    <div class="hub-icon" style="background: #eef2ff; color: #7c3aed;">
-                        <i class="fas fa-building"></i>
-                    </div>
-                    <div class="hub-title">Offline Gym</div>
-                    <div class="hub-desc">Manage gym equipment, trainer clock-ins, and facility status.</div>
-                </div>
 
                 <div class="hub-card" onclick="showSection('settings')">
                     <div class="hub-icon" style="background: #ede9fe; color: #8b5cf6;">
@@ -1061,8 +1060,8 @@ $conn->close();
             <div class="top-bar">
                 <h2>System Overview</h2>
                 <div class="top-bar-actions">
-                    <button class="admin-btn btn-secondary"><i class="fas fa-download"></i> Export Data</button>
-                    <button class="admin-btn btn-primary"><i class="fas fa-sync"></i> Refresh</button>
+                    <button class="admin-btn btn-secondary" onclick="window.location.href='admin_export_csv.php'"><i class="fas fa-download"></i> Export Data</button>
+                    <button class="admin-btn btn-primary" onclick="location.reload()"><i class="fas fa-sync"></i> Refresh</button>
                 </div>
             </div>
 
@@ -1315,14 +1314,14 @@ $conn->close();
                                 </div>
                             </div>
                             <div class="card-actions">
-                                <button class="action-btn">View Profile</button>
+                                <button class="action-btn" onclick='viewTrainerDetails(<?php echo json_encode($trainer, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'>View Profile</button>
                                 <button class="action-btn" style="color: #dc2626;" onclick="handleTrainerAction(<?php echo $trainer['user_id']; ?>, 'delete')">Remove</button>
                             </div>
                         </div>
                     <?php endforeach; ?>
                 </div>
                 <?php else: ?>
-                    <p style="padding: 20px; color: #64748b; font-style: italic;">No active trainers found.</p>
+                    <p style="padding: 20px; color: #64748b; font-style: italic;">No trainers found.</p>
                 <?php endif; ?>
             </div>
         </div>
@@ -1513,9 +1512,9 @@ $conn->close();
             <!-- Trainers On Site -->
             <div class="management-section">
                 <div class="section-title">Trainers On Site</div>
-                <?php if (count($activeTrainers) > 0): ?>
+                <?php if (count($offlineTrainers) > 0): ?>
                 <div class="admin-grid">
-                    <?php foreach ($activeTrainers as $trainer): ?>
+                    <?php foreach ($offlineTrainers as $trainer): ?>
                         <div class="admin-card">
                             <div class="card-header">
                                 <div>
@@ -1596,6 +1595,19 @@ $conn->close();
             </div>
             <div id="modalBody">
                 <!-- Content will be injected by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Trainer Detail Modal -->
+    <div id="trainerModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('trainerModal')">&times;</span>
+            <div class="modal-header">
+                <h2>Trainer Profile</h2>
+            </div>
+            <div id="trainerModalBody">
+                <!-- Content injected by JS -->
             </div>
         </div>
     </div>
@@ -1782,6 +1794,100 @@ $conn->close();
         }
 
         // Modal Functions
+        // Trainer Modal Function
+        // Trainer Modal Function - Editable Version
+        function viewTrainerDetails(trainer) {
+            const modal = document.getElementById('trainerModal');
+            const body = document.getElementById('trainerModalBody');
+            
+            // Format certs - editable as text for now
+            const certs = trainer.certifications || '';
+            
+            // Fallback for image
+            const imgHtml = trainer.image_url 
+                ? `<img src="${trainer.image_url}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">` 
+                : '<i class="fas fa-user"></i>';
+
+            body.innerHTML = `
+                <form id="editTrainerForm" onsubmit="event.preventDefault(); saveTrainerDetails(${trainer.user_id});">
+                    <div style="display: flex; gap: 20px; margin-bottom: 20px; align-items: start;">
+                        <div style="width: 100px; height: 100px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; color: #64748b; flex-shrink: 0;">
+                            ${imgHtml}
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="display:flex; gap: 10px; margin-bottom: 10px;">
+                                <input type="text" id="t_first_name" class="editable-input" value="${trainer.first_name}" style="font-weight:700; color:#0F2C59; width: 48%;" placeholder="First Name">
+                                <input type="text" id="t_last_name" class="editable-input" value="${trainer.last_name}" style="font-weight:700; color:#0F2C59; width: 48%;" placeholder="Last Name">
+                            </div>
+                            <input type="email" id="t_email" class="editable-input" value="${trainer.email}" style="width: 100%; color: #64748b; margin-bottom: 8px;">
+                            <span class="badge badge-active" style="text-transform: capitalize;">${trainer.account_status}</span>
+                        </div>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Phone</span>
+                        <input type="text" id="t_phone" class="editable-input" value="${trainer.phone || ''}" style="width: 60%; text-align: right;">
+                    </div>
+                    
+                    <div class="detail-row">
+                        <span class="detail-label">Specialization</span>
+                        <input type="text" id="t_spec" class="editable-input" value="${trainer.trainer_specialization || trainer.specialization || ''}" style="width: 60%; text-align: right;">
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Experience (Years)</span>
+                        <input type="number" id="t_exp" class="editable-input" value="${trainer.experience_years || 0}" style="width: 60%; text-align: right;">
+                    </div>
+
+                    <div class="detail-row" style="border-bottom: none;">
+                        <div style="width:100%">
+                            <span class="detail-label">About</span>
+                            <textarea id="t_bio" class="editable-input" style="width: 100%; height: 100px; margin-top: 8px; resize: vertical; padding: 10px;">${trainer.bio || ''}</textarea>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px; text-align: right; border-top: 1px solid #eee; padding-top: 20px;">
+                         <button type="button" class="action-btn" onclick="closeModal('trainerModal')">Cancel</button>
+                         <button type="submit" class="admin-btn btn-primary" style="display: inline-flex;">Save Changes</button>
+                    </div>
+                </form>
+            `;
+            
+            modal.style.display = "block";
+        }
+
+        function saveTrainerDetails(trainerId) {
+            const data = {
+                trainer_id: trainerId,
+                first_name: document.getElementById('t_first_name').value,
+                last_name: document.getElementById('t_last_name').value,
+                email: document.getElementById('t_email').value,
+                phone: document.getElementById('t_phone').value,
+                trainer_specialization: document.getElementById('t_spec').value,
+                experience_years: document.getElementById('t_exp').value,
+                bio: document.getElementById('t_bio').value
+            };
+
+            fetch('admin_trainer_update.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Request failed');
+            });
+        }
+
         function viewClientDetails(client) {
             const modal = document.getElementById('clientModal');
             const body = document.getElementById('modalBody');

@@ -120,7 +120,7 @@
                 <div class="f-socials" style="display: flex; gap: 15px;">
                     <a href="#" style="width: 40px; height: 40px; background: #222; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;"><i class="fab fa-facebook-f"></i></a>
                     <a href="#" style="width: 40px; height: 40px; background: #222; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;"><i class="fab fa-twitter"></i></a>
-                    <a href="#" style="width: 40px; height: 40px; background: #222; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;"><i class="fab fa-instagram"></i></a>
+
                 </div>
             </div>
             <div>

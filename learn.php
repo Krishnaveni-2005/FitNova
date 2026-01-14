@@ -1,4 +1,4 @@
-<?php session_start(); include 'header.php'; ?>
+<?php session_start(); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,6 +26,7 @@
     </style>
 </head>
 <body>
+    <?php include 'header.php'; ?>
     <div class="hero">
         <div class="container" style="padding:0;">
             <h1>Knowledge Hub</h1>

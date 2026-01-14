@@ -32,7 +32,35 @@ $stmt->bind_param("si", $role, $userId);
 
 if ($stmt->execute()) {
     $_SESSION['user_role'] = $role; // Update session
-    echo json_encode(["status" => "success", "message" => "Plan updated successfully", "redirect" => $role . "user_dashboard.php"]);
+    $message = "Plan updated successfully";
+    
+    // Handle Automatic Trainer Hire Request
+    $trainerId = isset($data['trainer_id']) ? intval($data['trainer_id']) : 0;
+    if ($trainerId > 0) {
+        $hireSql = "UPDATE users SET assigned_trainer_id = ?, assignment_status = 'pending' WHERE user_id = ?";
+        $hireStmt = $conn->prepare($hireSql);
+        $hireStmt->bind_param("ii", $trainerId, $userId);
+        if ($hireStmt->execute()) {
+            $message .= " and Trainer Request Sent!";
+            
+            // Create notification for the client
+            require_once 'notification_helper.php';
+            
+            // Get trainer name
+            $trainerSql = "SELECT CONCAT(first_name, ' ', last_name) as name FROM users WHERE user_id = ?";
+            $tStmt = $conn->prepare($trainerSql);
+            $tStmt->bind_param("i", $trainerId);
+            $tStmt->execute();
+            $trainerName = $tStmt->get_result()->fetch_assoc()['name'];
+            $tStmt->close();
+            
+            $notifMessage = "Request sent to Coach " . $trainerName . ". Approval pending.";
+            createNotification($conn, $userId, 'trainer_request_pending', $notifMessage);
+        }
+        $hireStmt->close();
+    }
+
+    echo json_encode(["status" => "success", "message" => $message, "redirect" => $role . "user_dashboard.php"]);
 } else {
     echo json_encode(["status" => "error", "message" => "Database error: " . $conn->error]);
 }

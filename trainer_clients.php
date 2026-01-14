@@ -9,6 +9,26 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_role']) || $_SESSION[
 }
 
 $trainerId = $_SESSION['user_id'];
+
+// Check Account Status explicitly to prevent access if status changes
+$statusSql = "SELECT account_status FROM users WHERE user_id = ?";
+$stmt = $conn->prepare($statusSql);
+$stmt->bind_param("i", $trainerId);
+$stmt->execute();
+$resStatus = $stmt->get_result();
+if ($resStatus->num_rows > 0) {
+    $userStatus = $resStatus->fetch_assoc()['account_status'];
+    if ($userStatus === 'pending') {
+        header("Location: trainer_pending.php");
+        exit();
+    }
+    if ($userStatus === 'inactive' || $userStatus === 'rejected') {
+        session_destroy();
+        header("Location: login.php?error=account_inactive");
+        exit();
+    }
+}
+$stmt->close();
 $trainerName = $_SESSION['user_name'];
 $trainerEmail = $_SESSION['user_email'];
 $trainerInitials = strtoupper(substr($trainerName, 0, 1) . substr(explode(' ', $trainerName)[1] ?? '', 0, 1));
@@ -576,14 +596,53 @@ if ($stmt) {
                     </div>
                 </div>
                 <div class="client-actions">
-                    <a href="#" class="btn-client btn-view">View Profile</a>
-                    <a href="#" class="btn-client btn-plan">Assign Plan</a>
+                    <a href="view_client_profile.php?user_id=<?php echo $client['user_id']; ?>" class="btn-client btn-view">View Profile</a>
+                    <button onclick="openAssignModal(<?php echo $client['user_id']; ?>, '<?php echo htmlspecialchars($client['first_name']); ?>')" class="btn-client btn-plan" style="border:none; cursor:pointer;">Assign Plan</button>
                 </div>
             </div>
             <?php endforeach; ?>
         </div>
         <?php endif; ?>
     </main>
+
+    <!-- Assignment Modal -->
+    <div id="assignModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Assign Plan</h3>
+                <button class="close-btn" onclick="closeAssignModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>What type of plan do you want to assign to <strong id="modalClientName">Client</strong>?</p>
+                <div class="assign-options">
+                    <a href="#" id="assignWorkoutLink" class="assign-option">
+                        <div class="icon-box"><i class="fas fa-dumbbell"></i></div>
+                        <span>Workout Plan</span>
+                    </a>
+                    <a href="#" id="assignDietLink" class="assign-option">
+                        <div class="icon-box" style="background: #ecfdf5; color: #10b981;"><i class="fas fa-apple-alt"></i></div>
+                        <span>Diet Plan</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 2000; animation: fadeIn 0.2s; }
+        .modal { background: white; width: 400px; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: slideUp 0.3s; }
+        .modal-header { padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h3 { font-size: 18px; margin: 0; color: #1e293b; }
+        .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #999; }
+        .modal-body { padding: 25px; text-align: center; }
+        .assign-options { display: flex; gap: 15px; margin-top: 20px; }
+        .assign-option { flex: 1; padding: 20px; border: 1px solid #eee; border-radius: 10px; text-decoration: none; color: #333; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .assign-option:hover { background: #f8fafc; border-color: var(--primary-color); transform: translateY(-2px); }
+        .icon-box { width: 50px; height: 50px; background: #eef2ff; color: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
 
     <script>
         // Simple search functionality
@@ -601,7 +660,17 @@ if ($stmt) {
                 }
             });
         });
+
+        function openAssignModal(userId, name) {
+            document.getElementById('modalClientName').textContent = name;
+            document.getElementById('assignWorkoutLink').href = 'trainer_workouts.php?assign_to=' + userId;
+            document.getElementById('assignDietLink').href = 'trainer_diets.php?assign_to=' + userId;
+            document.getElementById('assignModal').style.display = 'flex';
+        }
+
+        function closeAssignModal() {
+            document.getElementById('assignModal').style.display = 'none';
+        }
     </script>
 </body>
-
 </html>

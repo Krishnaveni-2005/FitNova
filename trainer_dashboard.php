@@ -2,6 +2,7 @@
 session_start();
 
 // Redirect to login if not logged in or not a trainer
+// Redirect to login if not logged in or not a trainer
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'trainer') {
     header("Location: login.php");
     exit();
@@ -10,6 +11,27 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_role']) || $_SESSION[
 require "db_connect.php";
 
 $trainerId = $_SESSION['user_id'];
+
+// Check Account Status explicitly from DB to prevent session bypass
+$statusSql = "SELECT account_status FROM users WHERE user_id = ?";
+$stmt = $conn->prepare($statusSql);
+$stmt->bind_param("i", $trainerId);
+$stmt->execute();
+$resStatus = $stmt->get_result();
+if ($resStatus->num_rows > 0) {
+    $userStatus = $resStatus->fetch_assoc()['account_status'];
+    if ($userStatus === 'pending') {
+        header("Location: trainer_pending.php");
+        exit();
+    }
+    if ($userStatus === 'inactive' || $userStatus === 'rejected') {
+        session_destroy();
+        header("Location: login.php?error=account_inactive");
+        exit();
+    }
+}
+$stmt->close();
+
 $trainerName = $_SESSION['user_name'];
 $trainerEmail = $_SESSION['user_email'];
 $trainerInitials = strtoupper(substr($trainerName, 0, 1) . substr(explode(' ', $trainerName)[1] ?? '', 0, 1));

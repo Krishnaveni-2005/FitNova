@@ -1,6 +1,7 @@
 <?php
 session_start();
 // gym.php - Gym Equipment & Trainer Availability
+require 'db_connect.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -37,7 +38,7 @@ session_start();
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
 
         /* Navbar */
-        .navbar { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 20px 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .navbar { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 15px 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .nav-container { display: flex; justify-content: space-between; align-items: center; }
         .logo { font-size: 28px; font-weight: 900; color: var(--primary-color); letter-spacing: -0.5px; }
         .nav-links { display: flex; align-items: center; gap: 40px; }
@@ -167,11 +168,34 @@ session_start();
 
     <?php include 'header.php'; ?>
 
+    <?php
+    // Fetch Gym Schedule
+    require 'db_connect.php';
+    $gymSettings = ['gym_open_time' => '05:00 AM', 'gym_close_time' => '10:00 PM', 'gym_status' => 'open'];
+    $sqlGs = "SELECT * FROM gym_settings";
+    $resultGs = $conn->query($sqlGs);
+    if ($resultGs && $resultGs->num_rows > 0) {
+        while($row = $resultGs->fetch_assoc()) {
+            $gymSettings[$row['setting_key']] = $row['setting_value'];
+        }
+    }
+    $isClosed = ($gymSettings['gym_status'] === 'closed');
+    $timeText = $isClosed 
+        ? "Gym is Closed Today" 
+        : "Open Today: " . $gymSettings['gym_open_time'] . " - " . $gymSettings['gym_close_time'];
+    $iconColor = $isClosed ? '#ef4444' : '#4ade80';
+    $iconClass = $isClosed ? 'fa-times-circle' : 'fa-clock';
+    ?>
+
     <!-- Hero -->
     <header class="gym-hero">
         <div class="container">
             <h1>Physical Gym Status</h1>
             <p>Check real-time equipment availability and trainer schedules before you head out. Stay efficient with your workout time.</p>
+            <div style="margin-top: 25px; display: inline-flex; align-items: center; background: rgba(255,255,255,0.15); padding: 12px 25px; border-radius: 50px; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.2);">
+                <i class="fas <?php echo $iconClass; ?>" style="color: <?php echo $iconColor; ?>; margin-right: 12px; font-size: 1.2rem;"></i>
+                <span style="font-weight: 600; font-size: 1.1rem; letter-spacing: 0.5px;"><?php echo htmlspecialchars($timeText); ?></span>
+            </div>
         </div>
     </header>
 
@@ -283,66 +307,50 @@ session_start();
             </div>
 
             <div class="gym-grid">
-                <!-- Trainer 1 -->
+                <!-- Trainer 1: Joshua Joseph -->
                 <div class="trainer-card">
                     <div class="trainer-img-wrapper">
-                        <img src="https://images.unsplash.com/photo-1594381898411-846e7d193883?auto=format&fit=crop&q=80&w=400" alt="Trainer" class="trainer-img">
+                        <img src="uploads/universal_trainer_profile.png" alt="Joshua Joseph" class="trainer-img">
                         <div class="trainer-status-indicator" style="background: var(--success-color);"></div>
                     </div>
                     <div class="trainer-content">
-                        <h3>John Wickern</h3>
-                        <span class="trainer-specialty">Strength & Conditioning</span>
+                        <h3>Joshua Joseph</h3>
+                        <span class="trainer-specialty">Gym Trainer</span>
                         <div class="trainer-stats">
                             <div class="stat-item"><span>Status</span><strong>Available</strong></div>
-                            <div class="stat-item"><span>Exp.</span><strong>8 Years</strong></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Trainer 2 -->
-                <div class="trainer-card">
-                    <div class="trainer-img-wrapper">
-                        <img src="https://images.unsplash.com/photo-1548690312-e3b507d17a12?auto=format&fit=crop&q=80&w=400" alt="Trainer" class="trainer-img">
-                        <div class="trainer-status-indicator" style="background: var(--warning-color);"></div>
-                    </div>
-                    <div class="trainer-content">
-                        <h3>Elena Rodriguez</h3>
-                        <span class="trainer-specialty">Yoga & Flexibility</span>
-                        <div class="trainer-stats">
-                            <div class="stat-item"><span>Status</span><strong>In Session</strong></div>
                             <div class="stat-item"><span>Exp.</span><strong>5 Years</strong></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Trainer 3 -->
+                <!-- Trainer 2: David John -->
                 <div class="trainer-card">
                     <div class="trainer-img-wrapper">
-                        <img src="https://images.unsplash.com/photo-1567013127542-490d757e51fc?auto=format&fit=crop&q=80&w=400" alt="Trainer" class="trainer-img">
+                        <img src="uploads/universal_trainer_profile.png" alt="David John" class="trainer-img">
                         <div class="trainer-status-indicator" style="background: var(--success-color);"></div>
                     </div>
                     <div class="trainer-content">
-                        <h3>Marcus Chen</h3>
-                        <span class="trainer-specialty">Bodybuilding</span>
+                        <h3>David John</h3>
+                        <span class="trainer-specialty">Strength Coach</span>
                         <div class="trainer-stats">
                             <div class="stat-item"><span>Status</span><strong>Available</strong></div>
-                            <div class="stat-item"><span>Exp.</span><strong>12 Years</strong></div>
+                            <div class="stat-item"><span>Exp.</span><strong>4 Years</strong></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Trainer 4 -->
+                <!-- Trainer 3: Elis Reji -->
                 <div class="trainer-card">
                     <div class="trainer-img-wrapper">
-                        <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&q=80&w=400" alt="Trainer" class="trainer-img">
-                        <div class="trainer-status-indicator" style="background: var(--danger-color);"></div>
+                        <img src="uploads/universal_trainer_profile.png" alt="Elis Reji" class="trainer-img">
+                        <div class="trainer-status-indicator" style="background: var(--success-color);"></div>
                     </div>
                     <div class="trainer-content">
-                        <h3>Sarah Smith</h3>
-                        <span class="trainer-specialty">HIIT & Cardio</span>
+                        <h3>Elis Reji</h3>
+                        <span class="trainer-specialty">Fitness Instructor</span>
                         <div class="trainer-stats">
-                            <div class="stat-item"><span>Status</span><strong>Offline</strong></div>
-                            <div class="stat-item"><span>Exp.</span><strong>6 Years</strong></div>
+                            <div class="stat-item"><span>Status</span><strong>Available</strong></div>
+                            <div class="stat-item"><span>Exp.</span><strong>3 Years</strong></div>
                         </div>
                     </div>
                 </div>

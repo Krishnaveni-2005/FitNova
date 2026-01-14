@@ -154,3 +154,223 @@ Stack trace:
 [08-Jan-2026 19:27:10 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
 [08-Jan-2026 19:27:10 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
 [08-Jan-2026 19:27:10 Europe/Berlin] PHP Warning:  Undefined array key "id" in C:\test\htdocs\fitnova\trainers.php on line 72
+[10-Jan-2026 17:51:56 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function fetch_assoc() on bool in C:\test\htdocs\fitnova\gym_admin_dashboard.php:52
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 52
+[10-Jan-2026 17:51:58 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function fetch_assoc() on bool in C:\test\htdocs\fitnova\gym_admin_dashboard.php:52
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 52
+[10-Jan-2026 17:51:59 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function fetch_assoc() on bool in C:\test\htdocs\fitnova\gym_admin_dashboard.php:52
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 52
+[10-Jan-2026 17:52:16 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function fetch_assoc() on bool in C:\test\htdocs\fitnova\gym_admin_dashboard.php:52
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 52
+[10-Jan-2026 17:54:37 Europe/Berlin] PHP Warning:  Undefined array key "equipment_name" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 598
+[10-Jan-2026 17:54:37 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 618
+[10-Jan-2026 17:54:37 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 621
+[10-Jan-2026 17:54:37 Europe/Berlin] PHP Warning:  Undefined array key "equipment_name" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 598
+[10-Jan-2026 17:54:37 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 618
+[10-Jan-2026 17:54:37 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 621
+[10-Jan-2026 17:54:37 Europe/Berlin] PHP Warning:  Undefined array key "equipment_name" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 598
+[10-Jan-2026 17:54:37 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 618
+[10-Jan-2026 17:54:37 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 621
+[10-Jan-2026 17:54:37 Europe/Berlin] PHP Warning:  Undefined array key "equipment_name" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 598
+[10-Jan-2026 17:54:37 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 618
+[10-Jan-2026 17:54:37 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 621
+[10-Jan-2026 18:00:26 Europe/Berlin] PHP Warning:  Undefined array key "equipment_name" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 598
+[10-Jan-2026 18:00:26 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 618
+[10-Jan-2026 18:00:26 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 621
+[10-Jan-2026 18:00:26 Europe/Berlin] PHP Warning:  Undefined array key "equipment_name" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 598
+[10-Jan-2026 18:00:26 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 618
+[10-Jan-2026 18:00:26 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 621
+[10-Jan-2026 18:00:26 Europe/Berlin] PHP Warning:  Undefined array key "equipment_name" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 598
+[10-Jan-2026 18:00:26 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 618
+[10-Jan-2026 18:00:26 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 621
+[10-Jan-2026 18:00:26 Europe/Berlin] PHP Warning:  Undefined array key "equipment_name" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 598
+[10-Jan-2026 18:00:26 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 618
+[10-Jan-2026 18:00:26 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 621
+[11-Jan-2026 07:17:02 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\seed_trainers.php:39
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\seed_trainers.php on line 39
+[11-Jan-2026 07:26:40 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\add_all_trainers.php:376
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\add_all_trainers.php on line 376
+[11-Jan-2026 07:41:01 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in C:\test\htdocs\fitnova\seed_trainers.php:79
+Stack trace:
+#0 C:\test\htdocs\fitnova\seed_trainers.php(79): mysqli_stmt->bind_param('ssssssssissii', 'Arjun', 'Mehta', 'arjun.mehta@fit...', '9876543210', '$2y$10$V.w8vVZ/...', 'trainer', 'active', 'Yoga & Flexibil...', 5, 'Certified Yoga ...', 'Yoga & Flexibil...', 5)
+#1 {main}
+  thrown in C:\test\htdocs\fitnova\seed_trainers.php on line 79
+[11-Jan-2026 10:15:01 Europe/Berlin] PHP Warning:  Undefined array key "equipment_name" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 598
+[11-Jan-2026 10:15:01 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 618
+[11-Jan-2026 10:15:01 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 621
+[11-Jan-2026 10:15:01 Europe/Berlin] PHP Warning:  Undefined array key "equipment_name" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 598
+[11-Jan-2026 10:15:01 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 618
+[11-Jan-2026 10:15:01 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 621
+[11-Jan-2026 10:15:01 Europe/Berlin] PHP Warning:  Undefined array key "equipment_name" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 598
+[11-Jan-2026 10:15:01 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 618
+[11-Jan-2026 10:15:01 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 621
+[11-Jan-2026 10:15:01 Europe/Berlin] PHP Warning:  Undefined array key "equipment_name" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 598
+[11-Jan-2026 10:15:01 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 618
+[11-Jan-2026 10:15:01 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 621
+[11-Jan-2026 10:18:20 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\set_trainers_onsite.php:33
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\set_trainers_onsite.php on line 33
+[11-Jan-2026 10:20:43 Europe/Berlin] PHP Warning:  Undefined array key "equipment_name" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 598
+[11-Jan-2026 10:20:43 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 618
+[11-Jan-2026 10:20:43 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 621
+[11-Jan-2026 10:20:43 Europe/Berlin] PHP Warning:  Undefined array key "equipment_name" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 598
+[11-Jan-2026 10:20:43 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 618
+[11-Jan-2026 10:20:43 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 621
+[11-Jan-2026 10:20:43 Europe/Berlin] PHP Warning:  Undefined array key "equipment_name" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 598
+[11-Jan-2026 10:20:43 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 618
+[11-Jan-2026 10:20:43 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 621
+[11-Jan-2026 10:20:43 Europe/Berlin] PHP Warning:  Undefined array key "equipment_name" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 598
+[11-Jan-2026 10:20:43 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 618
+[11-Jan-2026 10:20:43 Europe/Berlin] PHP Warning:  Undefined array key "equipment_id" in C:\test\htdocs\fitnova\gym_admin_dashboard.php on line 621
+[11-Jan-2026 10:39:47 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\update_trainer_profile_admin.php:28
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\update_trainer_profile_admin.php on line 28
+[11-Jan-2026 10:39:50 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\update_trainer_profile_admin.php:28
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\update_trainer_profile_admin.php on line 28
+[11-Jan-2026 10:39:50 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\update_trainer_profile_admin.php:28
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\update_trainer_profile_admin.php on line 28
+[11-Jan-2026 10:39:51 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\update_trainer_profile_admin.php:28
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\update_trainer_profile_admin.php on line 28
+[11-Jan-2026 10:39:51 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\update_trainer_profile_admin.php:28
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\update_trainer_profile_admin.php on line 28
+[11-Jan-2026 10:39:51 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\update_trainer_profile_admin.php:28
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\update_trainer_profile_admin.php on line 28
+[11-Jan-2026 12:11:24 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli object is already closed in C:\test\htdocs\fitnova\admin_dashboard.php:1475
+Stack trace:
+#0 C:\test\htdocs\fitnova\admin_dashboard.php(1475): mysqli->query('SELECT * FROM u...')
+#1 {main}
+  thrown in C:\test\htdocs\fitnova\admin_dashboard.php on line 1475
+[11-Jan-2026 12:14:05 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli object is already closed in C:\test\htdocs\fitnova\admin_dashboard.php:1519
+Stack trace:
+#0 C:\test\htdocs\fitnova\admin_dashboard.php(1519): mysqli->query('SELECT * FROM u...')
+#1 {main}
+  thrown in C:\test\htdocs\fitnova\admin_dashboard.php on line 1519
+[11-Jan-2026 12:15:59 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli object is already closed in C:\test\htdocs\fitnova\admin_dashboard.php:1522
+Stack trace:
+#0 C:\test\htdocs\fitnova\admin_dashboard.php(1522): mysqli->query('SELECT * FROM u...')
+#1 {main}
+  thrown in C:\test\htdocs\fitnova\admin_dashboard.php on line 1522
+[11-Jan-2026 12:16:23 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli object is already closed in C:\test\htdocs\fitnova\admin_dashboard.php:1522
+Stack trace:
+#0 C:\test\htdocs\fitnova\admin_dashboard.php(1522): mysqli->query('SELECT * FROM u...')
+#1 {main}
+  thrown in C:\test\htdocs\fitnova\admin_dashboard.php on line 1522
+[11-Jan-2026 12:16:23 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli object is already closed in C:\test\htdocs\fitnova\admin_dashboard.php:1522
+Stack trace:
+#0 C:\test\htdocs\fitnova\admin_dashboard.php(1522): mysqli->query('SELECT * FROM u...')
+#1 {main}
+  thrown in C:\test\htdocs\fitnova\admin_dashboard.php on line 1522
+[11-Jan-2026 12:16:55 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli object is already closed in C:\test\htdocs\fitnova\admin_dashboard.php:1522
+Stack trace:
+#0 C:\test\htdocs\fitnova\admin_dashboard.php(1522): mysqli->query('SELECT * FROM u...')
+#1 {main}
+  thrown in C:\test\htdocs\fitnova\admin_dashboard.php on line 1522
+[11-Jan-2026 12:17:02 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli object is already closed in C:\test\htdocs\fitnova\admin_dashboard.php:1522
+Stack trace:
+#0 C:\test\htdocs\fitnova\admin_dashboard.php(1522): mysqli->query('SELECT * FROM u...')
+#1 {main}
+  thrown in C:\test\htdocs\fitnova\admin_dashboard.php on line 1522
+[11-Jan-2026 12:18:12 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli object is already closed in C:\test\htdocs\fitnova\admin_dashboard.php:1522
+Stack trace:
+#0 C:\test\htdocs\fitnova\admin_dashboard.php(1522): mysqli->query('SELECT * FROM u...')
+#1 {main}
+  thrown in C:\test\htdocs\fitnova\admin_dashboard.php on line 1522
+[11-Jan-2026 12:18:17 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli object is already closed in C:\test\htdocs\fitnova\admin_dashboard.php:1522
+Stack trace:
+#0 C:\test\htdocs\fitnova\admin_dashboard.php(1522): mysqli->query('SELECT * FROM u...')
+#1 {main}
+  thrown in C:\test\htdocs\fitnova\admin_dashboard.php on line 1522
+[11-Jan-2026 12:18:17 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli object is already closed in C:\test\htdocs\fitnova\admin_dashboard.php:1522
+Stack trace:
+#0 C:\test\htdocs\fitnova\admin_dashboard.php(1522): mysqli->query('SELECT * FROM u...')
+#1 {main}
+  thrown in C:\test\htdocs\fitnova\admin_dashboard.php on line 1522
+[11-Jan-2026 12:22:50 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli object is already closed in C:\test\htdocs\fitnova\admin_dashboard.php:1522
+Stack trace:
+#0 C:\test\htdocs\fitnova\admin_dashboard.php(1522): mysqli->query('SELECT * FROM u...')
+#1 {main}
+  thrown in C:\test\htdocs\fitnova\admin_dashboard.php on line 1522
+[11-Jan-2026 12:23:01 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli object is already closed in C:\test\htdocs\fitnova\admin_dashboard.php:1522
+Stack trace:
+#0 C:\test\htdocs\fitnova\admin_dashboard.php(1522): mysqli->query('SELECT * FROM u...')
+#1 {main}
+  thrown in C:\test\htdocs\fitnova\admin_dashboard.php on line 1522
+[11-Jan-2026 12:24:29 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli object is already closed in C:\test\htdocs\fitnova\admin_dashboard.php:1522
+Stack trace:
+#0 C:\test\htdocs\fitnova\admin_dashboard.php(1522): mysqli->query('SELECT * FROM u...')
+#1 {main}
+  thrown in C:\test\htdocs\fitnova\admin_dashboard.php on line 1522
+[11-Jan-2026 12:27:57 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli object is already closed in C:\test\htdocs\fitnova\admin_dashboard.php:1522
+Stack trace:
+#0 C:\test\htdocs\fitnova\admin_dashboard.php(1522): mysqli->query('SELECT * FROM u...')
+#1 {main}
+  thrown in C:\test\htdocs\fitnova\admin_dashboard.php on line 1522
+[11-Jan-2026 12:33:16 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli object is already closed in C:\test\htdocs\fitnova\admin_dashboard.php:1522
+Stack trace:
+#0 C:\test\htdocs\fitnova\admin_dashboard.php(1522): mysqli->query('SELECT * FROM u...')
+#1 {main}
+  thrown in C:\test\htdocs\fitnova\admin_dashboard.php on line 1522
+[11-Jan-2026 12:37:53 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli object is already closed in C:\test\htdocs\fitnova\admin_dashboard.php:1521
+Stack trace:
+#0 C:\test\htdocs\fitnova\admin_dashboard.php(1521): mysqli->query('SELECT * FROM u...')
+#1 {main}
+  thrown in C:\test\htdocs\fitnova\admin_dashboard.php on line 1521
+[11-Jan-2026 12:44:38 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli object is already closed in C:\test\htdocs\fitnova\admin_dashboard.php:1506
+Stack trace:
+#0 C:\test\htdocs\fitnova\admin_dashboard.php(1506): mysqli->query('SELECT * FROM u...')
+#1 {main}
+  thrown in C:\test\htdocs\fitnova\admin_dashboard.php on line 1506
+[11-Jan-2026 12:44:59 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli object is already closed in C:\test\htdocs\fitnova\admin_dashboard.php:1521
+Stack trace:
+#0 C:\test\htdocs\fitnova\admin_dashboard.php(1521): mysqli->query('SELECT * FROM u...')
+#1 {main}
+  thrown in C:\test\htdocs\fitnova\admin_dashboard.php on line 1521
+[11-Jan-2026 12:44:59 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli object is already closed in C:\test\htdocs\fitnova\admin_dashboard.php:1521
+Stack trace:
+#0 C:\test\htdocs\fitnova\admin_dashboard.php(1521): mysqli->query('SELECT * FROM u...')
+#1 {main}
+  thrown in C:\test\htdocs\fitnova\admin_dashboard.php on line 1521
+[11-Jan-2026 12:44:59 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli object is already closed in C:\test\htdocs\fitnova\admin_dashboard.php:1521
+Stack trace:
+#0 C:\test\htdocs\fitnova\admin_dashboard.php(1521): mysqli->query('SELECT * FROM u...')
+#1 {main}
+  thrown in C:\test\htdocs\fitnova\admin_dashboard.php on line 1521
+[11-Jan-2026 12:45:13 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli object is already closed in C:\test\htdocs\fitnova\admin_dashboard.php:1521
+Stack trace:
+#0 C:\test\htdocs\fitnova\admin_dashboard.php(1521): mysqli->query('SELECT * FROM u...')
+#1 {main}
+  thrown in C:\test\htdocs\fitnova\admin_dashboard.php on line 1521
+[11-Jan-2026 12:45:26 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli object is already closed in C:\test\htdocs\fitnova\admin_dashboard.php:1521
+Stack trace:
+#0 C:\test\htdocs\fitnova\admin_dashboard.php(1521): mysqli->query('SELECT * FROM u...')
+#1 {main}
+  thrown in C:\test\htdocs\fitnova\admin_dashboard.php on line 1521
+[14-Jan-2026 05:28:27 Europe/Berlin] Diet Prepare Error: MySQL server has gone away
+[14-Jan-2026 05:28:27 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\prouser_dashboard.php:128
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\prouser_dashboard.php on line 128
