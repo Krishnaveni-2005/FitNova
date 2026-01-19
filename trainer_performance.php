@@ -323,6 +323,9 @@ if ($stmt) {
             <a href="trainer_diets.php" class="menu-item">
                 <i class="fas fa-utensils"></i> Diet Plans
             </a>
+            <a href="trainer_achievements.php" class="menu-item">
+                <i class="fas fa-medal"></i> Achievements
+            </a>
             <a href="trainer_performance.php" class="menu-item active">
                 <i class="fas fa-chart-line"></i> Performance
             </a>
@@ -334,14 +337,17 @@ if ($stmt) {
             </a>
         </nav>
 
-        <div class="user-profile-preview">
-            <div class="user-avatar-sm"><?php echo $trainerInitials; ?></div>
-            <div class="user-info-sm">
-                <h4><?php echo htmlspecialchars($trainerName); ?></h4>
-                <p>Expert Trainer</p>
+        <div class="user-profile-preview" style="padding: 20px; border-top: 1px solid #E9ECEF; display: flex; align-items: center; gap: 12px; margin-top: auto; background: #fff;">
+            <div style="width: 40px; height: 40px; background-color: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                <?php echo $trainerInitials; ?>
             </div>
-            <a href="logout.php" style="margin-left: auto; color: var(--text-light);"><i
-                    class="fas fa-sign-out-alt fa-flip-horizontal"></i></a>
+            <div>
+                <h4 style="font-size:15px; margin:0; color:#333; font-weight:600;"><?php echo htmlspecialchars($trainerName); ?></h4>
+                <p style="font-size:11px; margin:0; color:#64748b; text-transform:uppercase; font-weight:600; letter-spacing:0.5px;">Expert Trainer</p>
+            </div>
+            <a href="logout.php" title="Logout" style="margin-left: auto; color: #64748b; text-decoration: none; font-size: 16px; transition: 0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#64748b'">
+                <i class="fas fa-sign-out-alt"></i>
+            </a>
         </div>
     </aside>
 

@@ -30,12 +30,22 @@ if (!$client) {
 }
 
 $initials = strtoupper(substr($client['first_name'], 0, 1) . substr($client['last_name'], 0, 1));
-$age = $client['age'] ?? 'N/A';
+$age = 'N/A';
+if (!empty($client['dob'])) {
+    try {
+        $dobDate = new DateTime($client['dob']);
+        $now = new DateTime();
+        $age = $now->diff($dobDate)->y;
+    } catch (Exception $e) {
+        $age = 'N/A';
+    }
+}
+
 $gender = ucfirst($client['gender'] ?? 'N/A');
-$height = $client['height'] ?? 'N/A';
-$weight = $client['weight'] ?? 'N/A';
-$goal = ucfirst($client['goal'] ?? 'Not set');
-$activityLevel = ucfirst($client['activity_level'] ?? 'Not set');
+$height = $client['height_cm'] ?? 'N/A';
+$weight = $client['weight_kg'] ?? 'N/A';
+$goal = ucfirst(str_replace('_', ' ', $client['primary_goal'] ?? 'Not set'));
+$activityLevel = ucfirst(str_replace('_', ' ', $client['activity_level'] ?? 'Not set'));
 
 ?>
 <!DOCTYPE html>
@@ -122,7 +132,7 @@ $activityLevel = ucfirst($client['activity_level'] ?? 'Not set');
             <div class="section-title"><i class="fas fa-info-circle"></i> Additional Info</div>
             <div class="info-row">
                 <div class="info-label">Ideally Workout Days</div>
-                <div class="info-value"><?php echo $client['workout_days'] ?? 'Not specified'; ?> days/week</div>
+                <div class="info-value"><?php echo $client['workout_days_per_week'] ?? 'Not specified'; ?> days/week</div>
             </div>
              <div class="info-row">
                 <div class="info-label">Medical Conditions</div>

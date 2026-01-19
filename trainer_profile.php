@@ -45,7 +45,57 @@ if ($is_mock && $trainer_name) {
         $trainer = $result->fetch_assoc();
     }
     $stmt->close();
+
+    // Fetch Client Count
+    $countSql = "SELECT COUNT(*) as total FROM users WHERE assigned_trainer_id = ? AND assignment_status = 'approved'";
+    $stmt = $conn->prepare($countSql);
+    $stmt->bind_param("i", $trainer_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $clientCount = 0;
+    if ($row = $result->fetch_assoc()) {
+        $clientCount = $row['total'];
+    }
+    $stmt->close();
+
+    // Ensure ratings table exists
+    $conn->query("CREATE TABLE IF NOT EXISTS trainer_ratings (
+        rating_id INT AUTO_INCREMENT PRIMARY KEY,
+        trainer_id INT NOT NULL,
+        user_id INT NOT NULL,
+        rating DECIMAL(3,1) NOT NULL,
+        review TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (trainer_id) REFERENCES users(user_id),
+        FOREIGN KEY (user_id) REFERENCES users(user_id)
+    )");
+
+    // Fetch Average Rating
+    $rateSql = "SELECT AVG(rating) as avg_rating, COUNT(*) as count FROM trainer_ratings WHERE trainer_id = ?";
+    $stmt = $conn->prepare($rateSql);
+    $stmt->bind_param("i", $trainer_id);
+    $stmt->execute();
+    $rateRes = $stmt->get_result()->fetch_assoc();
+    $avgRating = $rateRes['avg_rating'] ? round($rateRes['avg_rating'], 1) : 0;
+    $ratingCount = $rateRes['count'] ?? 0;
+    $stmt->close();
+
+    // Fetch Achievements
+    $achievements = [];
+    $achStmt = $conn->prepare("SELECT * FROM trainer_achievements WHERE trainer_id = ? ORDER BY date_earned DESC");
+    if ($achStmt) {
+        $achStmt->bind_param("i", $trainer_id);
+        $achStmt->execute();
+        $achRes = $achStmt->get_result();
+        while ($row = $achRes->fetch_assoc()) {
+            $achievements[] = $row;
+        }
+        $achStmt->close();
+    }
 }
+$clientCount = $clientCount ?? 0;
+$avgRating = $avgRating ?? 0;
+$ratingCount = $ratingCount ?? 0;
 
 // Logic for Client Request
 $user_id = $_SESSION['user_id'] ?? 0;
@@ -102,7 +152,6 @@ if (!$trainer) {
     exit();
 }
 
-include 'header.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -125,6 +174,54 @@ include 'header.php';
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Outfit', sans-serif; background: var(--bg-light); color: var(--text-dark); }
         
+        /* Modal for Image Preview */
+        .img-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            padding-top: 100px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.9);
+        }
+        .img-modal-content {
+            margin: auto;
+            display: block;
+            width: 80%;
+            max-width: 700px;
+            max-height: 80vh;
+            object-fit: contain;
+        }
+        .img-caption {
+            margin: auto;
+            display: block;
+            width: 80%;
+            max-width: 700px;
+            text-align: center;
+            color: #ccc;
+            padding: 10px 0;
+            height: 150px;
+        }
+        .img-close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .img-close:hover,
+        .img-close:focus {
+            color: #bbb;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
         .profile-hero {
             background: linear-gradient(135deg, var(--primary-color) 0%, #1a4d8f 100%);
             padding: 80px 0 60px;
@@ -351,6 +448,13 @@ include 'header.php';
     </style>
 </head>
 <body>
+    <?php include 'header.php'; ?>
+    <!-- Image Modal -->
+    <div id="certModal" class="img-modal">
+      <span class="img-close" onclick="document.getElementById('certModal').style.display='none'">&times;</span>
+      <img class="img-modal-content" id="img01">
+      <div id="caption" class="img-caption"></div>
+    </div>
 
     <?php if ($msg === 'upgrade_required'): ?>
         <script>
@@ -373,15 +477,10 @@ include 'header.php';
         </script>
     <?php endif; ?>
 
-    <div class="modal-buttons">
-        <button class="btn-ignore" onclick="closeModal()">Ignore</button>
-        <a href="subscription_plans.php?msg=upgrade_required&trainer_id=<?php echo $trainer_id; ?>" class="btn-upgrade">Upgrade Now</a>
-    </div>
+
     <div class="profile-hero">
         <div class="container">
-            <a href="trainers.php" class="btn-back">
-                <i class="fas fa-arrow-left"></i> Back to All Trainers
-            </a>
+
             
             <div class="profile-header">
                 <img src="uploads/universal_trainer_profile.png" 
@@ -400,12 +499,11 @@ include 'header.php';
                             <span><?php echo isset($trainer['experience_years']) ? $trainer['experience_years'] : '5+'; ?> Years Experience</span>
                         </div>
                         <div class="stat-item">
-                            <i class="fas fa-users"></i>
-                            <span>100+ Clients Trained</span>
+                            <span><?php echo $clientCount; ?> Clients Trained</span>
                         </div>
                         <div class="stat-item">
                             <i class="fas fa-star"></i>
-                            <span>4.9/5 Rating</span>
+                            <span><?php echo $ratingCount > 0 ? $avgRating . '/5 (' . $ratingCount . ' reviews)' : 'New Trainer'; ?></span>
                         </div>
                     </div>
                 </div>
@@ -434,8 +532,25 @@ include 'header.php';
                         <?php endforeach; ?>
                     </ul>
                     <div style="margin-top: 20px; border-top: 1px dashed #eee; padding-top: 15px;">
-                        <h4 style="font-size: 0.9rem; color: #888; margin-bottom: 10px; font-weight: 600;">Certificate of Appreciation</h4>
-                        <img src="assets/certificate.jpg" alt="Trainer Certificate" style="width: 100%; max-width: 100%; border: 4px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-radius: 4px; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                        <h4 style="font-size: 0.9rem; color: #888; margin-bottom: 15px; font-weight: 600;">Credentials Showcase</h4>
+                        <?php if(!empty($achievements)): ?>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px;">
+                                <?php foreach($achievements as $ach): ?>
+                                    <div style="text-align:center;">
+                                        <img src="<?php echo htmlspecialchars($ach['image_url']); ?>" 
+                                             alt="<?php echo htmlspecialchars($ach['title']); ?>" 
+                                             style="width: 100%; aspect-ratio: 1/1; object-fit: cover; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-radius: 4px; cursor: pointer; transition: transform 0.2s;"
+                                             onmouseover="this.style.transform='scale(1.05)'" 
+                                             onmouseout="this.style.transform='scale(1)'"
+                                             onclick="showImage('<?php echo htmlspecialchars($ach['image_url']); ?>', '<?php echo htmlspecialchars($ach['title']); ?>')"
+                                        >
+                                        <p style="font-size: 0.7rem; color: #666; margin-top: 5px; line-height: 1.2; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;" title="<?php echo htmlspecialchars($ach['title']); ?>"><?php echo htmlspecialchars($ach['title']); ?></p>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php else: ?>
+                            <p style="font-size: 0.85rem; color: #aaa; font-style: italic;">No uploaded credentials yet.</p>
+                        <?php endif; ?>
                     </div>
                 </div>
                 
@@ -472,8 +587,7 @@ include 'header.php';
                          <p style="margin-top: 10px; font-size: 0.9rem;">Waiting for trainer approval.</p>
 
                     <?php elseif ($current_status === 'approved' || $current_status === 'pending'): ?>
-                        <p>You already have an assigned trainer or a pending request.</p>
-                        <a href="trainer_profile.php?id=<?php echo $assigned_id; ?>" style="color: white; text-decoration: underline;">View My Trainer</a>
+                        <button type="button" class="btn-book" onclick="sendSessionRequest(<?php echo $trainer_id; ?>)">Request Session</button>
                     <?php else: ?>
                         <form method="POST">
                              <?php if (isset($user_role) && $user_role === 'free'): ?>
@@ -489,5 +603,73 @@ include 'header.php';
     </div>
     
     <?php include 'footer.php'; ?>
+    <script>
+    function showImage(src, title) {
+        var modal = document.getElementById("certModal");
+        var modalImg = document.getElementById("img01");
+        var captionText = document.getElementById("caption");
+        modal.style.display = "block";
+        modalImg.src = src;
+        captionText.innerHTML = title;
+    }
+
+    // Close the modal when clicking anywhere outside the image
+    window.onclick = function(event) {
+        var modal = document.getElementById("certModal");
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    function sendSessionRequest(trainerId) {
+        Swal.fire({
+            title: 'Sending Request...',
+            text: 'Please wait',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        fetch('send_session_request.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                trainer_id: trainerId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    title: 'Request Sent',
+                    text: 'Your request has been sent and approval is pending.',
+                    icon: 'success',
+                    confirmButtonColor: '#0F2C59',
+                    confirmButtonText: 'OK'
+                });
+            } else {
+                Swal.fire({
+                    title: 'Notice',
+                    text: data.message,
+                    icon: 'info',
+                    confirmButtonColor: '#0F2C59'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                title: 'Error',
+                text: 'An error occurred while sending the request.',
+                icon: 'error',
+                confirmButtonColor: '#0F2C59'
+            });
+        });
+    }
+    </script>
 </body>
 </html>

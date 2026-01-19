@@ -8,343 +8,429 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_role']) || $_SESSION[
 }
 
 $trainerId = $_SESSION['user_id'];
-$trainerName = $_SESSION['user_name'];
-$trainerInitials = strtoupper(substr($trainerName, 0, 1) . substr(explode(' ', $trainerName)[1] ?? '', 0, 1));
 
-// Handle AJAX updates
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_workout') {
-    $workoutId = $_POST['workout_id'];
-    $planName = $conn->real_escape_string($_POST['plan_name']);
-    $clientName = $conn->real_escape_string($_POST['client_name']);
-    $weeks = (int)$_POST['duration_weeks'];
-    $exercises = $conn->real_escape_string($_POST['exercises']);
-    
-    $updateSql = "UPDATE trainer_workouts SET plan_name = ?, client_name = ?, duration_weeks = ?, exercises = ? WHERE workout_id = ? AND trainer_id = ?";
-    $stmt = $conn->prepare($updateSql);
-    $stmt->bind_param("ssisii", $planName, $clientName, $weeks, $exercises, $workoutId, $trainerId);
-    
-    if ($stmt->execute()) {
-        echo json_encode(['status' => 'success']);
+// Determine Mode
+$assignTo = isset($_GET['assign_to']) ? intval($_GET['assign_to']) : 0;
+$client = null;
+$currentPlan = null;
+$workoutData = ['level_1'=>'', 'level_2'=>'', 'level_3'=>''];
+
+if ($assignTo) {
+    // Verify Client
+    $stmt = $conn->prepare("SELECT user_id, first_name, last_name, email FROM users WHERE user_id = ? AND assigned_trainer_id = ?");
+    $stmt->bind_param("ii", $assignTo, $trainerId);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    if ($res->num_rows > 0) {
+        $client = $res->fetch_assoc();
+        
+        // Fetch Existing Plan
+        $dStmt = $conn->prepare("SELECT * FROM trainer_workouts WHERE user_id = ? AND trainer_id = ? LIMIT 1");
+        $dStmt->bind_param("ii", $assignTo, $trainerId);
+        $dStmt->execute();
+        $dRes = $dStmt->get_result();
+        if ($dRes->num_rows > 0) {
+            $currentPlan = $dRes->fetch_assoc();
+            // Parse Levels
+            if (!empty($currentPlan['exercises'])) {
+                $decoded = json_decode($currentPlan['exercises'], true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    $workoutData = array_merge($workoutData, $decoded);
+                } else {
+                    $workoutData['level_1'] = $currentPlan['exercises']; // Fallback
+                }
+            }
+        }
+        $dStmt->close();
     } else {
-        echo json_encode(['status' => 'error', 'message' => $conn->error]);
+        die("Client not found or not assigned to you.");
     }
     $stmt->close();
-    exit();
 }
 
-// Fetch Workout Plans
-$sql = "SELECT * FROM trainer_workouts WHERE trainer_id = ? ORDER BY created_at DESC";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $trainerId);
-$stmt->execute();
-$result = $stmt->get_result();
-$workouts = [];
-while ($row = $result->fetch_assoc()) {
-    $workouts[] = $row;
+// Handle Delete
+if (isset($_GET['delete_id'])) {
+    $delId = intval($_GET['delete_id']);
+    // Ensure it belongs to this trainer and is a personal plan (user_id = trainer_id)
+    $stmt = $conn->prepare("DELETE FROM trainer_workouts WHERE workout_id = ? AND trainer_id = ? AND user_id = ?");
+    $stmt->bind_param("iii", $delId, $trainerId, $trainerId);
+    if ($stmt->execute()) {
+        header("Location: trainer_workouts.php?msg=deleted");
+        exit();
+    }
+    $stmt->close();
 }
-$stmt->close();
+
+// Handle Save/Update
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    $planName = $conn->real_escape_string($_POST['plan_name']);
+    $difficulty = $conn->real_escape_string($_POST['difficulty']);
+    $weeks = (int)$_POST['duration_weeks'];
+    
+    // Encode Levels
+    $levels = [
+        'level_1' => $_POST['level_1'] ?? '',
+        'level_2' => $_POST['level_2'] ?? '',
+        'level_3' => $_POST['level_3'] ?? ''
+    ];
+    $details = json_encode($levels);
+
+    if ($_POST['action'] === 'save_workout' && isset($_POST['client_id'])) {
+        // Assign to Client
+        $clientId = (int)$_POST['client_id'];
+        $clientName = $conn->real_escape_string($_POST['client_name_str']);
+        
+        $check = $conn->prepare("SELECT workout_id FROM trainer_workouts WHERE user_id = ? AND trainer_id = ?");
+        $check->bind_param("ii", $clientId, $trainerId);
+        $check->execute();
+        $cRes = $check->get_result();
+        $exists = $cRes->num_rows > 0;
+        $existingId = $exists ? $cRes->fetch_assoc()['workout_id'] : 0;
+        $check->close();
+        
+        if ($exists) {
+            $sql = "UPDATE trainer_workouts SET plan_name=?, difficulty=?, duration_weeks=?, exercises=? WHERE workout_id=?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("ssisi", $planName, $difficulty, $weeks, $details, $existingId);
+        } else {
+            $sql = "INSERT INTO trainer_workouts (trainer_id, user_id, client_name, plan_name, difficulty, duration_weeks, exercises) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("iisssis", $trainerId, $clientId, $clientName, $planName, $difficulty, $weeks, $details);
+        }
+        
+        if ($stmt->execute()) {
+            echo json_encode(['status' => 'success', 'message' => 'Client plan updated successfully']);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => $conn->error]);
+        }
+        $stmt->close();
+        exit();
+
+    } elseif ($_POST['action'] === 'save_personal_plan') {
+        // Save Personal/Showcase Plan
+        // user_id = trainer_id
+        $clientId = $trainerId;
+        $workoutId = isset($_POST['workout_id']) ? intval($_POST['workout_id']) : 0;
+        // Use a distinct client name to identify
+        $clientName = "Personal Showcase"; 
+
+        if ($workoutId > 0) {
+            // Update
+            $sql = "UPDATE trainer_workouts SET plan_name=?, difficulty=?, duration_weeks=?, exercises=? WHERE workout_id=? AND trainer_id=?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("ssisii", $planName, $difficulty, $weeks, $details, $workoutId, $trainerId);
+        } else {
+            // New
+            $sql = "INSERT INTO trainer_workouts (trainer_id, user_id, client_name, plan_name, difficulty, duration_weeks, exercises) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("iisssis", $trainerId, $clientId, $clientName, $planName, $difficulty, $weeks, $details);
+        }
+
+        if ($stmt->execute()) {
+            echo json_encode(['status' => 'success', 'message' => 'Personal routine saved successfully']);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => $conn->error]);
+        }
+        $stmt->close();
+        exit();
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workout Plans - FitNova Trainer</title>
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <title>Workout Plans - FitNova</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            /* Professional Color Palette matching Free User */
-            --primary-color: #0F2C59;
-            /* Deep Navy Blue */
-            --secondary-color: #DAC0A3;
-            /* Warm Beige/Champagne */
-            --accent-color: #E63946;
-            /* Professional Red */
-            --bg-color: #F8F9FA;
-            --sidebar-bg: #ffffff;
-            --text-color: #333333;
-            --text-light: #6C757D;
-            --border-color: #E9ECEF;
-            --success-color: #28a745;
-            --warning-color: #ffc107;
-            --info-color: #17a2b8;
-            --border-radius: 12px;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-color); display: flex; min-height: 100vh; }
-
-        /* Sidebar (Shared) */
-        .sidebar { width: 260px; background-color: var(--sidebar-bg); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 1000; }
-        .sidebar-brand {
-            padding: 30px;
-            display: flex;
-            align-items: center;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .brand-logo {
-            font-family: 'Outfit', sans-serif;
-            font-weight: 900;
-            font-size: 24px;
-            color: var(--primary-color);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .brand-logo span {
-            color: var(--secondary-color);
-            font-size: 10px;
-            background: var(--secondary-color);
-            color: var(--primary-color);
-            padding: 2px 6px;
-            border-radius: 4px;
-            margin-left: 5px;
-            font-weight: 700;
-        }
-        .sidebar-info { padding: 20px; border-bottom: 1px solid var(--border-color); }
-        .user-badge { display: flex; align-items: center; gap: 12px; padding: 12px; background: #ffffff; border-radius: 10px; border: 1px solid var(--border-color); }
-        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--secondary-color) 0%, #ef4444 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; }
-        .sidebar-menu {
-            padding: 20px 0;
-            flex: 1;
-        }
-
-        .menu-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 30px;
-            color: var(--text-light);
-            text-decoration: none;
-            transition: var(--transition);
-            font-weight: 500;
-            border-left: 3px solid transparent;
-        }
-
-        .menu-item:hover, .menu-item.active {
-            color: var(--primary-color);
-            background-color: rgba(15, 44, 89, 0.05);
-        }
-
-        .menu-item.active {
-            border-left-color: var(--primary-color);
-        }
-
-        .menu-item i {
-            width: 20px;
-            text-align: center;
-            font-size: 18px;
-        }
-
-        .user-profile-preview {
-            padding: 20px;
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .user-avatar-sm {
-            width: 40px;
-            height: 40px;
-            background-color: var(--primary-color);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 14px;
-        }
-
-        .user-info-sm h4 {
-            font-size: 14px;
-            margin-bottom: 2px;
-            color: var(--text-color);
-        }
-
-        .user-info-sm p {
-            font-size: 11px;
-            color: var(--text-light);
-            text-transform: uppercase;
-        }
-
-        /* Main Content */
+        :root { --primary-color: #0F2C59; --secondary-color: #DAC0A3; --bg-color: #F8F9FA; --text-color: #333; --border-color: #E9ECEF; --sidebar-bg: #fff; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); display: flex; min-height: 100vh; margin: 0; }
+        
+        .sidebar { width: 260px; background: var(--sidebar-bg); border-right: 1px solid var(--border-color); position: fixed; height: 100vh; z-index: 100; display: flex; flex-direction: column; }
+        .brand-logo { padding: 30px; font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 24px; color: var(--primary-color); text-decoration: none; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border-color); }
+        .sidebar-menu { padding: 20px 0; flex: 1; }
+        .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 30px; color: #6C757D; text-decoration: none; font-weight: 500; }
+        .menu-item:hover, .menu-item.active { color: var(--primary-color); background: rgba(15, 44, 89, 0.05); border-left: 3px solid var(--primary-color); }
         .main-content { margin-left: 260px; flex: 1; padding: 40px; }
-        .header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
-        .header-title h2 { font-family: 'Outfit', sans-serif; font-size: 32px; color: #1e293b; }
-        .header-title p { color: var(--text-light); margin-top: 5px; }
-
-        .btn-action { padding: 10px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: var(--transition); border: none; display: flex; align-items: center; gap: 8px; }
-        .btn-primary { background: var(--primary-color); color: white; }
-        .btn-outline { background: white; border: 1px solid var(--border-color); color: var(--text-light); }
-        .btn-outline:hover { border-color: var(--primary-color); color: var(--primary-color); }
-
-        .workout-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 25px; }
-        .workout-card { background: white; border-radius: 20px; border: 1px solid var(--border-color); padding: 30px; box-shadow: var(--shadow); transition: var(--transition); position: relative; }
-        .workout-card:hover { transform: translateY(-5px); box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1); }
-
-        .workout-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-        .difficulty-badge { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-        .difficulty-beginner { background: #ecfdf5; color: #10b981; }
-        .difficulty-intermediate { background: #fffbeb; color: #f59e0b; }
-        .difficulty-advanced { background: #fef2f2; color: #ef4444; }
-
-        .workout-card h3 { font-family: 'Outfit', sans-serif; font-size: 20px; color: #1e293b; margin-bottom: 5px; }
-        .client-name-tag { font-size: 14px; color: var(--text-light); display: flex; align-items: center; gap: 5px; margin-bottom: 20px; }
-
-        .workout-stats { display: flex; gap: 20px; margin-bottom: 25px; background: #f8fafc; padding: 15px; border-radius: 12px; }
-        .workout-stats div { flex: 1; }
-        .workout-stats span { display: block; font-size: 11px; color: var(--text-light); text-transform: uppercase; margin-bottom: 4px; }
-        .workout-stats strong { font-size: 14px; color: #1e293b; }
-
-        .exercise-list { margin-bottom: 25px; }
-        .exercise-list p { font-size: 14px; color: #475569; line-height: 1.6; }
-
-        /* Editable Mode */
-        .editable-input, .editable-textarea { width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-family: inherit; font-size: 14px; background: #f8fafc; margin-bottom: 10px; display: none; }
-        .editable-textarea { min-height: 100px; resize: vertical; }
-        .edit-mode .display-val { display: none; }
-        .edit-mode .editable-input, .edit-mode .editable-textarea { display: block; }
-        .edit-mode .save-btn { display: flex; }
-        .edit-mode .edit-btn { display: none; }
-
-        .card-actions { display: flex; gap: 10px; }
-        .save-btn { background: var(--success-color); color: white; display: none; }
-
-        @media (max-width: 1024px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; } }
+        
+        .header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header-title h2 { font-family: 'Outfit', sans-serif; font-size: 28px; color: #1e293b; margin-bottom: 5px; }
+        
+        .card { background: white; border-radius: 15px; border: 1px solid var(--border-color); padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; margin-bottom: 8px; font-weight: 500; color: #334155; }
+        .form-control { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-family: inherit; font-size: 14px; transition: 0.2s; }
+        
+        .btn-primary { background: var(--primary-color); color: white; padding: 12px 24px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block;}
+        .btn-outline { background: transparent; color: var(--primary-color); border: 2px solid var(--primary-color); padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; text-decoration: none; }
+        
+        .level-section { margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
+        .level-box { background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #f1f5f9; margin-bottom: 20px; }
+        .level-title { font-weight: 700; color: var(--primary-color); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; font-size: 16px; }
+        textarea.meal-input { min-height: 120px; resize: vertical; border-color: #e2e8f0; width: 100%; font-family: inherit; padding: 10px; border-radius: 6px; }
     </style>
 </head>
-
 <body>
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-brand">
-            <a href="home.php" class="brand-logo">
-                <i class="fas fa-dumbbell"></i> FitNova <span>TRAINER</span>
-            </a>
-        </div>
-
+    <aside class="sidebar">
+        <a href="home.php" class="brand-logo"><i class="fas fa-dumbbell"></i> FitNova</a>
         <nav class="sidebar-menu">
-            <a href="trainer_dashboard.php" class="menu-item">
-                <i class="fas fa-home"></i> Overview
-            </a>
-            <a href="trainer_clients.php" class="menu-item">
-                <i class="fas fa-users"></i> My Clients
-            </a>
-            <a href="trainer_schedule.php" class="menu-item">
-                <i class="fas fa-calendar-alt"></i> Schedule
-            </a>
-            <a href="trainer_workouts.php" class="menu-item active">
-                <i class="fas fa-clipboard-list"></i> Workout Plans
-            </a>
-            <a href="trainer_diets.php" class="menu-item">
-                <i class="fas fa-utensils"></i> Diet Plans
-            </a>
-            <a href="trainer_performance.php" class="menu-item">
-                <i class="fas fa-chart-line"></i> Performance
-            </a>
-            <a href="trainer_messages.php" class="menu-item">
-                <i class="fas fa-envelope"></i> Messages
-            </a>
-            <a href="client_profile_setup.php" class="menu-item">
-                <i class="fas fa-user-circle"></i> Profile
-            </a>
+            <a href="trainer_dashboard.php" class="menu-item"><i class="fas fa-home"></i> Overview</a>
+            <a href="trainer_clients.php" class="menu-item"><i class="fas fa-users"></i> My Clients</a>
+            <a href="trainer_schedule.php" class="menu-item"><i class="fas fa-calendar-alt"></i> Schedule</a>
+            <a href="trainer_workouts.php" class="menu-item active"><i class="fas fa-clipboard-list"></i> Workout Plans</a>
+            <a href="trainer_diets.php" class="menu-item"><i class="fas fa-utensils"></i> Diet Plans</a>
+            <a href="trainer_achievements.php" class="menu-item"><i class="fas fa-medal"></i> Achievements</a>
+            <a href="trainer_performance.php" class="menu-item"><i class="fas fa-chart-line"></i> Performance</a>
+            <a href="trainer_messages.php" class="menu-item"><i class="fas fa-envelope"></i> Messages</a>
+            <a href="client_profile_setup.php" class="menu-item"><i class="fas fa-user-circle"></i> Profile</a>
         </nav>
-
-        <div class="user-profile-preview">
-            <div class="user-avatar-sm"><?php echo $trainerInitials; ?></div>
-            <div class="user-info-sm">
-                <h4><?php echo htmlspecialchars($trainerName); ?></h4>
-                <p>Expert Trainer</p>
+        <div class="user-profile-preview" style="padding: 20px; border-top: 1px solid #E9ECEF; display: flex; align-items: center; gap: 12px; margin-top: auto; background: #fff;">
+            <div style="width: 40px; height: 40px; background-color: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                <?php echo $trainerInitials; ?>
             </div>
-            <a href="logout.php" style="margin-left: auto; color: var(--text-light);"><i
-                    class="fas fa-sign-out-alt fa-flip-horizontal"></i></a>
+            <div>
+                <h4 style="font-size:15px; margin:0; color:#333; font-weight:600;"><?php echo htmlspecialchars($trainerName); ?></h4>
+                <p style="font-size:11px; margin:0; color:#64748b; text-transform:uppercase; font-weight:600; letter-spacing:0.5px;">Expert Trainer</p>
+            </div>
+            <a href="logout.php" title="Logout" style="margin-left: auto; color: #64748b; text-decoration: none; font-size: 16px; transition: 0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#64748b'">
+                <i class="fas fa-sign-out-alt"></i>
+            </a>
         </div>
     </aside>
 
     <main class="main-content">
-        <div class="header-section">
-            <div class="header-title"><h2>My Personal Workouts</h2><p>Manage your own training routines and fitness templates</p></div>
-            <button class="btn-action btn-primary"><i class="fas fa-plus"></i> Create New Routine</button>
-        </div>
-
-        <div class="workout-grid">
-            <?php foreach ($workouts as $w): ?>
-            <div class="workout-card" data-id="<?php echo $w['workout_id']; ?>">
-                <div class="workout-header">
-                    <span class="difficulty-badge difficulty-<?php echo $w['difficulty']; ?>"><?php echo $w['difficulty']; ?></span>
-                    <i class="fas fa-ellipsis-v" style="color: var(--text-light); cursor: pointer;"></i>
-                </div>
-                
-                <h3 class="display-val"><?php echo htmlspecialchars($w['plan_name']); ?></h3>
-                <input type="text" class="editable-input plan-name-input" value="<?php echo htmlspecialchars($w['plan_name']); ?>">
-
-                <p class="client-name-tag">
-                    <i class="fas fa-clock"></i>
-                    <span>Personal Template</span>
-                </p>
-
-                <div class="workout-stats">
-                    <div><span>Duration</span><strong><span class="display-val"><?php echo $w['duration_weeks']; ?></span> Weeks</strong>
-                        <input type="number" class="editable-input duration-input" value="<?php echo $w['duration_weeks']; ?>">
-                    </div>
-                    <div><span>Training Frequency</span><strong>4 Days/Week</strong></div>
-                </div>
-
-                <div class="exercise-list">
-                    <strong>Routine Details:</strong>
-                    <p class="display-val"><?php echo nl2br(htmlspecialchars($w['exercises'])); ?></p>
-                    <textarea class="editable-textarea exercises-input"><?php echo htmlspecialchars($w['exercises']); ?></textarea>
-                </div>
-
-                <div class="card-actions">
-                    <button class="btn-action btn-outline edit-btn" onclick="toggleEdit(this)"><i class="fas fa-pen"></i> Edit Routine</button>
-                    <button class="btn-action save-btn" onclick="saveWorkout(this)"><i class="fas fa-save"></i> Save Changes</button>
-                    <button class="btn-action btn-outline" style="color: var(--primary-color)">Log Performance</button>
+        <?php if ($assignTo): ?>
+            <!-- ... Client Assignment View (Keep Existing) ... -->
+            <a href="trainer_clients.php" style="color: #64748b; text-decoration: none; margin-bottom: 20px; display: inline-block;">
+                <i class="fas fa-arrow-left"></i> Back to Clients
+            </a>
+            
+            <div class="header-section" style="justify-content: center; text-align: center;">
+                <div class="header-title">
+                    <h2>Assign Workout Plan <span style="font-size: 0.6em; background: #eef2ff; padding: 5px 12px; border-radius: 20px; color: var(--primary-color); vertical-align: middle;">
+                        <?php echo htmlspecialchars($client['first_name'] . ' ' . $client['last_name']); ?>
+                    </span></h2>
+                    <p>Customize training levels and routines.</p>
                 </div>
             </div>
-            <?php endforeach; ?>
-        </div>
+
+            <div class="card">
+                <form id="workoutFormClient" onsubmit="saveWorkout(event, 'save_workout')">
+                    <input type="hidden" name="client_id" value="<?php echo $client['user_id']; ?>">
+                    <input type="hidden" name="client_name_str" value="<?php echo htmlspecialchars($client['first_name'] . ' ' . $client['last_name']); ?>">
+                    
+                    <div class="form-group">
+                        <label class="form-label">Plan Name</label>
+                        <input type="text" name="plan_name" class="form-control" placeholder="e.g. Strength Phase 1" 
+                               value="<?php echo $currentPlan ? htmlspecialchars($currentPlan['plan_name']) : 'Personalized Workout Plan'; ?>" required>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="form-group">
+                            <label class="form-label">Difficulty / Goal</label>
+                            <select name="difficulty" class="form-control">
+                                <option value="Beginner" <?php if($currentPlan && $currentPlan['difficulty'] == 'Beginner') echo 'selected'; ?>>Beginner / Weight Loss</option>
+                                <option value="Intermediate" <?php if($currentPlan && $currentPlan['difficulty'] == 'Intermediate') echo 'selected'; ?>>Intermediate / Toning</option>
+                                <option value="Advanced" <?php if($currentPlan && $currentPlan['difficulty'] == 'Advanced') echo 'selected'; ?>>Advanced / Muscle Gain</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Duration (Weeks)</label>
+                            <input type="number" name="duration_weeks" class="form-control" placeholder="e.g. 4" 
+                                   value="<?php echo $currentPlan ? htmlspecialchars($currentPlan['duration_weeks']) : '4'; ?>" required>
+                        </div>
+                    </div>
+
+                    <div class="level-section">
+                        <div class="level-box" style="border-left: 5px solid #10b981;">
+                            <div class="level-title"><i class="fas fa-seedling"></i> Beginner Level</div>
+                            <textarea name="level_1" class="meal-input" placeholder="List exercises, sets, reps for beginners..."><?php echo htmlspecialchars($workoutData['level_1']); ?></textarea>
+                        </div>
+                        <div class="level-box" style="border-left: 5px solid #f59e0b;">
+                            <div class="level-title"><i class="fas fa-fire"></i> Intermediate Level</div>
+                            <textarea name="level_2" class="meal-input" placeholder="Progression exercises..."><?php echo htmlspecialchars($workoutData['level_2']); ?></textarea>
+                        </div>
+                        <div class="level-box" style="border-left: 5px solid #ef4444;">
+                            <div class="level-title"><i class="fas fa-dumbbell"></i> Advanced Level</div>
+                            <textarea name="level_3" class="meal-input" placeholder="Advanced techniques..."><?php echo htmlspecialchars($workoutData['level_3']); ?></textarea>
+                        </div>
+                    </div>
+
+                    <div style="text-align: right; margin-top: 30px;">
+                        <button type="submit" class="btn-primary" id="saveBtnClient">
+                            <i class="fas fa-save"></i> <?php echo $currentPlan ? 'Update Plan' : 'Assign Plan'; ?>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+        <?php elseif(isset($_GET['create_new']) || isset($_GET['edit_id'])): ?>
+            <!-- ... Create/Edit Personal Plan Mode ... -->
+            <?php
+            $editMode = false;
+            $pPlan = null;
+            $pData = ['level_1'=>'', 'level_2'=>'', 'level_3'=>''];
+
+            if (isset($_GET['edit_id'])) {
+                $editId = intval($_GET['edit_id']);
+                $stmt = $conn->prepare("SELECT * FROM trainer_workouts WHERE workout_id=? AND trainer_id=? AND user_id=?");
+                $stmt->bind_param("iii", $editId, $trainerId, $trainerId);
+                $stmt->execute();
+                $res = $stmt->get_result();
+                if ($res->num_rows > 0) {
+                    $editMode = true;
+                    $pPlan = $res->fetch_assoc();
+                    if (!empty($pPlan['exercises'])) {
+                        $dec = json_decode($pPlan['exercises'], true);
+                        if (is_array($dec)) $pData = array_merge($pData, $dec);
+                        else $pData['level_1'] = $pPlan['exercises'];
+                    }
+                }
+                $stmt->close();
+            }
+            ?>
+            <a href="trainer_workouts.php" style="color: #64748b; text-decoration: none; margin-bottom: 20px; display: inline-block;">
+                <i class="fas fa-arrow-left"></i> Back to Plans
+            </a>
+            <div class="header-section">
+                <div class="header-title">
+                    <h2><?php echo $editMode ? 'Edit' : 'Create'; ?> Personal Routine</h2>
+                    <p>Share your personal workout strategy with your clients.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <form id="workoutFormPersonal" onsubmit="saveWorkout(event, 'save_personal_plan')">
+                     <?php if($editMode): ?>
+                        <input type="hidden" name="workout_id" value="<?php echo $pPlan['workout_id']; ?>">
+                     <?php endif; ?>
+
+                    <div class="form-group">
+                        <label class="form-label">Routine Name</label>
+                        <input type="text" name="plan_name" class="form-control" placeholder="e.g. My Morning Shred" 
+                               value="<?php echo $pPlan ? htmlspecialchars($pPlan['plan_name']) : ''; ?>" required>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="form-group">
+                            <label class="form-label">Target / Focus</label>
+                            <select name="difficulty" class="form-control">
+                                <option value="Beginner" <?php if($pPlan && $pPlan['difficulty'] == 'Beginner') echo 'selected'; ?>>Beginner Friendly</option>
+                                <option value="Intermediate" <?php if($pPlan && $pPlan['difficulty'] == 'Intermediate') echo 'selected'; ?>>Intermediate Intensity</option>
+                                <option value="Advanced" <?php if($pPlan && $pPlan['difficulty'] == 'Advanced') echo 'selected'; ?>>High Performance (Advanced)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Duration (Weeks)</label>
+                            <input type="number" name="duration_weeks" class="form-control" placeholder="e.g. 4" 
+                                   value="<?php echo $pPlan ? htmlspecialchars($pPlan['duration_weeks']) : '4'; ?>" required>
+                        </div>
+                    </div>
+
+                    <div class="level-section">
+                         <div class="level-box">
+                            <div class="level-title"><i class="fas fa-list-ul"></i> Routine Details</div>
+                            <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Describe the exercises, sets, and reps. You can break it down by levels if you want to offer scaling options.</p>
+                            
+                            <label class="form-label" style="font-size: 13px;">Main Routine / Level 1</label>
+                            <textarea name="level_1" class="meal-input" placeholder="e.g. 3x10 Squats, 3x12 Pushups..."><?php echo htmlspecialchars($pData['level_1']); ?></textarea>
+                            
+                            <label class="form-label" style="font-size: 13px; margin-top: 15px;">Progression / Level 2 (Optional)</label>
+                            <textarea name="level_2" class="meal-input" placeholder="e.g. Add weight, reduce rest..."><?php echo htmlspecialchars($pData['level_2']); ?></textarea>
+                            
+                            <label class="form-label" style="font-size: 13px; margin-top: 15px;">Advanced / Level 3 (Optional)</label>
+                            <textarea name="level_3" class="meal-input" placeholder="Exclude if not applicable"><?php echo htmlspecialchars($pData['level_3']); ?></textarea>
+                        </div>
+                    </div>
+
+                    <div style="text-align: right; margin-top: 30px;">
+                        <button type="submit" class="btn-primary" id="saveBtnPersonal">
+                            <i class="fas fa-save"></i> Save Routine
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+        <?php else: ?>
+            <!-- ... List of Personal Plans ... -->
+            <div class="header-section">
+                <div class="header-title">
+                    <h2>My Workout Routines</h2>
+                    <p>Manage the plans you follow. Clients can view these for inspiration.</p>
+                </div>
+                <a href="trainer_workouts.php?create_new=1" class="btn-primary">
+                    <i class="fas fa-plus"></i> Add New Routine
+                </a>
+            </div>
+            
+            <?php
+            // Fetch PERSONAL plans (user_id = trainer_id)
+            $plansSql = "SELECT * FROM trainer_workouts WHERE trainer_id = ? AND user_id = ? ORDER BY created_at DESC";
+            $pStmt = $conn->prepare($plansSql);
+            $pStmt->bind_param("ii", $trainerId, $trainerId);
+            $pStmt->execute();
+            $myPlans = $pStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+            $pStmt->close();
+            ?>
+
+            <?php if (count($myPlans) > 0): ?>
+                <div class="card" style="padding: 0; overflow: hidden; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                            <thead style="background: #f8fafc; color: var(--primary-color); border-bottom: 2px solid #e2e8f0;">
+                                <tr>
+                                    <th style="padding: 16px 24px;">Routine Name</th>
+                                    <th style="padding: 16px 24px;">Focus</th>
+                                    <th style="padding: 16px 24px;">Duration</th>
+                                    <th style="padding: 16px 24px; text-align: right;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach($myPlans as $plan): ?>
+                                <tr style="border-bottom: 1px solid #f1f5f9;">
+                                    <td style="padding: 16px 24px; font-weight: 600; color: var(--primary-color);">
+                                        <?php echo htmlspecialchars($plan['plan_name']); ?>
+                                        <div style="font-size: 12px; color: #888; font-weight: 400;">Created: <?php echo date('M d, Y', strtotime($plan['created_at'])); ?></div>
+                                    </td>
+                                    <td style="padding: 16px 24px;">
+                                        <span style="background: #eef2ff; color: #4338ca; padding: 4px 10px; border-radius: 15px; font-size: 12px; font-weight: 600;">
+                                            <?php echo htmlspecialchars($plan['difficulty']); ?>
+                                        </span>
+                                    </td>
+                                    <td style="padding: 16px 24px; color: #666;">
+                                        <?php echo htmlspecialchars($plan['duration_weeks']); ?> Weeks
+                                    </td>
+                                    <td style="padding: 16px 24px; text-align: right;">
+                                        <a href="trainer_workouts.php?edit_id=<?php echo $plan['workout_id']; ?>" style="color: var(--primary-color); margin-right: 15px;"><i class="fas fa-edit"></i></a>
+                                        <a href="trainer_workouts.php?delete_id=<?php echo $plan['workout_id']; ?>" onclick="return confirm('Delete this routine?')" style="color: #ef4444;"><i class="fas fa-trash"></i></a>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                </div>
+            <?php else: ?>
+                <div class="card" style="text-align: center; padding: 50px;">
+                    <i class="fas fa-running" style="font-size: 48px; color: var(--secondary-color); margin-bottom: 20px;"></i>
+                    <h3>No Personal Routines Yet</h3>
+                    <p style="color: #64748b; margin-bottom: 20px;">Add the workout plans you follow so your clients can see what drives your success.</p>
+                    <a href="trainer_workouts.php?create_new=1" class="btn-primary">Create Your First Routine</a>
+                </div>
+            <?php endif; ?>
+        <?php endif; ?>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        function toggleEdit(btn) {
-            const card = btn.closest('.workout-card');
-            card.classList.toggle('edit-mode');
-            if (card.classList.contains('edit-mode')) {
-                btn.innerHTML = '<i class="fas fa-times"></i> Cancel';
-            } else {
-                btn.innerHTML = '<i class="fas fa-pen"></i> Edit Plan';
-            }
-        }
+        function saveWorkout(e, actionType) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            formData.append('action', actionType);
 
-        function saveWorkout(btn) {
-            const card = btn.closest('.workout-card');
-            const id = card.dataset.id;
-            const planName = card.querySelector('.plan-name-input').value;
-            const clientName = card.querySelector('.client-name-input').value;
-            const duration = card.querySelector('.duration-input').value;
-            const exercises = card.querySelector('.exercises-input').value;
-
-            const formData = new FormData();
-            formData.append('action', 'update_workout');
-            formData.append('workout_id', id);
-            formData.append('plan_name', planName);
-            formData.append('client_name', clientName);
-            formData.append('duration_weeks', duration);
-            formData.append('exercises', exercises);
-
+            const btn = form.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
             btn.disabled = true;
 
@@ -352,23 +438,31 @@ $stmt->close();
             .then(res => res.json())
             .then(data => {
                 if (data.status === 'success') {
-                    // Update displays
-                    card.querySelector('h3.display-val').innerText = planName;
-                    card.querySelector('.client-name-tag .display-val').innerText = clientName;
-                    card.querySelector('.workout-stats .display-val').innerText = duration;
-                    card.querySelector('.exercise-list p.display-val').innerText = exercises;
-                    
-                    card.classList.remove('edit-mode');
-                    btn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
-                    btn.disabled = false;
-                    
-                    const editBtn = card.querySelector('.edit-btn');
-                    editBtn.innerHTML = '<i class="fas fa-pen"></i> Edit Plan';
+                    Swal.fire({
+                        title: 'Success!',
+                        text: data.message,
+                        icon: 'success',
+                        confirmButtonColor: '#0F2C59'
+                    }).then(() => {
+                        // Reload or redirect based on action
+                         if (actionType === 'save_workout') {
+                            // Stay or go back? Usually stay or reload.
+                            window.location.reload(); 
+                         } else {
+                            window.location.href = 'trainer_workouts.php';
+                         }
+                    });
                 } else {
-                    alert('Error: ' + data.message);
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+                    Swal.fire('Error', data.message, 'error');
                 }
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire('Error', 'An unexpected error occurred.', 'error');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             });
         }
     </script>

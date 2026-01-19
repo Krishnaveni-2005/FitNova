@@ -1644,8 +1644,19 @@ $conn->close();
                     </div>
 
                     <div class="detail-row">
-                        <label class="detail-label">Image URL</label>
+                        <label class="detail-label">Image URL (Optional)</label>
                         <input type="text" id="p_image" name="image_url" class="editable-input" style="display:block; width: 60%;" placeholder="https://...">
+                    </div>
+
+                    <div class="detail-row">
+                        <label class="detail-label">Or Upload Image</label>
+                        <input type="file" id="p_image_file" name="image_file" class="editable-input" style="display:block; width: 60%;" accept="image/*">
+                        <small style="color: #64748b; font-size: 11px;">Recommended: JPG/PNG, Max 2MB</small>
+                    </div>
+
+                    <div class="detail-row">
+                        <label class="detail-label">Description</label>
+                        <textarea id="p_description" name="description" class="editable-input" style="display:block; width: 100%; height: 80px; resize: vertical;" placeholder="Product description..."></textarea>
                     </div>
 
                     <div style="margin-top: 20px; text-align: right;">
@@ -1949,9 +1960,11 @@ $conn->close();
                 document.getElementById('p_category').value = product.category;
                 document.getElementById('p_price').value = product.price;
                 document.getElementById('p_image').value = product.image_url;
+                document.getElementById('p_description').value = product.description || '';
             } else {
                 document.getElementById('productModalTitle').innerText = 'Add New Product';
                 document.getElementById('p_id').value = '';
+                document.getElementById('p_description').value = '';
             }
             
             modal.style.display = "block";

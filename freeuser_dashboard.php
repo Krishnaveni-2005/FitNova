@@ -28,6 +28,15 @@ $commonWorkouts = $cwResult ? $cwResult->fetch_all(MYSQLI_ASSOC) : [];
 $commonDietsSql = "SELECT * FROM trainer_diet_plans WHERE client_name = 'Personal Template' OR client_name = '' OR client_name IS NULL LIMIT 1";
 $cdResult = $conn->query($commonDietsSql);
 $commonDiets = $cdResult ? $cdResult->fetch_all(MYSQLI_ASSOC) : [];
+
+// Fetch User Full Name for Schedule Matching
+$uFnStmt = $conn->prepare("SELECT first_name, last_name FROM users WHERE user_id = ?");
+$uFnStmt->bind_param("i", $userId);
+$uFnStmt->execute();
+$uFnRes = $uFnStmt->get_result()->fetch_assoc();
+$dbFullName = $uFnRes['first_name'] . ' ' . $uFnRes['last_name'];
+$firstNameOnly = explode(' ', trim($uFnRes['first_name']))[0];
+$uFnStmt->close();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -639,6 +648,61 @@ $commonDiets = $cdResult ? $cdResult->fetch_all(MYSQLI_ASSOC) : [];
                         Premium</button>
                 </div>
 
+                <?php
+                // Fetch Upcoming live sessions aimed at this user
+                $scheduleSql = "SELECT ts.*, t.first_name as trainer_first, t.last_name as trainer_last 
+                                FROM trainer_schedules ts
+                                JOIN users t ON ts.trainer_id = t.user_id
+                                WHERE (
+                                    ts.client_name = ? 
+                                    OR ts.client_name = ? 
+                                    OR ts.client_name LIKE CONCAT(?, '%')
+                                    OR ? LIKE CONCAT(ts.client_name, '%')
+                                )
+                                AND ts.status = 'upcoming'
+                                AND ts.session_date >= CURDATE()
+                                ORDER BY ts.session_date ASC, ts.session_time ASC
+                                LIMIT 3";
+                $stmt = $conn->prepare($scheduleSql);
+                $mySchedules = [];
+                if ($stmt) {
+                    $stmt->bind_param("ssss", $dbFullName, $userName, $firstNameOnly, $dbFullName);
+                    $stmt->execute();
+                    $mySchedules = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+                    $stmt->close();
+                }
+                ?>
+                
+                <?php if (!empty($mySchedules)): ?>
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">Upcoming Sessions</h3>
+                    </div>
+                    <?php foreach ($mySchedules as $session): 
+                        $sDate = date('M d', strtotime($session['session_date']));
+                        $dayName = date('D', strtotime($session['session_date']));
+                        $sTime = date('h:i A', strtotime($session['session_time']));
+                    ?>
+                    <div class="workout-item">
+                         <div class="workout-img" style="background: var(--primary-color); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; flex-direction: column; width: 60px; height: 60px;">
+                            <span style="font-size: 10px; opacity: 0.8;"><?php echo $dayName; ?></span>
+                            <span style="font-size: 16px;"><?php echo date('d', strtotime($session['session_date'])); ?></span>
+                         </div>
+                         <div class="workout-info">
+                             <h4 class="workout-name">
+                                 <?php echo htmlspecialchars($session['session_type']); ?>
+                             </h4>
+                             <div class="workout-meta">
+                                 <span><i class="far fa-clock"></i> <?php echo $sTime; ?></span>
+                                 <span><i class="fas fa-user-tie"></i> <?php echo htmlspecialchars($session['trainer_first']); ?></span>
+                             </div>
+                         </div>
+                         <button class="btn-action" onclick='showSessionDetails(<?php echo json_encode($session); ?>)'>Details</button>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+                <?php endif; ?>
+
                 <div class="section-card">
                     <div class="section-header">
                         <h3 class="section-title">Recommended for You</h3>
@@ -740,7 +804,84 @@ $commonDiets = $cdResult ? $cdResult->fetch_all(MYSQLI_ASSOC) : [];
         </div>
     </main>
 
+    <!-- Session Details Modal -->
+    <div id="sessionModal" class="modal-overlay" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
+        <div class="modal-content" style="background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 500px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+                <h3 style="color: var(--primary-color); margin: 0;">Session Details</h3>
+                <button onclick="closeSessionModal()" style="border: none; background: none; font-size: 20px; color: #999; cursor: pointer;">&times;</button>
+            </div>
+            
+            <div style="margin-bottom: 25px;">
+                <div style="display: flex; margin-bottom: 15px; align-items: center;">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                        <i class="fas fa-dumbbell"></i>
+                    </div>
+                    <div>
+                        <span style="font-size: 12px; color: #777;">SESSION TYPE</span>
+                        <h4 style="margin: 0; color: #333;" id="modalSessionType">Workout</h4>
+                    </div>
+                </div>
+
+                <div style="display: flex; margin-bottom: 15px; align-items: center;">
+                     <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--secondary-color); color: white; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <div>
+                        <span style="font-size: 12px; color: #777;">TRAINER</span>
+                        <h4 style="margin: 0; color: #333;" id="modalSessionTrainer">Trainer Name</h4>
+                    </div>
+                </div>
+
+                 <div style="display: flex; margin-bottom: 15px; align-items: center;">
+                     <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--accent-color); color: white; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                        <i class="far fa-clock"></i>
+                    </div>
+                    <div>
+                        <span style="font-size: 12px; color: #777;">DATE & TIME</span>
+                        <h4 style="margin: 0; color: #333;"><span id="modalSessionDate">May 12</span> at <span id="modalSessionTime">10:00 AM</span></h4>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                     <span style="font-size: 12px; color: #777;">STATUS</span>
+                     <p style="margin: 5px 0 0 0; color: var(--success-color); font-weight: 600;" id="modalSessionStatus">UPCOMING</p>
+                </div>
+            </div>
+
+            <button onclick="closeSessionModal()" style="width: 100%; padding: 12px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Close</button>
+        </div>
+    </div>
+
     <script>
+        function showSessionDetails(session) {
+            document.getElementById('modalSessionType').innerText = session.session_type;
+            document.getElementById('modalSessionTrainer').innerText = session.trainer_first + ' ' + session.trainer_last;
+            
+            const d = new Date(session.session_date);
+            const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            document.getElementById('modalSessionDate').innerText = dateStr;
+            
+            // Format time manually
+            let timeParts = session.session_time.split(':');
+            let h = parseInt(timeParts[0]);
+            let m = timeParts[1];
+            let ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12;
+            h = h ? h : 12; 
+            let timeStr = h + ':' + m + ' ' + ampm;
+            
+            document.getElementById('modalSessionTime').innerText = timeStr;
+            document.getElementById('modalSessionStatus').innerText = session.status.toUpperCase();
+            
+            const modal = document.getElementById('sessionModal');
+            modal.style.display = 'flex';
+        }
+
+        function closeSessionModal() {
+            document.getElementById('sessionModal').style.display = 'none';
+        }
+
         // Simple script to handle mobile sidebar toggle if we add a hamburger later
         document.addEventListener('DOMContentLoaded', () => {
             console.log('Dashboard Loaded');

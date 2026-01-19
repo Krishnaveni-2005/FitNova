@@ -374,3 +374,35 @@ Stack trace:
 Stack trace:
 #0 {main}
   thrown in C:\test\htdocs\fitnova\prouser_dashboard.php on line 128
+[17-Jan-2026 11:56:09 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli_stmt object is already closed in C:\test\htdocs\fitnova\trainer_dashboard.php:90
+Stack trace:
+#0 C:\test\htdocs\fitnova\trainer_dashboard.php(90): mysqli_stmt->close()
+#1 {main}
+  thrown in C:\test\htdocs\fitnova\trainer_dashboard.php on line 90
+[17-Jan-2026 16:34:16 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\send_session_request.php:22
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\send_session_request.php on line 22
+[17-Jan-2026 16:34:23 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\send_session_request.php:22
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\send_session_request.php on line 22
+[17-Jan-2026 16:34:28 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\test\htdocs\fitnova\send_session_request.php:22
+Stack trace:
+#0 {main}
+  thrown in C:\test\htdocs\fitnova\send_session_request.php on line 22
+[17-Jan-2026 16:39:48 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli_stmt object is already closed in C:\test\htdocs\fitnova\prouser_dashboard.php:133
+Stack trace:
+#0 C:\test\htdocs\fitnova\prouser_dashboard.php(133): mysqli_stmt->close()
+#1 {main}
+  thrown in C:\test\htdocs\fitnova\prouser_dashboard.php on line 133
+[17-Jan-2026 16:39:51 Europe/Berlin] PHP Fatal error:  Uncaught Error: mysqli_stmt object is already closed in C:\test\htdocs\fitnova\prouser_dashboard.php:133
+Stack trace:
+#0 C:\test\htdocs\fitnova\prouser_dashboard.php(133): mysqli_stmt->close()
+#1 {main}
+  thrown in C:\test\htdocs\fitnova\prouser_dashboard.php on line 133
+[18-Jan-2026 09:50:57 Europe/Berlin] PHP Warning:  Attempt to read property "num_rows" on bool in C:\test\htdocs\fitnova\debug_schedule_match.php on line 9
+[18-Jan-2026 10:35:33 Europe/Berlin] PHP Warning:  Undefined variable $trainerInitials in C:\test\htdocs\fitnova\trainer_workouts.php on line 191
+[18-Jan-2026 10:35:33 Europe/Berlin] PHP Warning:  Undefined variable $trainerName in C:\test\htdocs\fitnova\trainer_workouts.php on line 194
+[18-Jan-2026 10:40:29 Europe/Berlin] PHP Warning:  Undefined variable $trainerInitials in C:\test\htdocs\fitnova\trainer_workouts.php on line 191
+[18-Jan-2026 10:40:29 Europe/Berlin] PHP Warning:  Undefined variable $trainerName in C:\test\htdocs\fitnova\trainer_workouts.php on line 194

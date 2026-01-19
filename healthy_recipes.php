@@ -1,4 +1,20 @@
-<?php session_start(); include 'header.php'; ?>
+<?php 
+session_start(); 
+
+// Redirect to custom diet plan if assigned
+if (isset($_SESSION['user_id'])) {
+    require_once 'db_connect.php';
+    $chkStmt = $conn->prepare("SELECT diet_id FROM trainer_diet_plans WHERE user_id = ?");
+    $chkStmt->bind_param("i", $_SESSION['user_id']);
+    $chkStmt->execute();
+    if ($chkStmt->get_result()->num_rows > 0) {
+        header("Location: view_my_diet.php");
+        exit();
+    }
+}
+
+include 'header.php'; 
+?>
 <!DOCTYPE html>
 <html lang="en">
 

@@ -89,6 +89,24 @@ if ($stmt) {
     $stmt->close();
 }
 
+// Fetch Session Requests
+$sessionReqSql = "SELECT sr.request_id, sr.user_id, sr.created_at, u.first_name, u.last_name 
+                  FROM session_requests sr 
+                  JOIN users u ON sr.user_id = u.user_id 
+                  WHERE sr.trainer_id = ? AND sr.status = 'pending' 
+                  ORDER BY sr.created_at DESC";
+$stmt = $conn->prepare($sessionReqSql);
+$sessionRequests = [];
+if ($stmt) {
+    $stmt->bind_param("i", $trainerId);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    while ($row = $res->fetch_assoc()) {
+        $sessionRequests[] = $row;
+    }
+    $stmt->close();
+}
+
 // Fetch today's schedule
 $today = date('Y-m-d');
 $dashboardSchedules = [];
@@ -514,6 +532,9 @@ if ($stmt) {
             <a href="trainer_diets.php" class="menu-item">
                 <i class="fas fa-utensils"></i> Diet Plans
             </a>
+            <a href="trainer_achievements.php" class="menu-item">
+                <i class="fas fa-medal"></i> Achievements
+            </a>
             <a href="trainer_performance.php" class="menu-item">
                 <i class="fas fa-chart-line"></i> Performance
             </a>
@@ -525,14 +546,17 @@ if ($stmt) {
             </a>
         </nav>
 
-        <div class="user-profile-preview">
-            <div class="user-avatar-sm"><?php echo $trainerInitials; ?></div>
-            <div class="user-info-sm">
-                <h4><?php echo htmlspecialchars($trainerName); ?></h4>
-                <p>Expert Trainer</p>
+        <div class="user-profile-preview" style="padding: 20px; border-top: 1px solid #E9ECEF; display: flex; align-items: center; gap: 12px; margin-top: auto; background: #fff;">
+            <div style="width: 40px; height: 40px; background-color: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                <?php echo $trainerInitials; ?>
             </div>
-            <a href="logout.php" style="margin-left: auto; color: var(--text-light);"><i
-                    class="fas fa-sign-out-alt fa-flip-horizontal"></i></a>
+            <div>
+                <h4 style="font-size:15px; margin:0; color:#333; font-weight:600;"><?php echo htmlspecialchars($trainerName); ?></h4>
+                <p style="font-size:11px; margin:0; color:#64748b; text-transform:uppercase; font-weight:600; letter-spacing:0.5px;">Expert Trainer</p>
+            </div>
+            <a href="logout.php" title="Logout" style="margin-left: auto; color: #64748b; text-decoration: none; font-size: 16px; transition: 0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#64748b'">
+                <i class="fas fa-sign-out-alt"></i>
+            </a>
         </div>
     </aside>
 
@@ -636,30 +660,34 @@ if ($stmt) {
                         </div>
                         <?php endforeach; ?>
                         
-                        <script>
-                        function handleRequest(clientId, action) {
-                            if(!confirm('Are you sure you want to ' + action + ' this client?')) return;
-                            
-                            fetch('trainer_handle_request.php', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ client_id: clientId, action: action })
-                            })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    document.getElementById('req-' + clientId).remove();
-                                    // Optionally reload to update valid client count
-                                    // location.reload(); 
-                                } else {
-                                    alert('Error: ' + (data.message || 'Unknown error'));
-                                }
-                            })
-                            .catch(err => console.error(err));
-                        }
-                        </script>
+
                     <?php endif; ?>
                     <button class="btn-action btn-outline" style="width: 100%; margin-top: 10px;">Review all Requests</button>
+                </div>
+
+                <div class="section-box">
+                    <div class="section-header">
+                        <h3 class="section-title">Session Requests</h3>
+                    </div>
+                    <?php if (empty($sessionRequests)): ?>
+                        <p style="padding: 15px; color: var(--text-light); font-size: 13px; text-align: center;">No new session requests.</p>
+                    <?php else: ?>
+                        <?php foreach ($sessionRequests as $sReq): 
+                            $clientInitials = strtoupper(substr($sReq['first_name'], 0, 1) . substr($sReq['last_name'], 0, 1));
+                        ?>
+                        <div class="client-item">
+                            <div class="user-avatar" style="width: 35px; height: 35px; font-size: 12px; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center; border-radius: 50%;"><?php echo $clientInitials; ?></div>
+                            <div class="client-info">
+                                <h5><?php echo htmlspecialchars($sReq['first_name'] . ' ' . $sReq['last_name']); ?></h5>
+                                <p>Requested a session</p>
+                                <div style="margin-top: 5px;">
+                                    <button class="btn-action btn-primary" onclick="handleSessionRequest(<?php echo $sReq['request_id']; ?>, 'approve')" style="padding: 4px 10px; font-size: 11px;">Accept</button>
+                                    <button class="btn-action btn-outline" onclick="handleSessionRequest(<?php echo $sReq['request_id']; ?>, 'reject')" style="padding: 4px 10px; font-size: 11px; border: 1px solid #ccc;">Decline</button>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
 
                 <div class="section-box" style="background: #f1f5f9;">
@@ -672,6 +700,47 @@ if ($stmt) {
             </div>
         </div>
     </main>
+    <script>
+    function handleRequest(clientId, action) {
+        if(!confirm('Are you sure you want to ' + action + ' this client?')) return;
+        
+        fetch('trainer_handle_request.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ client_id: clientId, action: action })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const el = document.getElementById('req-' + clientId);
+                if(el) el.remove();
+                if(action === 'approve') location.reload(); // Reload to update counts usually
+            } else {
+                alert('Error: ' + (data.message || 'Unknown error'));
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    function handleSessionRequest(requestId, action) {
+        if(!confirm('Are you sure you want to ' + action + ' this session?')) return;
+        
+        fetch('trainer_handle_session.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ request_id: requestId, action: action })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload(); 
+            } else {
+                alert('Error: ' + (data.message || 'Unknown error'));
+            }
+        })
+        .catch(err => console.error(err));
+    }
+    </script>
 </body>
 
 </html>

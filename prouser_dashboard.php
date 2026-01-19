@@ -32,10 +32,11 @@ if ($stmt->execute()) {
 $stmt->close();
 
 // Fetch Assigned Workouts
-$workoutSql = "SELECT * FROM trainer_workouts WHERE client_name = ? ORDER BY created_at DESC LIMIT 3";
+// Fetch Assigned Workouts
+$workoutSql = "SELECT * FROM trainer_workouts WHERE user_id = ? ORDER BY created_at DESC LIMIT 3";
 $stmt = $conn->prepare($workoutSql);
 if ($stmt) {
-    $stmt->bind_param("s", $userName);
+    $stmt->bind_param("i", $userId);
     $stmt->execute();
     $assignedWorkouts = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     $stmt->close();
@@ -44,10 +45,11 @@ if ($stmt) {
 }
 
 // Fetch Assigned Diets
-$dietSql = "SELECT * FROM trainer_diet_plans WHERE client_name = ? ORDER BY created_at DESC LIMIT 1";
+// Fetch Assigned Diets
+$dietSql = "SELECT * FROM trainer_diet_plans WHERE user_id = ? ORDER BY created_at DESC LIMIT 1";
 $stmt = $conn->prepare($dietSql);
 if ($stmt) {
-    $stmt->bind_param("s", $userName);
+    $stmt->bind_param("i", $userId);
     $stmt->execute();
     $assignedDiets = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     $stmt->close();
@@ -130,6 +132,30 @@ $gStmt->execute();
 $gymResult = $gStmt->get_result()->fetch_assoc();
 $gymStatus = $gymResult ? $gymResult['gym_membership_status'] : 'inactive';
 $gStmt->close();
+
+// Fetch Session Requests
+$sessionReqSql = "SELECT sr.request_id, sr.status, sr.created_at, t.first_name, t.last_name 
+                  FROM session_requests sr 
+                  JOIN users t ON sr.trainer_id = t.user_id 
+                  WHERE sr.user_id = ? 
+                  ORDER BY sr.created_at DESC";
+$stmt = $conn->prepare($sessionReqSql);
+$mySessionRequests = [];
+if ($stmt) {
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $mySessionRequests = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+}
+
+// Fetch User Full Name for Schedule Matching
+$uFnStmt = $conn->prepare("SELECT first_name, last_name FROM users WHERE user_id = ?");
+$uFnStmt->bind_param("i", $userId);
+$uFnStmt->execute();
+$uFnRes = $uFnStmt->get_result()->fetch_assoc();
+$dbFullName = $uFnRes['first_name'] . ' ' . $uFnRes['last_name'];
+$firstNameOnly = explode(' ', trim($uFnRes['first_name']))[0];
+$uFnStmt->close();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -740,7 +766,7 @@ $gStmt->close();
             width: 150px;
             height: 150px;
             border-radius: 50%;
-            background: conic-gradient(var(--success-color) 85%, #f0f0f0 0);
+            background: conic-gradient(var(--success-color) 0%, #f0f0f0 0);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -826,14 +852,17 @@ $gStmt->close();
             <a href="prouser_dashboard.php" class="menu-item active">
                 <i class="fas fa-home"></i> Premium Dashboard
             </a>
-            <a href="free_workouts.php" class="menu-item">
-                <i class="fas fa-dumbbell"></i> Workout Videos
+            <a href="view_my_workout.php" class="menu-item">
+                <i class="fas fa-dumbbell"></i> Workout Details
             </a>
             <a href="healthy_recipes.php" class="menu-item">
                 <i class="fas fa-utensils"></i> Healthy Recipes
             </a>
             <a href="my_progress.php" class="menu-item">
                 <i class="fas fa-chart-line"></i> My Progress
+            </a>
+            <a href="my_trainers.php" class="menu-item">
+                <i class="fas fa-users"></i> Trainers
             </a>
             <a href="messages.php" class="menu-item">
                 <i class="fas fa-envelope"></i> Messages
@@ -871,8 +900,10 @@ $gStmt->close();
             <div class="welcome-text">
                 <h1>Welcome back, <?php echo htmlspecialchars(explode(' ', $userName)[0]); ?>! 👋</h1>
                 <p>
-                    <span class="trainer-status"><i class="fas fa-circle" style="font-size: 8px;"></i> Coach <?php echo $currentAssignmentStatus === 'approved' ? htmlspecialchars($currentTrainerName) : 'Mike'; ?> is
+                    <?php if ($currentAssignmentStatus === 'approved'): ?>
+                    <span class="trainer-status"><i class="fas fa-circle" style="font-size: 8px;"></i> Coach <?php echo htmlspecialchars($currentTrainerName); ?> is
                         online</span>
+                    <?php endif; ?>
                     Ready for your transformation?
                 </p>
             </div>
@@ -927,7 +958,7 @@ $gStmt->close();
                 </div>
                 
                 
-                <a href="#" class="btn-primary">
+                <a href="trainers.php" class="btn-primary">
                     <i class="fas fa-calendar-plus"></i> Book Session
                 </a>
             </div>
@@ -1058,18 +1089,18 @@ $gStmt->close();
         <div class="stats-grid">
             <div class="stat-card blue">
                 <div class="stat-icon"><i class="fas fa-fire"></i></div>
-                <div class="stat-value">2,450</div>
-                <div class="stat-label">Calories (Weekly Avg)</div>
+                <div class="stat-value" id="dashCalories">0</div>
+                <div class="stat-label">Calories Burned (Total)</div>
             </div>
             <div class="stat-card gold">
                 <div class="stat-icon"><i class="fas fa-dumbbell"></i></div>
-                <div class="stat-value"><?php echo $profile['weight_kg'] ?? '72'; ?>kg</div>
+                <div class="stat-value" id="dashWeight"><?php echo $profile['weight_kg'] ?? '0'; ?>kg</div>
                 <div class="stat-label">Current Weight</div>
             </div>
             <div class="stat-card green">
                 <div class="stat-icon"><i class="fas fa-check-double"></i></div>
-                <div class="stat-value">98%</div>
-                <div class="stat-label">Plan Adherence</div>
+                <div class="stat-value" id="dashWorkouts">0</div>
+                <div class="stat-label">Workouts Logged</div>
             </div>
         </div>
 
@@ -1093,8 +1124,8 @@ $gStmt->close();
                                     <p>Your Personal Trainer</p>
                                     <a href="messages.php?trainer=<?php echo $assignedTrainerId; ?>" class="btn-chat" style="text-decoration:none; display:inline-block; text-align:center;"><i class="far fa-comment-alt"></i> Chat Now</a>
                                 </div>
-                                <div style="text-align: right;">
-                                    <span style="font-size: 0.8rem; color: var(--text-light); display: block;">Status:</span>
+                                <div style="display: flex; align-items: center; gap: 5px;">
+                                    <span style="font-size: 0.8rem; color: var(--text-light);">Status:</span>
                                     <span style="font-weight: 600; color: var(--success-color);">Active</span>
                                 </div>
                             </div>
@@ -1123,10 +1154,108 @@ $gStmt->close();
                     </div>
                 <?php endif; ?>
 
+                <!-- Session Requests Section -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">My Session Requests</h3>
+                    </div>
+                    <div class="workout-list">
+                        <?php if (empty($mySessionRequests)): ?>
+                            <p style="color: var(--text-light); padding: 20px; text-align: center;">No session requests found.</p>
+                        <?php else: ?>
+                            <?php foreach($mySessionRequests as $req): 
+                                $statusColor = 'var(--text-light)';
+                                $statusIcon = 'fa-circle';
+                                if ($req['status'] === 'approved') { $statusColor = 'var(--success-color)'; $statusIcon = 'fa-check-circle'; }
+                                if ($req['status'] === 'rejected') { $statusColor = 'var(--accent-color)'; $statusIcon = 'fa-times-circle'; }
+                                if ($req['status'] === 'pending') { $statusColor = '#f59e0b'; $statusIcon = 'fa-clock'; }
+                            ?>
+                            <div class="workout-item">
+                                <div style="width: 50px; height: 50px; background: <?php echo $statusColor; ?>20; color: <?php echo $statusColor; ?>; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 1.2rem;">
+                                    <i class="fas <?php echo $statusIcon; ?>"></i>
+                                </div>
+                                <div class="workout-info">
+                                    <h4 class="workout-name">Request to Coach <?php echo htmlspecialchars($req['first_name'] . ' ' . $req['last_name']); ?></h4>
+                                    <div class="workout-meta">
+                                        <span><i class="far fa-calendar-alt"></i> <?php echo date('M d, Y h:i A', strtotime($req['created_at'])); ?></span>
+                                        <span style="color: <?php echo $statusColor; ?>; font-weight: 700; text-transform: capitalize;">
+                                            <?php echo ucfirst($req['status']); ?>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <?php
+                // Fetch Upcoming live sessions aimed at this user
+                // Robust matching: Exact Full, Exact First, Starts With First, or User Full Starts With Schedule (reverse)
+                $scheduleSql = "SELECT ts.*, t.first_name as trainer_first, t.last_name as trainer_last 
+                                FROM trainer_schedules ts
+                                JOIN users t ON ts.trainer_id = t.user_id
+                                WHERE (
+                                    ts.client_name = ? 
+                                    OR ts.client_name = ? 
+                                    OR ts.client_name LIKE CONCAT(?, '%')
+                                    OR ? LIKE CONCAT(ts.client_name, '%')
+                                )
+                                AND ts.status = 'upcoming'
+                                AND ts.session_date >= CURDATE()
+                                ORDER BY ts.session_date ASC, ts.session_time ASC
+                                LIMIT 3";
+                $stmt = $conn->prepare($scheduleSql);
+                $mySchedules = [];
+                if ($stmt) {
+                    $stmt->bind_param("ssss", $dbFullName, $userName, $firstNameOnly, $dbFullName);
+                    $stmt->execute();
+                    $mySchedules = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+                    $stmt->close();
+                }
+                ?>
+
+                <!-- Upcoming Sessions Card -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">Upcoming Live Sessions</h3>
+                    </div>
+                    <?php if (empty($mySchedules)): ?>
+                        <div style="text-align: center; padding: 30px; border: 2px dashed #eee; border-radius: 10px;">
+                            <i class="fas fa-calendar-times" style="font-size: 30px; color: #ddd; margin-bottom: 10px;"></i>
+                            <p style="color: var(--text-light); font-size: 14px;">No upcoming sessions scheduled.</p>
+                        </div>
+                    <?php else: ?>
+                        <?php foreach ($mySchedules as $session): 
+                            $sDate = date('M d', strtotime($session['session_date']));
+                            $dayName = date('D', strtotime($session['session_date']));
+                            $sTime = date('h:i A', strtotime($session['session_time']));
+                        ?>
+                        <div class="workout-item live">
+                             <div class="workout-img" style="background: var(--primary-color); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; flex-direction: column; width: 60px; height: 60px;">
+                                <span style="font-size: 10px; opacity: 0.8;"><?php echo $dayName; ?></span>
+                                <span style="font-size: 16px;"><?php echo date('d', strtotime($session['session_date'])); ?></span>
+                             </div>
+                             <div class="workout-info">
+                                 <h4 class="workout-name">
+                                     <?php echo htmlspecialchars($session['session_type']); ?>
+                                     <span class="live-tag">UPCOMING</span>
+                                 </h4>
+                                 <div class="workout-meta">
+                                     <span><i class="far fa-clock"></i> <?php echo $sTime; ?></span>
+                                     <span><i class="fas fa-user-tie"></i> <?php echo htmlspecialchars($session['trainer_first']); ?></span>
+                                 </div>
+                             </div>
+                             <button class="btn-join" onclick='showSessionDetails(<?php echo json_encode($session); ?>)'>Details</button>
+                        </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+
                 <div class="section-card">
                     <div class="section-header">
                         <h3 class="section-title">Your Assigned Plans</h3>
-                        <a href="#" class="view-all">View Full Plan</a>
+
                     </div>
 
                     <div class="workout-list">
@@ -1144,7 +1273,7 @@ $gStmt->close();
                                         <span><i class="fas fa-layer-group"></i> <?php echo ucfirst($w['difficulty']); ?></span>
                                     </div>
                                 </div>
-                                <button class="btn-action">Start Log</button>
+                                <a href="view_my_workout.php?plan_id=<?php echo $w['workout_id']; ?>" class="btn-action" style="text-decoration:none;">View</a>
                             </div>
                             <?php endforeach; ?>
                         <?php endif; ?>
@@ -1154,7 +1283,7 @@ $gStmt->close();
                 <div class="section-card">
                     <div class="section-header">
                         <h3 class="section-title">Assigned Diet Plan</h3>
-                        <a href="#" class="view-all">View Details</a>
+
                     </div>
                     <?php if (empty($assignedDiets)): ?>
                         <p style="color: var(--text-light); padding: 20px; text-align: center;">Your custom diet plan will appear here once assigned.</p>
@@ -1171,7 +1300,7 @@ $gStmt->close();
                                     <span><i class="fas fa-bullseye"></i> Type: <?php echo ucfirst($diet['diet_type']); ?></span>
                                 </div>
                             </div>
-                            <button class="btn-action">View</button>
+                            <a href="view_my_diet.php" class="btn-action" style="text-decoration:none; display:inline-block; text-align:center;">View</a>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -1226,16 +1355,16 @@ $gStmt->close();
                         <h3 class="section-title">Phase Progress</h3>
                     </div>
                     <div class="progress-container">
-                        <div class="progress-circle">
-                            <div class="progress-value">
-                                85%
+                        <div class="progress-circle" id="progressRing">
+                            <div class="progress-value" id="progressText">
+                                0%
                                 <span class="progress-label">On Track</span>
                             </div>
                         </div>
-                        <p style="color: var(--text-light); font-size: 14px; margin-bottom: 20px; text-align: center;">
-                            "Great consistent effort this week. Let's push hard on the legs tomorrow." - Coach Mike</p>
+                        <p id="progressQuote" style="color: var(--text-light); font-size: 14px; margin-bottom: 20px; text-align: center;">
+                            "Your fitness journey begins today. Let's get started!"</p>
 
-                        <button
+                        <button onclick="window.location.href='my_progress.php'"
                             style="width: 100%; padding: 12px; background: var(--bg-color); color: var(--primary-color); border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">View
                             Detailed Analytics</button>
                     </div>
@@ -1315,9 +1444,132 @@ $gStmt->close();
         </div>
     </main>
 
+    <!-- Session Details Modal -->
+    <div id="sessionModal" class="modal-overlay" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
+        <div class="modal-content" style="background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 500px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+                <h3 style="color: var(--primary-color); margin: 0;">Session Details</h3>
+                <button onclick="closeSessionModal()" style="border: none; background: none; font-size: 20px; color: #999; cursor: pointer;">&times;</button>
+            </div>
+            
+            <div style="margin-bottom: 25px;">
+                <div style="display: flex; margin-bottom: 15px; align-items: center;">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                        <i class="fas fa-dumbbell"></i>
+                    </div>
+                    <div>
+                        <span style="font-size: 12px; color: #777;">SESSION TYPE</span>
+                        <h4 style="margin: 0; color: #333;" id="modalSessionType">Workout</h4>
+                    </div>
+                </div>
+
+                <div style="display: flex; margin-bottom: 15px; align-items: center;">
+                     <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--secondary-color); color: white; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <div>
+                        <span style="font-size: 12px; color: #777;">TRAINER</span>
+                        <h4 style="margin: 0; color: #333;" id="modalSessionTrainer">Trainer Name</h4>
+                    </div>
+                </div>
+
+                 <div style="display: flex; margin-bottom: 15px; align-items: center;">
+                     <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--accent-color); color: white; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                        <i class="far fa-clock"></i>
+                    </div>
+                    <div>
+                        <span style="font-size: 12px; color: #777;">DATE & TIME</span>
+                        <h4 style="margin: 0; color: #333;"><span id="modalSessionDate">May 12</span> at <span id="modalSessionTime">10:00 AM</span></h4>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                     <span style="font-size: 12px; color: #777;">STATUS</span>
+                     <p style="margin: 5px 0 0 0; color: var(--success-color); font-weight: 600;" id="modalSessionStatus">UPCOMING</p>
+                </div>
+            </div>
+
+            <button onclick="closeSessionModal()" style="width: 100%; padding: 12px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Close</button>
+        </div>
+    </div>
+
     <script>
+        function showSessionDetails(session) {
+            document.getElementById('modalSessionType').innerText = session.session_type;
+            document.getElementById('modalSessionTrainer').innerText = session.trainer_first + ' ' + session.trainer_last;
+            
+            const d = new Date(session.session_date);
+            const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            document.getElementById('modalSessionDate').innerText = dateStr;
+            
+            // Format time manually or simplistic approach since we have time string
+            // Assuming session.session_time is HH:mm:ss
+            let timeParts = session.session_time.split(':');
+            let h = parseInt(timeParts[0]);
+            let m = timeParts[1];
+            let ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12;
+            h = h ? h : 12; // the hour '0' should be '12'
+            let timeStr = h + ':' + m + ' ' + ampm;
+            
+            document.getElementById('modalSessionTime').innerText = timeStr;
+            document.getElementById('modalSessionStatus').innerText = session.status.toUpperCase();
+            
+            const modal = document.getElementById('sessionModal');
+            modal.style.display = 'flex';
+        }
+
+        function closeSessionModal() {
+            document.getElementById('sessionModal').style.display = 'none';
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             console.log('Pro Dashboard Loaded');
+            
+            // User Data Key Prefix
+            const USER_ID = "<?php echo $userId; ?>";
+            const S_KEY = (key) => `${key}_${USER_ID}`;
+
+            // Sync Stats from LocalStorage
+            const savedCalories = localStorage.getItem(S_KEY('fitnova_calories'));
+            const savedWorkouts = localStorage.getItem(S_KEY('fitnova_workouts'));
+            const savedWeight = localStorage.getItem(S_KEY('fitnova_weight'));
+
+            if (savedCalories) {
+                document.getElementById('dashCalories').innerText = parseInt(savedCalories).toLocaleString();
+            }
+            if (savedWorkouts) {
+                document.getElementById('dashWorkouts').innerText = savedWorkouts;
+            }
+            if (savedWeight) {
+                document.getElementById('dashWeight').innerText = savedWeight + 'kg';
+            }
+
+            // Update Phase Progress (Goal: 5000 calories)
+            const goal = 5000;
+            const currentCal = parseInt(savedCalories) || 0;
+            let pct = Math.round((currentCal / goal) * 100);
+            if (pct > 100) pct = 100;
+
+            const ring = document.getElementById('progressRing');
+            const text = document.getElementById('progressText');
+            const quote = document.getElementById('progressQuote');
+
+            if (ring && text && quote) {
+                // Update Text
+                text.innerHTML = `${pct}% <span class="progress-label">On Track</span>`;
+                
+                // Update Gradient Ring
+                ring.style.background = `conic-gradient(var(--success-color) ${pct}%, #f0f0f0 0)`;
+
+                // Update Quote
+                if (pct === 0) quote.innerText = "Your fitness journey begins today. Let's get started!";
+                else if (pct < 25) quote.innerText = "Great start! Consistency is key. Keep it up!";
+                else if (pct < 50) quote.innerText = "You're making real progress. Keep pushing!";
+                else if (pct < 75) quote.innerText = "Over halfway there! You're crushing it.";
+                else if (pct < 100) quote.innerText = "So close to your goal! Finish strong.";
+                else quote.innerText = "Phase Goal Complete! Amazing work user!";
+            }
         });
 
         function addToCart() {

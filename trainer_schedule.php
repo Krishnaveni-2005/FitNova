@@ -33,26 +33,70 @@ $trainerName = $_SESSION['user_name'];
 $trainerInitials = strtoupper(substr($trainerName, 0, 1) . substr(explode(' ', $trainerName)[1] ?? '', 0, 1));
 
 // Handle AJAX updates
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_schedule') {
-    $scheduleId = $_POST['schedule_id'];
-    $clientName = $conn->real_escape_string($_POST['client_name']);
-    $sessionTime = $_POST['session_time'];
-    $sessionType = $conn->real_escape_string($_POST['session_type']);
+// Handle AJAX updates
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     
-    $updateSql = "UPDATE trainer_schedules SET client_name = ?, session_time = ?, session_type = ? WHERE schedule_id = ? AND trainer_id = ?";
-    $stmt = $conn->prepare($updateSql);
-    $stmt->bind_param("sssii", $clientName, $sessionTime, $sessionType, $scheduleId, $trainerId);
-    
-    if ($stmt->execute()) {
-        echo json_encode(['status' => 'success']);
-    } else {
-        echo json_encode(['status' => 'error', 'message' => $conn->error]);
+    // Update Schedule
+    if ($_POST['action'] === 'update_schedule') {
+        $scheduleId = $_POST['schedule_id'];
+        $clientName = $conn->real_escape_string($_POST['client_name']);
+        $sessionTime = $_POST['session_time'];
+        $sessionType = $conn->real_escape_string($_POST['session_type']);
+        
+        $updateSql = "UPDATE trainer_schedules SET client_name = ?, session_time = ?, session_type = ? WHERE schedule_id = ? AND trainer_id = ?";
+        $stmt = $conn->prepare($updateSql);
+        $stmt->bind_param("sssii", $clientName, $sessionTime, $sessionType, $scheduleId, $trainerId);
+        
+        if ($stmt->execute()) {
+            echo json_encode(['status' => 'success']);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => $conn->error]);
+        }
+        $stmt->close();
+        exit();
     }
-    $stmt->close();
-    exit();
-}
+    
+    // Add Schedule
+    if ($_POST['action'] === 'add_schedule') {
+        $clientName = $conn->real_escape_string($_POST['client_name']);
+        $sessionTime = $_POST['session_time'];
+        $sessionType = $conn->real_escape_string($_POST['session_type']);
+        $today = date('Y-m-d');
+        
+        $insertSql = "INSERT INTO trainer_schedules (trainer_id, client_name, session_time, session_type, session_date, status) VALUES (?, ?, ?, ?, ?, 'upcoming')";
+        $stmt = $conn->prepare($insertSql);
+        $stmt->bind_param("issss", $trainerId, $clientName, $sessionTime, $sessionType, $today);
+        
+        if ($stmt->execute()) {
+            echo json_encode(['status' => 'success', 'id' => $stmt->insert_id]);
+            
+            // Notification System: Find user and notify
+            // Try to match exact name first
+            $findUserSql = "SELECT user_id FROM users WHERE CONCAT(first_name, ' ', last_name) = ? LIMIT 1";
+            $fStmt = $conn->prepare($findUserSql);
+            $fStmt->bind_param("s", $clientName);
+            $fStmt->execute();
+            $fRes = $fStmt->get_result();
+            if ($fRes->num_rows > 0) {
+                $targetUserId = $fRes->fetch_assoc()['user_id'];
+                $trainerName = $_SESSION['user_name'];
+                $notifMsg = "New Session Scheduled: $sessionType at " . date('h:i A', strtotime($sessionTime)) . " with Coach $trainerName.";
+                
+                $notifSql = "INSERT INTO user_notifications (user_id, notification_type, message) VALUES (?, 'session_scheduled', ?)";
+                $nStmt = $conn->prepare($notifSql);
+                $nStmt->bind_param("is", $targetUserId, $notifMsg);
+                $nStmt->execute();
+                $nStmt->close();
+            }
+            $fStmt->close();
 
-// Fetch schedules for today
+        } else {
+            echo json_encode(['status' => 'error', 'message' => $conn->error]);
+        }
+        $stmt->close();
+        exit();
+    }
+}
 $today = date('Y-m-d');
 $sql = "SELECT * FROM trainer_schedules WHERE trainer_id = ? AND session_date = ? ORDER BY session_time ASC";
 $stmt = $conn->prepare($sql);
@@ -450,6 +494,9 @@ $stmt->close();
             <a href="trainer_diets.php" class="menu-item">
                 <i class="fas fa-utensils"></i> Diet Plans
             </a>
+            <a href="trainer_achievements.php" class="menu-item">
+                <i class="fas fa-medal"></i> Achievements
+            </a>
             <a href="trainer_performance.php" class="menu-item">
                 <i class="fas fa-chart-line"></i> Performance
             </a>
@@ -461,14 +508,17 @@ $stmt->close();
             </a>
         </nav>
 
-        <div class="user-profile-preview">
-            <div class="user-avatar-sm"><?php echo $trainerInitials; ?></div>
-            <div class="user-info-sm">
-                <h4><?php echo htmlspecialchars($trainerName); ?></h4>
-                <p>Expert Trainer</p>
+        <div class="user-profile-preview" style="padding: 20px; border-top: 1px solid #E9ECEF; display: flex; align-items: center; gap: 12px; margin-top: auto; background: #fff;">
+            <div style="width: 40px; height: 40px; background-color: var(--primary-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                <?php echo $trainerInitials; ?>
             </div>
-            <a href="logout.php" style="margin-left: auto; color: var(--text-light);"><i
-                    class="fas fa-sign-out-alt fa-flip-horizontal"></i></a>
+            <div>
+                <h4 style="font-size:15px; margin:0; color:#333; font-weight:600;"><?php echo htmlspecialchars($trainerName); ?></h4>
+                <p style="font-size:11px; margin:0; color:#64748b; text-transform:uppercase; font-weight:600; letter-spacing:0.5px;">Expert Trainer</p>
+            </div>
+            <a href="logout.php" title="Logout" style="margin-left: auto; color: #64748b; text-decoration: none; font-size: 16px; transition: 0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#64748b'">
+                <i class="fas fa-sign-out-alt"></i>
+            </a>
         </div>
     </aside>
 
@@ -539,11 +589,37 @@ $stmt->close();
         </button>
     </main>
 
+    <!-- Add Session Modal -->
+    <div id="addSessionModal" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center;">
+        <div class="modal-content" style="background:white; padding:30px; border-radius:12px; width:400px; box-shadow:0 10px 30px rgba(0,0,0,0.2);">
+            <h3 style="margin-bottom:20px; color:var(--primary-color);">Add New Session</h3>
+            <form id="addSessionForm">
+                <div style="margin-bottom:15px;">
+                    <label style="display:block; margin-bottom:5px; font-weight:500; font-size:14px;">Client Name</label>
+                    <input type="text" name="client_name" required style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+                </div>
+                <div style="margin-bottom:15px;">
+                    <label style="display:block; margin-bottom:5px; font-weight:500; font-size:14px;">Time</label>
+                    <input type="time" name="session_time" required style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+                </div>
+                <div style="margin-bottom:20px;">
+                    <label style="display:block; margin-bottom:5px; font-weight:500; font-size:14px;">Session Type</label>
+                    <input type="text" name="session_type" placeholder="e.g. HIIT, Yoga" required style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:10px;">
+                    <button type="button" onclick="closeModal()" style="padding:10px 20px; border:1px solid #ddd; background:white; border-radius:8px; cursor:pointer;">Cancel</button>
+                    <button type="submit" style="padding:10px 20px; background:var(--primary-color); color:white; border:none; border-radius:8px; cursor:pointer;">Add Session</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         const toggleEditBtn = document.getElementById('toggleEditBtn');
         const mainContent = document.getElementById('main-content');
         const editActionsCols = document.querySelectorAll('.edit-actions-col');
         const addRowBtn = document.getElementById('addRowBtn');
+        const addModal = document.getElementById('addSessionModal');
 
         toggleEditBtn.addEventListener('click', () => {
             const isActive = toggleEditBtn.classList.toggle('active');
@@ -620,9 +696,37 @@ $stmt->close();
             return `${h}:${minutes} ${ampm}`;
         }
         
-        // Add row functionality could be implemented here to show full dynamism
+        // Modal Logic
         addRowBtn.addEventListener('click', () => {
-            alert('Add row functionality would open a modal to select a client and set a time. For this demo, please edit existing rows!');
+            addModal.style.display = 'flex';
+        });
+        
+        function closeModal() {
+            addModal.style.display = 'none';
+        }
+        
+        document.getElementById('addSessionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            formData.append('action', 'add_schedule');
+            
+            fetch('trainer_schedule.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    location.reload(); 
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            });
+        });
+
+        // Close modal on outside click
+        addModal.addEventListener('click', (e) => {
+            if (e.target === addModal) closeModal();
         });
     </script>
 </body>
