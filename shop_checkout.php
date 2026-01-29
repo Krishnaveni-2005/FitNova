@@ -54,6 +54,7 @@ $total = $subtotal + $shipping + $tax;
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
         :root {
             --primary-color: #0F2C59;
@@ -113,46 +114,20 @@ $total = $subtotal + $shipping + $tax;
     <div class="checkout-container">
         <!-- Payment Details -->
         <div class="checkout-left">
-            <h2>Select Payment Method</h2>
-            <div class="payment-methods">
-                <div class="payment-method active" onclick="selectMethod('card')">
-                    <i class="fas fa-credit-card"></i> Card
-                </div>
-                <div class="payment-method" onclick="selectMethod('gpay')">
-                    <i class="fab fa-google-pay"></i> UPI / GPay
-                </div>
-                <div class="payment-method" onclick="selectMethod('cod')">
-                    <i class="fas fa-money-bill-wave"></i> Cash on Delivery
-                </div>
+            <h2>Complete Your Payment</h2>
+            
+            <div style="background: #f8f9fa; padding: 30px; border-radius: 12px; margin-bottom: 30px; text-align: center; border-left: 4px solid var(--primary-color);">
+                <i class="fas fa-shield-alt" style="color: var(--primary-color); font-size: 3rem; margin-bottom: 20px;"></i>
+                <h3 style="margin-bottom: 15px; font-size: 1.3rem; color: var(--primary-color);">Secure Payment via Razorpay</h3>
+                <p style="color: #666; line-height: 1.6; font-size: 1rem;">Click the button below to proceed with a secure payment gateway.</p>
             </div>
 
-            <!-- Card Form -->
-            <div id="card-form" class="form-section active">
-                <h3>Card Details</h3>
-                <input type="text" class="form-input" placeholder="Card Number" maxlength="19">
-                <div style="display: flex; gap: 20px;">
-                    <input type="text" class="form-input" placeholder="MM/YY" maxlength="5">
-                    <input type="text" class="form-input" placeholder="CVV" maxlength="3">
-                </div>
-                <input type="text" class="form-input" placeholder="Cardholder Name">
-            </div>
-
-            <!-- UPI Form -->
-            <div id="gpay-form" class="form-section">
-                <h3>UPI Payment</h3>
-                <input type="text" class="form-input" placeholder="Enter UPI ID (e.g. mobile@upi)">
-                <p style="font-size: 0.9rem; color: #666;">A payment request will be sent to your UPI app.</p>
-            </div>
-
-            <!-- COD Form -->
-            <div id="cod-form" class="form-section">
-                <h3>Cash on Delivery</h3>
-                <p style="font-size: 0.95rem; color: #666; line-height: 1.6;">Pay securely with cash when your order arrives. Please ensure you have the exact amount ready.</p>
-            </div>
-
-            <button type="button" class="btn-pay" id="payBtn" onclick="processPayment()">
+            <button type="button" class="btn-pay" id="payBtn">
                 Pay <?php echo '₹' . number_format($total, 2); ?>
             </button>
+            <div style="text-align: center; margin-top: 20px; color: #777; font-size: 0.85rem;">
+                <i class="fas fa-lock"></i> 100% Secure Transaction
+            </div>
         </div>
 
         <!-- Order Summary -->
@@ -210,78 +185,95 @@ $total = $subtotal + $shipping + $tax;
     </script>
 
     <script>
-        let selectedPaymentMethod = 'card';
-
-        function selectMethod(method) {
-            document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.form-section').forEach(el => el.classList.remove('active'));
+        const totalAmount = <?php echo $total; ?>;
+        
+        document.getElementById('payBtn').addEventListener('click', function () {
+            const btn = this;
             
-            // Find clicked element (handling child clicks)
-            const clicked = event.target.closest('.payment-method');
-            clicked.classList.add('active');
-            selectedPaymentMethod = method;
-            
-            document.getElementById(method + '-form').classList.add('active');
-
-            const btn = document.getElementById('payBtn');
-            const amt = "<?php echo '₹' . number_format($total, 2); ?>";
-            if(method === 'cod') {
-                btn.innerText = "Place Order " + amt;
-            } else {
-                btn.innerText = "Pay " + amt;
+            // Check if Razorpay is loaded
+            if (typeof Razorpay === 'undefined') {
+                alert('Payment gateway is loading. Please wait a moment and try again.');
+                console.error('Razorpay SDK not loaded');
+                return;
             }
-        }
-
-        function processPayment() {
-            const btn = document.getElementById('payBtn');
-            const originalText = btn.innerText;
             
-            // Basic validation
-            if (selectedPaymentMethod === 'card') {
-                // ... validate card inputs ...
-            }
-            // ...
-
-            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Processing...';
-            btn.style.opacity = '0.8';
-            btn.disabled = true;
-
-            const payload = {
-                items: checkoutItems,
-                payment_method: selectedPaymentMethod,
-                ...deliveryDetails
-            };
-
-            fetch('place_order.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    // Clear cart if it was a bulk order (can do this by clearing localStorage if we are confirmed it was a cart checkout, 
-                    // or just always clear cart for simplicity since user likely just bought everything in their cart or bought a single item)
-                    // Let's assume we clear cart to be safe/clean.
-                    localStorage.removeItem('cart');
+            var options = {
+                "key": "rzp_test_S9XwIrDZ3gAbfv", // Razorpay Key ID
+                "amount": totalAmount * 100, // Amount in paise
+                "currency": "INR",
+                "name": "FitNova Shop",
+                "description": "Purchase from FitShop",
+                "image": "https://via.placeholder.com/100x100.png?text=FitNova",
+                "handler": function (response) {
+                    // Payment successful
+                    btn.innerHTML = '<i class="fas fa-check-circle"></i> Payment Successful';
+                    btn.style.backgroundColor = '#2ECC71';
+                    btn.disabled = true;
                     
-                    alert('Order Placed Successfully! Your gear is on its way.');
-                    window.location.href = "order_confirmation.php?id=" + data.order_id; 
-                } else {
-                    alert('Order Failed: ' + data.message);
-                    btn.innerHTML = originalText;
+                    // Process order
+                    const payload = {
+                        items: checkoutItems,
+                        payment_method: 'razorpay',
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        ...deliveryDetails
+                    };
+                    
+                    fetch('place_order.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            localStorage.removeItem('cart');
+                            setTimeout(() => {
+                                alert('Order Placed Successfully! Your gear is on its way.');
+                                window.location.href = "order_confirmation.php?id=" + data.order_id;
+                            }, 1000);
+                        } else {
+                            alert('Order Failed: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Payment received but error processing order. Please contact support.');
+                    });
+                },
+                "prefill": {
+                    "name": "",
+                    "email": "",
+                    "contact": ""
+                },
+                "theme": {
+                    "color": "#0F2C59"
+                },
+                "modal": {
+                    "ondismiss": function() {
+                        btn.innerHTML = btn.getAttribute('data-original-text') || 'Pay ₹' + totalAmount.toFixed(2);
+                        btn.disabled = false;
+                        btn.style.opacity = '1';
+                    }
+                }
+            };
+            
+            btn.setAttribute('data-original-text', btn.innerText);
+            
+            try {
+                var rzp = new Razorpay(options);
+                rzp.on('payment.failed', function (response){
+                    alert('Payment Failed: ' + response.error.description);
+                    btn.innerHTML = btn.getAttribute('data-original-text');
                     btn.disabled = false;
                     btn.style.opacity = '1';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred during payment.');
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-                btn.style.opacity = '1';
-            });
-        }
+                });
+                
+                rzp.open();
+            } catch (error) {
+                console.error('Razorpay Error:', error);
+                alert('Error initializing payment gateway. Please refresh the page and try again.');
+            }
+        });
     </script>
 </body>
 </html>

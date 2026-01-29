@@ -406,3 +406,583 @@ Stack trace:
 [18-Jan-2026 10:35:33 Europe/Berlin] PHP Warning:  Undefined variable $trainerName in C:\test\htdocs\fitnova\trainer_workouts.php on line 194
 [18-Jan-2026 10:40:29 Europe/Berlin] PHP Warning:  Undefined variable $trainerInitials in C:\test\htdocs\fitnova\trainer_workouts.php on line 191
 [18-Jan-2026 10:40:29 Europe/Berlin] PHP Warning:  Undefined variable $trainerName in C:\test\htdocs\fitnova\trainer_workouts.php on line 194
+[19-Jan-2026 18:58:46 Europe/Berlin] PHP Warning:  Undefined array key "age" in C:\test\htdocs\fitnova\macro_calculator.php on line 20
+[19-Jan-2026 18:58:46 Europe/Berlin] PHP Warning:  Undefined array key "gender" in C:\test\htdocs\fitnova\macro_calculator.php on line 21
+[19-Jan-2026 18:58:46 Europe/Berlin] PHP Warning:  Undefined array key "height" in C:\test\htdocs\fitnova\macro_calculator.php on line 22
+[19-Jan-2026 18:58:46 Europe/Berlin] PHP Warning:  Undefined array key "weight" in C:\test\htdocs\fitnova\macro_calculator.php on line 23
+[19-Jan-2026 18:58:46 Europe/Berlin] PHP Warning:  Undefined array key "activity" in C:\test\htdocs\fitnova\macro_calculator.php on line 24
+[19-Jan-2026 18:58:46 Europe/Berlin] PHP Warning:  Undefined array key "goal" in C:\test\htdocs\fitnova\macro_calculator.php on line 25
+[20-Jan-2026 05:14:32 Europe/Berlin] PHP Warning:  Undefined variable $trainerInitials in C:\test\htdocs\fitnova\trainer_workouts.php on line 191
+[20-Jan-2026 05:14:32 Europe/Berlin] PHP Warning:  Undefined variable $trainerName in C:\test\htdocs\fitnova\trainer_workouts.php on line 194
+[20-Jan-2026 05:37:38 Europe/Berlin] PHP Warning:  Undefined variable $trainerInitials in C:\test\htdocs\fitnova\trainer_workouts.php on line 191
+[20-Jan-2026 05:37:38 Europe/Berlin] PHP Warning:  Undefined variable $trainerName in C:\test\htdocs\fitnova\trainer_workouts.php on line 194
+[23-Jan-2026 18:44:48 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xamppp\htdocs\fitnova\healthy_recipes.php:8
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\healthy_recipes.php on line 8
+[23-Jan-2026 18:44:49 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xamppp\htdocs\fitnova\healthy_recipes.php:8
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\healthy_recipes.php on line 8
+[23-Jan-2026 18:44:52 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xamppp\htdocs\fitnova\healthy_recipes.php:8
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\healthy_recipes.php on line 8
+[23-Jan-2026 18:44:54 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xamppp\htdocs\fitnova\healthy_recipes.php:8
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\healthy_recipes.php on line 8
+[23-Jan-2026 18:44:56 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xamppp\htdocs\fitnova\healthy_recipes.php:8
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\healthy_recipes.php on line 8
+[23-Jan-2026 18:44:58 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xamppp\htdocs\fitnova\healthy_recipes.php:8
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\healthy_recipes.php on line 8
+[23-Jan-2026 18:46:57 Europe/Berlin] Diet Prepare Error: Unknown column 'user_id' in 'where clause'
+[23-Jan-2026 18:46:57 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xamppp\htdocs\fitnova\prouser_dashboard.php:130
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\prouser_dashboard.php on line 130
+[24-Jan-2026 17:15:31 Europe/Berlin] PHP Warning:  Undefined variable $trainers in C:\xamppp\htdocs\fitnova\admin_dashboard.php on line 912
+[24-Jan-2026 17:15:31 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: count(): Argument #1 ($value) must be of type Countable|array, null given in C:\xamppp\htdocs\fitnova\admin_dashboard.php:912
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\admin_dashboard.php on line 912
+[24-Jan-2026 17:15:33 Europe/Berlin] PHP Warning:  Undefined variable $trainers in C:\xamppp\htdocs\fitnova\admin_dashboard.php on line 912
+[24-Jan-2026 17:15:33 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: count(): Argument #1 ($value) must be of type Countable|array, null given in C:\xamppp\htdocs\fitnova\admin_dashboard.php:912
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\admin_dashboard.php on line 912
+[25-Jan-2026 17:50:47 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xamppp\htdocs\fitnova\setup_gym_db.php:35
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\setup_gym_db.php on line 35
+[25-Jan-2026 17:53:50 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 179
+[25-Jan-2026 17:53:50 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 179
+[25-Jan-2026 17:53:50 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 179
+[25-Jan-2026 17:53:50 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 179
+[25-Jan-2026 17:54:04 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 250
+[25-Jan-2026 17:54:04 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 250
+[25-Jan-2026 17:54:04 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 250
+[25-Jan-2026 17:54:04 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 250
+[25-Jan-2026 17:54:20 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 179
+[25-Jan-2026 17:54:20 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 179
+[25-Jan-2026 17:54:20 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 179
+[25-Jan-2026 17:54:20 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 179
+[25-Jan-2026 17:57:38 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 199
+[25-Jan-2026 17:57:38 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 199
+[25-Jan-2026 17:57:38 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 199
+[25-Jan-2026 17:57:38 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 199
+[25-Jan-2026 17:59:52 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 281
+[25-Jan-2026 17:59:52 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 281
+[25-Jan-2026 17:59:52 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 281
+[25-Jan-2026 17:59:52 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 281
+[25-Jan-2026 18:01:10 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 281
+[25-Jan-2026 18:01:10 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 281
+[25-Jan-2026 18:01:10 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 281
+[25-Jan-2026 18:01:10 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 281
+[25-Jan-2026 18:01:12 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 281
+[25-Jan-2026 18:01:12 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 281
+[25-Jan-2026 18:01:12 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 281
+[25-Jan-2026 18:01:12 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 281
+[25-Jan-2026 18:02:43 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 279
+[25-Jan-2026 18:02:43 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 279
+[25-Jan-2026 18:02:43 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 279
+[25-Jan-2026 18:02:43 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 279
+[25-Jan-2026 18:04:54 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:04:54 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:04:54 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:04:54 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:05:07 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:05:07 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:05:07 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:05:07 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:06:55 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:06:55 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:06:55 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:06:55 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:09:43 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:09:43 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:09:43 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:09:43 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:09:59 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:09:59 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:09:59 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:09:59 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:11:34 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:11:34 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:11:34 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:11:34 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:11:45 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:11:45 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:11:45 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:11:45 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:12:19 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:12:19 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:12:19 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:12:19 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:15:25 Europe/Berlin] PHP Warning:  Attempt to read property "num_rows" on bool in C:\xamppp\htdocs\fitnova\setup_settings_db.php on line 27
+[25-Jan-2026 18:15:25 Europe/Berlin] PHP Warning:  Attempt to read property "num_rows" on bool in C:\xamppp\htdocs\fitnova\setup_settings_db.php on line 27
+[25-Jan-2026 18:15:25 Europe/Berlin] PHP Warning:  Attempt to read property "num_rows" on bool in C:\xamppp\htdocs\fitnova\setup_settings_db.php on line 27
+[25-Jan-2026 18:17:56 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:17:56 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:17:56 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:17:56 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:20:27 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:20:27 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:20:27 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:20:27 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 280
+[25-Jan-2026 18:23:06 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:23:06 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:23:06 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:23:06 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:23:13 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:23:13 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:23:13 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:23:13 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:23:29 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:23:29 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:23:29 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:23:29 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:23:39 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:23:39 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:23:39 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:23:39 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:23:42 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:23:42 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:23:42 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:23:42 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:30:31 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:30:31 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:30:31 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:30:31 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:30:36 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:30:36 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:30:36 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:30:36 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:30:56 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:30:56 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:30:56 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:30:56 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:33:36 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:33:36 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:33:36 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:33:36 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:34:25 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:34:25 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:34:25 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:34:25 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:34:26 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:34:26 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:34:26 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:34:26 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 282
+[25-Jan-2026 18:37:14 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[25-Jan-2026 18:37:14 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[25-Jan-2026 18:37:14 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[25-Jan-2026 18:37:14 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[25-Jan-2026 18:37:37 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:37:37 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:37:37 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:37:37 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:38:06 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:38:06 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:38:06 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:38:06 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:42:05 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[25-Jan-2026 18:42:05 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[25-Jan-2026 18:42:05 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[25-Jan-2026 18:42:05 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[25-Jan-2026 18:42:09 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:42:09 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:42:09 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:42:09 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:42:43 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:42:43 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:42:43 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:42:43 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:45:19 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[25-Jan-2026 18:45:19 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[25-Jan-2026 18:45:19 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[25-Jan-2026 18:45:19 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[25-Jan-2026 18:45:25 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:45:25 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:45:25 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:45:25 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:45:48 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[25-Jan-2026 18:45:48 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[25-Jan-2026 18:45:48 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[25-Jan-2026 18:45:48 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[25-Jan-2026 18:45:51 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:45:51 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:45:51 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:45:51 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:47:18 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:47:18 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:47:18 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:47:18 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:47:21 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:47:21 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:47:21 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:47:21 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:47:21 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:47:21 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:47:21 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:47:21 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:47:21 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:47:21 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:47:21 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:47:21 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:47:25 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 284
+[25-Jan-2026 18:47:25 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 284
+[25-Jan-2026 18:47:25 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 284
+[25-Jan-2026 18:47:25 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 284
+[25-Jan-2026 18:47:29 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:47:29 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:47:29 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:47:29 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:48:09 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 284
+[25-Jan-2026 18:48:09 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 284
+[25-Jan-2026 18:48:09 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 284
+[25-Jan-2026 18:48:09 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 284
+[25-Jan-2026 18:51:37 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:51:37 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:51:37 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:51:37 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:51:52 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 284
+[25-Jan-2026 18:51:52 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 284
+[25-Jan-2026 18:51:52 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 284
+[25-Jan-2026 18:51:52 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 284
+[25-Jan-2026 18:51:58 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 284
+[25-Jan-2026 18:51:58 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 284
+[25-Jan-2026 18:51:58 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 284
+[25-Jan-2026 18:51:58 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 284
+[25-Jan-2026 18:52:10 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:52:10 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:52:10 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:52:10 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:53:37 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:53:37 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:53:37 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:53:37 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:55:30 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 284
+[25-Jan-2026 18:55:30 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 284
+[25-Jan-2026 18:55:30 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 284
+[25-Jan-2026 18:55:30 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 284
+[25-Jan-2026 18:55:33 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:55:33 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:55:33 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:55:33 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:56:31 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:56:31 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:56:31 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:56:31 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:57:17 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:57:17 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:57:17 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:57:17 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:57:33 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:57:33 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:57:33 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:57:33 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:57:43 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:57:43 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:57:43 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:57:43 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 18:57:45 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 284
+[25-Jan-2026 18:57:45 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 284
+[25-Jan-2026 18:57:45 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 284
+[25-Jan-2026 18:57:45 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 284
+[25-Jan-2026 18:59:36 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[25-Jan-2026 18:59:36 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[25-Jan-2026 18:59:36 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[25-Jan-2026 18:59:36 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[25-Jan-2026 19:01:32 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[25-Jan-2026 19:01:32 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[25-Jan-2026 19:01:32 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[25-Jan-2026 19:01:32 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[25-Jan-2026 19:06:09 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[25-Jan-2026 19:06:09 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[25-Jan-2026 19:06:09 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[25-Jan-2026 19:06:09 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[25-Jan-2026 19:06:25 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 19:06:25 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 19:06:25 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[25-Jan-2026 19:06:25 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 14:29:46 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 14:29:46 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 14:29:46 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 14:29:46 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 14:45:17 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 14:45:17 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 14:45:17 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 14:45:17 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 14:45:23 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 14:45:23 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 14:45:23 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 14:45:23 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 14:45:32 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 14:45:32 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 14:45:32 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 14:45:32 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 14:45:35 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 14:45:35 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 14:45:35 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 14:45:35 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 14:45:39 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 14:45:39 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 14:45:39 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 14:45:39 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 14:58:04 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 14:58:04 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 14:58:04 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 14:58:04 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 14:58:09 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 14:58:09 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 14:58:09 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 14:58:09 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:01:38 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:01:38 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:01:38 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:01:38 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:01:50 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:01:50 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:01:50 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:01:50 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:03:31 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:03:31 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:03:31 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:03:31 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:03:35 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:03:35 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:03:35 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:03:35 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:09:39 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:09:39 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:09:39 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:09:39 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:09:44 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:09:44 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:09:44 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:09:44 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:09:48 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:09:48 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:09:48 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:09:48 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:10:20 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:10:20 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:10:20 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:10:20 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:12:10 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:12:10 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:12:10 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:12:10 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:12:12 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:12:12 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:12:12 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:12:12 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:12:12 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:12:12 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:12:12 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:12:12 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:12:18 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:12:18 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:12:18 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:12:18 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:12:21 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:12:21 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:12:21 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:12:21 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:12:25 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:12:25 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:12:25 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:12:25 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:14:07 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:14:07 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:14:07 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:14:07 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:14:13 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:14:13 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:14:13 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:14:13 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:14:18 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:14:18 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:14:18 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:14:18 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:16:21 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:16:21 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:16:21 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:16:21 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:20:30 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:20:30 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:20:30 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:20:30 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:20:41 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:20:41 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:20:41 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:20:41 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:20:42 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:20:42 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:20:42 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:20:42 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:20:47 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:20:47 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:20:47 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:20:47 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:25:29 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:25:29 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:25:29 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:25:29 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:25:41 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:25:41 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:25:41 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:25:41 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:25:43 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:25:43 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:25:43 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:25:43 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:34:00 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:34:00 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:34:00 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:34:00 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:34:06 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:34:06 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:34:06 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:34:06 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:34:15 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:34:15 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:34:15 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:34:15 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:34:41 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:34:41 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:34:41 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:34:41 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:42:57 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:42:57 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:42:57 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:42:57 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:43:06 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:43:06 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:43:06 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:43:06 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:43:16 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:43:16 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:43:16 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:43:16 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 15:57:26 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:57:26 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:57:26 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 15:57:26 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 16:00:52 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 16:00:52 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 16:00:52 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 16:00:52 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 16:00:56 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:00:56 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:00:56 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:00:56 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:01:05 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 16:01:05 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 16:01:05 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 16:01:05 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 16:01:48 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:01:48 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:01:48 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:01:48 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:03:39 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:03:39 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:03:39 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:03:39 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:03:41 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:03:41 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:03:41 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:03:41 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:03:41 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:03:41 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:03:41 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:03:41 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:03:41 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:03:41 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:03:41 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:03:41 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:03:41 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:03:41 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:03:41 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:03:41 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:03:44 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 16:03:44 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 16:03:44 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 16:03:44 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 16:03:54 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:03:54 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:03:54 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:03:54 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:03:56 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:03:56 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:03:56 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:03:56 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:04:00 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 16:04:00 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 16:04:00 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 16:04:00 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym_owner_dashboard.php on line 285
+[26-Jan-2026 16:04:07 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:04:07 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:04:07 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:04:07 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:04:08 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:04:08 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:04:08 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:04:08 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:04:15 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:04:15 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:04:15 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[26-Jan-2026 16:04:15 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[27-Jan-2026 15:33:55 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[27-Jan-2026 15:33:55 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[27-Jan-2026 15:33:55 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[27-Jan-2026 15:33:55 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[27-Jan-2026 16:19:49 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[27-Jan-2026 16:19:49 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[27-Jan-2026 16:19:49 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[27-Jan-2026 16:19:49 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[27-Jan-2026 17:11:09 Europe/Berlin] PHP Warning:  Undefined variable $trainerInitials in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 191
+[27-Jan-2026 17:11:09 Europe/Berlin] PHP Warning:  Undefined variable $trainerName in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 194
+[27-Jan-2026 17:17:50 Europe/Berlin] PHP Warning:  Undefined variable $trainerInitials in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 191
+[27-Jan-2026 17:17:50 Europe/Berlin] PHP Warning:  Undefined variable $trainerName in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 194
+[27-Jan-2026 17:25:30 Europe/Berlin] PHP Warning:  Undefined variable $trainerInitials in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 191
+[27-Jan-2026 17:25:30 Europe/Berlin] PHP Warning:  Undefined variable $trainerName in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 194
+[27-Jan-2026 17:28:48 Europe/Berlin] PHP Warning:  Undefined variable $trainerInitials in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 191
+[27-Jan-2026 17:28:48 Europe/Berlin] PHP Warning:  Undefined variable $trainerName in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 194
+[27-Jan-2026 17:51:44 Europe/Berlin] PHP Warning:  Undefined variable $trainerInitials in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 192
+[27-Jan-2026 17:51:44 Europe/Berlin] PHP Warning:  Undefined variable $trainerName in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 195
+[27-Jan-2026 17:58:46 Europe/Berlin] PHP Warning:  Undefined variable $trainerInitials in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 192
+[27-Jan-2026 17:58:46 Europe/Berlin] PHP Warning:  Undefined variable $trainerName in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 195
+[27-Jan-2026 17:59:02 Europe/Berlin] PHP Warning:  Undefined variable $trainerInitials in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 192
+[27-Jan-2026 17:59:02 Europe/Berlin] PHP Warning:  Undefined variable $trainerName in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 195
+[27-Jan-2026 17:59:54 Europe/Berlin] PHP Warning:  Undefined variable $trainerInitials in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 192
+[27-Jan-2026 17:59:54 Europe/Berlin] PHP Warning:  Undefined variable $trainerName in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 195
+[27-Jan-2026 18:07:56 Europe/Berlin] PHP Warning:  Undefined variable $trainerInitials in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 192
+[27-Jan-2026 18:07:56 Europe/Berlin] PHP Warning:  Undefined variable $trainerName in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 195
+[27-Jan-2026 18:16:21 Europe/Berlin] PHP Warning:  Undefined variable $trainerInitials in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 196
+[27-Jan-2026 18:16:21 Europe/Berlin] PHP Warning:  Undefined variable $trainerName in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 199
+[27-Jan-2026 18:20:41 Europe/Berlin] PHP Warning:  Undefined variable $trainerInitials in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 196
+[27-Jan-2026 18:20:41 Europe/Berlin] PHP Warning:  Undefined variable $trainerName in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 199
+[27-Jan-2026 18:20:51 Europe/Berlin] PHP Warning:  Undefined variable $trainerInitials in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 196
+[27-Jan-2026 18:20:51 Europe/Berlin] PHP Warning:  Undefined variable $trainerName in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 199
+[28-Jan-2026 17:27:44 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[28-Jan-2026 17:27:44 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[28-Jan-2026 17:27:44 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[28-Jan-2026 17:27:44 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[29-Jan-2026 08:00:53 Europe/Berlin] PHP Warning:  Undefined variable $trainerInitials in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 196
+[29-Jan-2026 08:00:53 Europe/Berlin] PHP Warning:  Undefined variable $trainerName in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 199
+[29-Jan-2026 08:00:59 Europe/Berlin] PHP Warning:  Undefined variable $trainerInitials in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 196
+[29-Jan-2026 08:00:59 Europe/Berlin] PHP Warning:  Undefined variable $trainerName in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 199
+[29-Jan-2026 09:22:42 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[29-Jan-2026 09:22:42 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[29-Jan-2026 09:22:42 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[29-Jan-2026 09:22:42 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[29-Jan-2026 09:36:21 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[29-Jan-2026 09:36:21 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[29-Jan-2026 09:36:21 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247
+[29-Jan-2026 09:36:21 Europe/Berlin] PHP Warning:  Undefined array key "icon_class" in C:\xamppp\htdocs\fitnova\gym.php on line 247

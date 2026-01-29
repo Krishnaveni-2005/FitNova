@@ -73,37 +73,37 @@ require 'db_connect.php';
         .dot.unavailable { background: var(--danger-color); box-shadow: 0 0 10px var(--danger-color); }
 
         /* Grid Layouts */
-        .gym-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; margin-bottom: 80px; }
+        .gym-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; margin-bottom: 60px; }
 
         /* Equipment Card */
         .equip-card {
             background: var(--white);
-            border-radius: 24px;
-            padding: 25px;
+            border-radius: 16px;
+            padding: 20px;
             box-shadow: var(--shadow);
             transition: var(--transition);
             border: 1px solid rgba(255, 255, 255, 0.3);
             position: relative;
             overflow: hidden;
         }
-        .equip-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        .equip-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
         .equip-icon {
-            width: 60px;
-            height: 60px;
+            width: 45px;
+            height: 45px;
             background: rgba(79, 172, 254, 0.1);
-            border-radius: 18px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             color: var(--accent-color);
-            font-size: 1.5rem;
+            font-size: 1.2rem;
         }
-        .equip-card h3 { font-size: 1.25rem; font-weight: 700; margin-bottom: 10px; }
-        .equip-info { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 0.9rem; color: var(--text-light); }
-        .progress-container { height: 8px; background: #eee; border-radius: 10px; overflow: hidden; margin-bottom: 10px; }
+        .equip-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+        .equip-info { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 0.8rem; color: var(--text-light); }
+        .progress-container { height: 6px; background: #eee; border-radius: 10px; overflow: hidden; margin-bottom: 8px; }
         .progress-bar { height: 100%; border-radius: 10px; transition: width 1s ease-in-out; }
-        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+        .status-badge { display: inline-block; padding: 3px 10px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
         .status-badge.available { background: rgba(0, 219, 222, 0.1); color: var(--success-color); }
         .status-badge.busy { background: rgba(250, 208, 46, 0.1); color: #b7950b; }
         .status-badge.unavailable { background: rgba(255, 78, 80, 0.1); color: var(--danger-color); }
@@ -111,31 +111,31 @@ require 'db_connect.php';
         /* Trainer Card */
         .trainer-card {
             background: var(--white);
-            border-radius: 24px;
+            border-radius: 16px;
             padding: 0;
             overflow: hidden;
             box-shadow: var(--shadow);
             transition: var(--transition);
             text-align: center;
         }
-        .trainer-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
-        .trainer-img-wrapper { position: relative; height: 200px; }
+        .trainer-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+        .trainer-img-wrapper { position: relative; height: 160px; }
         .trainer-img { width: 100%; height: 100%; object-fit: cover; }
         .trainer-status-indicator {
             position: absolute;
-            bottom: 15px;
-            right: 15px;
-            width: 15px;
-            height: 15px;
+            bottom: 10px;
+            right: 10px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
-            border: 3px solid white;
+            border: 2px solid white;
         }
-        .trainer-content { padding: 25px; }
-        .trainer-content h3 { font-size: 1.3rem; margin-bottom: 5px; }
-        .trainer-specialty { color: var(--accent-color); font-weight: 600; font-size: 0.9rem; margin-bottom: 15px; display: block; }
-        .trainer-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border-top: 1px solid #eee; padding-top: 15px; }
-        .stat-item span { display: block; font-size: 0.75rem; color: var(--text-light); }
-        .stat-item strong { font-size: 1rem; color: var(--primary-color); }
+        .trainer-content { padding: 15px; }
+        .trainer-content h3 { font-size: 1.1rem; margin-bottom: 4px; }
+        .trainer-specialty { color: var(--accent-color); font-weight: 600; font-size: 0.8rem; margin-bottom: 10px; display: block; }
+        .trainer-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; border-top: 1px solid #eee; padding-top: 10px; }
+        .stat-item span { display: block; font-size: 0.7rem; color: var(--text-light); }
+        .stat-item strong { font-size: 0.9rem; color: var(--primary-color); }
 
         /* Live Animation */
         .live-pulse {
@@ -193,8 +193,8 @@ require 'db_connect.php';
             <h1>Physical Gym Status</h1>
             <p>Check real-time equipment availability and trainer schedules before you head out. Stay efficient with your workout time.</p>
             <div style="margin-top: 25px; display: inline-flex; align-items: center; background: rgba(255,255,255,0.15); padding: 12px 25px; border-radius: 50px; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.2);">
-                <i class="fas <?php echo $iconClass; ?>" style="color: <?php echo $iconColor; ?>; margin-right: 12px; font-size: 1.2rem;"></i>
-                <span style="font-weight: 600; font-size: 1.1rem; letter-spacing: 0.5px;"><?php echo htmlspecialchars($timeText); ?></span>
+                <i id="gym-status-icon" class="fas <?php echo $iconClass; ?>" style="color: <?php echo $iconColor; ?>; margin-right: 12px; font-size: 1.2rem;"></i>
+                <span id="gym-status-text" style="font-weight: 600; font-size: 1.1rem; letter-spacing: 0.5px;"><?php echo htmlspecialchars($timeText); ?></span>
             </div>
         </div>
     </header>
@@ -212,90 +212,55 @@ require 'db_connect.php';
                 </div>
             </div>
 
-            <div class="gym-grid">
-                <!-- Card 1: Treadmills -->
-                <div class="equip-card">
-                    <div class="equip-icon"><i class="fas fa-running"></i></div>
-                    <h3>Treadmills</h3>
+            <div class="gym-grid" id="equipment-grid">
+                <?php
+                // Fetch Equipment from DB
+                // DB Connection is already established in header or top
+                $sqlEq = "SELECT * FROM gym_equipment";
+                $resEq = $conn->query($sqlEq);
+                
+                if ($resEq && $resEq->num_rows > 0) {
+                    while($row = $resEq->fetch_assoc()) {
+                        $percent = ($row['available_units'] / $row['total_units']) * 100;
+                        // Logic duplicated for initial render
+                        if ($percent > 60) {
+                            $barColor = 'var(--success-color)';
+                            $badgeClass = 'available';
+                            $badgeText = 'High Availability';
+                        } elseif ($percent > 20) {
+                            $barColor = 'var(--warning-color)';
+                            $badgeClass = 'busy';
+                            $badgeText = 'Busy Session';
+                        } else {
+                            $barColor = 'var(--danger-color)';
+                            $badgeClass = 'unavailable';
+                            $badgeText = 'Full Capacity';
+                        }
+                        
+                        if ($row['status'] === 'unavailable') {
+                            $badgeClass = 'unavailable';
+                            $badgeText = 'Maintenance / Unavailable';
+                            $barColor = '#ccc';
+                        }
+                ?>
+                <div class="equip-card" data-id="<?php echo $row['id']; ?>">
+                    <div class="equip-icon"><i class="<?php echo $row['icon_class']; ?>"></i></div>
+                    <h3><?php echo htmlspecialchars($row['name']); ?></h3>
                     <div class="equip-info">
-                        <span>Total Units: 12</span>
-                        <strong>8 Available</strong>
+                        <span>Total: <?php echo $row['total_units']; ?></span>
+                        <strong class="avail-text"><?php echo $row['available_units']; ?> Available</strong>
                     </div>
                     <div class="progress-container">
-                        <div class="progress-bar" style="width: 66%; background: var(--success-color);"></div>
+                        <div class="progress-bar" style="width: <?php echo $percent; ?>%; background: <?php echo $barColor; ?>;"></div>
                     </div>
-                    <span class="status-badge available">High Availability</span>
+                    <span class="status-badge <?php echo $badgeClass; ?>"><?php echo $badgeText; ?></span>
                 </div>
-
-                <!-- Card 2: Dumbbells -->
-                <div class="equip-card">
-                    <div class="equip-icon"><i class="fas fa-dumbbell"></i></div>
-                    <h3>Free Weights</h3>
-                    <div class="equip-info">
-                        <span>Sets: 20</span>
-                        <strong>4 Available</strong>
-                    </div>
-                    <div class="progress-container">
-                        <div class="progress-bar" style="width: 20%; background: var(--warning-color);"></div>
-                    </div>
-                    <span class="status-badge busy">Busy Session</span>
-                </div>
-
-                <!-- Card 3: Bench Press -->
-                <div class="equip-card">
-                    <div class="equip-icon"><i class="fas fa-weight-hanging"></i></div>
-                    <h3>Bench Press</h3>
-                    <div class="equip-info">
-                        <span>Stations: 5</span>
-                        <strong>0 Available</strong>
-                    </div>
-                    <div class="progress-container">
-                        <div class="progress-bar" style="width: 0%; background: var(--danger-color);"></div>
-                    </div>
-                    <span class="status-badge unavailable">Full Capacity</span>
-                </div>
-
-                <!-- Card 4: Squat Racks -->
-                <div class="equip-card">
-                    <div class="equip-icon"><i class="fas fa-child"></i></div>
-                    <h3>Squat Racks</h3>
-                    <div class="equip-info">
-                        <span>Racks: 4</span>
-                        <strong>2 Available</strong>
-                    </div>
-                    <div class="progress-container">
-                        <div class="progress-bar" style="width: 50%; background: var(--warning-color);"></div>
-                    </div>
-                    <span class="status-badge busy">Moderate</span>
-                </div>
-
-                <!-- Card 5: Rowing Machines -->
-                <div class="equip-card">
-                    <div class="equip-icon"><i class="fas fa-water"></i></div>
-                    <h3>Rowing Machines</h3>
-                    <div class="equip-info">
-                        <span>Units: 6</span>
-                        <strong>6 Available</strong>
-                    </div>
-                    <div class="progress-container">
-                        <div class="progress-bar" style="width: 100%; background: var(--success-color);"></div>
-                    </div>
-                    <span class="status-badge available">Open</span>
-                </div>
-
-                <!-- Card 6: Lat Pulldown -->
-                <div class="equip-card">
-                    <div class="equip-icon"><i class="fas fa-level-down-alt"></i></div>
-                    <h3>Lat Pulldown</h3>
-                    <div class="equip-info">
-                        <span>Stations: 3</span>
-                        <strong>1 Available</strong>
-                    </div>
-                    <div class="progress-container">
-                        <div class="progress-bar" style="width: 33%; background: var(--warning-color);"></div>
-                    </div>
-                    <span class="status-badge busy">Limited</span>
-                </div>
+                <?php
+                    }
+                } else {
+                    echo "<p>No equipment data available.</p>";
+                }
+                ?>
             </div>
         </section>
 
@@ -307,59 +272,137 @@ require 'db_connect.php';
             </div>
 
             <div class="gym-grid">
-                <!-- Trainer 1: Joshua Joseph -->
-                <div class="trainer-card">
-                    <div class="trainer-img-wrapper">
-                        <img src="uploads/universal_trainer_profile.png" alt="Joshua Joseph" class="trainer-img">
-                        <div class="trainer-status-indicator" style="background: var(--success-color);"></div>
-                    </div>
-                    <div class="trainer-content">
-                        <h3>Joshua Joseph</h3>
-                        <span class="trainer-specialty">Gym Trainer</span>
-                        <div class="trainer-stats">
-                            <div class="stat-item"><span>Status</span><strong>Available</strong></div>
-                            <div class="stat-item"><span>Exp.</span><strong>5 Years</strong></div>
-                        </div>
-                    </div>
-                </div>
+                <?php
+                // Fetch All Active Offline Trainers
+                $allOfflineTrainers = [];
+                $sqlTrainers = "SELECT u.user_id, u.first_name, u.last_name, u.trainer_specialization, u.trainer_experience,
+                                (SELECT status FROM trainer_attendance ta 
+                                 WHERE ta.trainer_id = u.user_id AND DATE(ta.check_in_time) = CURDATE() 
+                                 ORDER BY ta.check_in_time DESC LIMIT 1) as attendance_status
+                                FROM users u
+                                WHERE u.role = 'trainer' AND u.trainer_type = 'offline' AND u.account_status = 'active'
+                                ORDER BY u.first_name ASC";
+                
+                $resTrainers = $conn->query($sqlTrainers);
+                if ($resTrainers && $resTrainers->num_rows > 0) {
+                    while($row = $resTrainers->fetch_assoc()) {
+                        $allOfflineTrainers[] = $row;
+                    }
+                }
 
-                <!-- Trainer 2: David John -->
-                <div class="trainer-card">
+                if (count($allOfflineTrainers) > 0) {
+                    foreach ($allOfflineTrainers as $trainer) {
+                        $name = htmlspecialchars($trainer['first_name'] . ' ' . $trainer['last_name']);
+                        $spec = htmlspecialchars($trainer['trainer_specialization'] ?: 'Trainer');
+                        $exp = htmlspecialchars($trainer['trainer_experience'] ?: 'N/A');
+                        
+                        $isAvailable = ($trainer['attendance_status'] === 'checked_in');
+                        $statusColor = $isAvailable ? 'var(--success-color)' : '#cbd5e1';
+                        $statusText = $isAvailable ? 'Available' : 'Off Duty';
+                        $statusLabelColor = $isAvailable ? 'var(--success-color)' : '#94a3b8';
+                ?>
+                <a href="trainer_profile.php?id=<?php echo $trainer['user_id']; ?>" class="trainer-card" style="text-decoration: none; color: inherit;">
                     <div class="trainer-img-wrapper">
-                        <img src="uploads/universal_trainer_profile.png" alt="David John" class="trainer-img">
-                        <div class="trainer-status-indicator" style="background: var(--success-color);"></div>
+                        <img src="uploads/universal_trainer_profile.png" alt="<?php echo $name; ?>" class="trainer-img">
+                        <div class="trainer-status-indicator" style="background: <?php echo $statusColor; ?>;" title="<?php echo $statusText; ?>"></div>
                     </div>
                     <div class="trainer-content">
-                        <h3>David John</h3>
-                        <span class="trainer-specialty">Strength Coach</span>
+                        <h3><?php echo $name; ?></h3>
+                        <span class="trainer-specialty"><?php echo $spec; ?></span>
                         <div class="trainer-stats">
-                            <div class="stat-item"><span>Status</span><strong>Available</strong></div>
-                            <div class="stat-item"><span>Exp.</span><strong>4 Years</strong></div>
+                            <div class="stat-item"><span>Status</span><strong style="color: <?php echo $statusLabelColor; ?>;"><?php echo $statusText; ?></strong></div>
+                            <div class="stat-item"><span>Exp.</span><strong><?php echo $exp; ?> Years</strong></div>
                         </div>
                     </div>
-                </div>
-
-                <!-- Trainer 3: Elis Reji -->
-                <div class="trainer-card">
-                    <div class="trainer-img-wrapper">
-                        <img src="uploads/universal_trainer_profile.png" alt="Elis Reji" class="trainer-img">
-                        <div class="trainer-status-indicator" style="background: var(--success-color);"></div>
-                    </div>
-                    <div class="trainer-content">
-                        <h3>Elis Reji</h3>
-                        <span class="trainer-specialty">Fitness Instructor</span>
-                        <div class="trainer-stats">
-                            <div class="stat-item"><span>Status</span><strong>Available</strong></div>
-                            <div class="stat-item"><span>Exp.</span><strong>3 Years</strong></div>
-                        </div>
-                    </div>
-                </div>
+                </a>
+                <?php 
+                    }
+                } else {
+                    echo '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-light);">No offline trainers registered yet.</div>';
+                }
+                ?>
             </div>
         </section>
 
     </main>
 
     <?php include 'footer.php'; ?>
+    
+    <script>
+        // Real-time Updates
+        function updateGymStatus() {
+            fetch('api_gym_status.php')
+                .then(response => response.json())
+                .then(data => {
+                    // Update Gym Status Header
+                    const settings = data.settings;
+                    const statusText = document.getElementById('gym-status-text');
+                    const statusIcon = document.getElementById('gym-status-icon');
+                    
+                    const openTime = settings.gym_open_time || '06:00 AM';
+                    const closeTime = settings.gym_close_time || '10:00 PM';
+                    const isOpen = (settings.gym_status || 'open') === 'open';
+                    
+                    if (isOpen) {
+                        statusText.textContent = `Open Today: ${openTime} - ${closeTime}`;
+                        statusIcon.className = 'fas fa-clock';
+                        statusIcon.style.color = '#4ade80';
+                    } else {
+                        statusText.textContent = 'Gym is Closed Today';
+                        statusIcon.className = 'fas fa-times-circle';
+                        statusIcon.style.color = '#ef4444';
+                    }
+                    
+                    // Update Equipment
+                    data.equipment.forEach(eq => {
+                        const card = document.querySelector(`.equip-card[data-id="${eq.id}"]`);
+                        if (card) {
+                            // Update Available Text
+                            const availText = card.querySelector('.avail-text');
+                            if (availText) availText.textContent = `${eq.available_units} Available`;
+                            
+                            // Update Progress Bar
+                            const progressBar = card.querySelector('.progress-bar');
+                            const percent = (eq.available_units / eq.total_units) * 100;
+                            let barColor = 'var(--success-color)';
+                            let badgeClass = 'available';
+                            let badgeText = 'High Availability';
+                            
+                            if (percent <= 60 && percent > 20) {
+                                barColor = 'var(--warning-color)';
+                                badgeClass = 'busy';
+                                badgeText = 'Busy Session';
+                            } else if (percent <= 20) {
+                                barColor = 'var(--danger-color)';
+                                badgeClass = 'unavailable';
+                                badgeText = 'Full Capacity';
+                            }
+                            
+                            if (eq.status === 'unavailable') {
+                                barColor = '#ccc';
+                                badgeClass = 'unavailable';
+                                badgeText = 'Maintenance / Unavailable';
+                            }
+                            
+                            if (progressBar) {
+                                progressBar.style.width = percent + '%';
+                                progressBar.style.background = barColor;
+                            }
+                            
+                            // Update Badge
+                            const badge = card.querySelector('.status-badge');
+                            if (badge) {
+                                badge.className = `status-badge ${badgeClass}`;
+                                badge.textContent = badgeText;
+                            }
+                        }
+                    });
+                })
+                .catch(err => console.error('Error fetching gym status:', err));
+        }
 
+        // Poll every 5 seconds
+        setInterval(updateGymStatus, 5000);
+    </script>
 </body>
 </html>

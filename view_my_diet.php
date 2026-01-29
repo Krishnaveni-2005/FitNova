@@ -10,13 +10,36 @@ if (!isset($_SESSION['user_id'])) {
 $userId = $_SESSION['user_id'];
 
 // Fetch All Diet Plans with Trainer Info
+// Fetch Plans
 $sql = "SELECT d.*, t.first_name as t_first, t.last_name as t_last 
         FROM trainer_diet_plans d 
-        LEFT JOIN users t ON d.trainer_id = t.user_id 
-        WHERE d.user_id = ? 
-        ORDER BY d.created_at DESC";
+        LEFT JOIN users t ON d.trainer_id = t.user_id";
+
+$params = [];
+$types = "";
+
+if (isset($_GET['view_personal']) && isset($_GET['trainer_id'])) {
+    // Show Trainer's Personal Plans
+    $sql .= " WHERE d.user_id = d.trainer_id AND d.trainer_id = ?";
+    $params[] = $_GET['trainer_id'];
+    $types = "i";
+} else {
+    // Show Client's Assigned Plans
+    $sql .= " WHERE d.user_id = ?";
+    $params = [$userId];
+    $types = "i";
+
+    if (isset($_GET['trainer_id'])) {
+        $sql .= " AND d.trainer_id = ?";
+        $params[] = $_GET['trainer_id'];
+        $types .= "i";
+    }
+}
+
+$sql .= " ORDER BY d.created_at DESC";
+
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $userId);
+$stmt->bind_param($types, ...$params);
 $stmt->execute();
 $result = $stmt->get_result();
 $allPlans = $result->fetch_all(MYSQLI_ASSOC);
@@ -60,66 +83,151 @@ if ($activePlan && !empty($activePlan['meal_details'])) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --primary-color: #0F2C59; --secondary-color: #DAC0A3; --bg-color: #F8F9FA; --text-color: #333; --success-color: #10b981; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding: 40px; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
         
-        .container { max-width: 800px; margin: 0 auto; }
-        .back-btn { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: #64748b; font-weight: 500; margin-bottom: 20px; }
-        .back-btn:hover { color: var(--primary-color); }
+        .main-content { flex: 1; padding: 40px 20px; max-width: 1000px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+
+        .back-btn { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: #64748b; font-weight: 500; margin-bottom: 20px; transition: 0.3s; }
+        .back-btn:hover { color: var(--primary-color); transform: translateX(-5px); }
         
-        .plan-selector { margin-bottom: 20px; background: white; padding: 15px 20px; border-radius: 12px; display: flex; align-items: center; gap: 15px; border: 1px solid #e2e8f0; }
-        .plan-select-input { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-family: inherit; }
+        .plan-selector { 
+            background: white; 
+            padding: 15px 25px; 
+            border-radius: 50px; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 15px; 
+            border: 1px solid #e2e8f0; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            transition: 0.3s;
+        }
+        .plan-select-input { border: none; outline: none; background: transparent; font-family: inherit; font-weight: 600; color: var(--primary-color); cursor: pointer; min-width: 200px; }
         
-        .plan-header { background: white; border-radius: 15px; padding: 30px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); text-align: center; border: 1px solid #e2e8f0; }
-        .plan-title { font-family: 'Outfit', sans-serif; font-size: 28px; color: var(--primary-color); margin: 0 0 10px 0; }
-        .plan-meta { display: flex; justify-content: center; gap: 20px; color: #64748b; font-size: 14px; flex-wrap: wrap; }
-        .meta-badge { background: #eef2ff; color: var(--primary-color); padding: 4px 10px; border-radius: 20px; font-weight: 600; }
-        
-        .meal-grid { display: grid; gap: 25px; }
-        .meal-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; }
-        .meal-header { background: #0F2C59; color: white; padding: 15px 20px; display: flex; align-items: center; gap: 10px; font-weight: 600; font-family: 'Outfit', sans-serif; }
-        .meal-header.lunch { background: #0F2C59; opacity: 0.9; }
-        .meal-header.dinner { background: #0F2C59; opacity: 0.8; }
+        .plan-header { 
+            background: white; 
+            border-radius: 20px; 
+            padding: 40px; 
+            margin-bottom: 40px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
+            text-align: center; 
+            position: relative; 
+            overflow: hidden; 
+        }
+        .plan-header::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: linear-gradient(90deg, var(--success-color), var(--primary-color));
+        }
+
+        .plan-title { font-size: 36px; color: var(--primary-color); margin: 0 0 10px 0; letter-spacing: -1px; }
+        .trainer-info { color: #64748b; font-size: 15px; margin-top: 5px; font-weight: 500; }
+
+        .plan-meta { display: flex; justify-content: center; gap: 15px; margin-top: 25px; flex-wrap: wrap; }
+        .meta-badge { background: #ecfdf5; color: var(--success-color); padding: 8px 20px; border-radius: 30px; font-weight: 600; font-size: 14px; border: 1px solid #d1fae5; display: flex; align-items: center; gap: 8px; }
+
+        .meal-grid { display: grid; gap: 30px; }
+        .meal-card { 
+            background: white; 
+            border-radius: 20px; 
+            overflow: hidden; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+            border: 1px solid #f1f5f9;
+            transition: transform 0.3s;
+        }
+        .meal-card:hover { transform: translateY(-5px); }
+
+        .meal-header { 
+            background: var(--primary-color); 
+            color: white; 
+            padding: 20px 30px; 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+            font-weight: 700; 
+            font-size: 18px; 
+        }
+        .meal-header.lunch { background: #3b82f6; }
+        .meal-header.dinner { background: #6366f1; }
         .meal-header.snacks { background: #DAC0A3; color: #0F2C59; }
         
-        .meal-content { padding: 25px; line-height: 1.7; color: #334155; white-space: pre-wrap; }
+        .meal-content { 
+            padding: 30px; 
+            line-height: 1.8; 
+            color: #334155; 
+            white-space: pre-wrap; 
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+        }
         
-        .empty-state { text-align: center; padding: 50px; color: #94a3b8; }
-        .trainer-info { color: #64748b; font-size: 13px; margin-top: 5px; }
+        /* Empty State */
+        .empty-state { 
+            text-align: center; 
+            padding: 80px 20px; 
+            color: #64748b; 
+            background: white; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+            max-width: 600px;
+            margin: 40px auto;
+        }
+        .empty-icon-container {
+            width: 100px; height: 100px; background: #fdf2f8; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; margin: 0 auto 30px;
+        }
+        .btn-action {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 25px;
+            transition: 0.3s;
+        }
+        .btn-action:hover { background: #0a1f40; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
-    <div class="container">
-        <a href="prouser_dashboard.php" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    <?php include 'header.php'; ?>
+
+    <div class="main-content">
         
         <!-- Multiple Plans Selector -->
         <?php if (count($allPlans) > 1): ?>
-        <div class="plan-selector">
-            <i class="fas fa-history" style="color: var(--primary-color);"></i>
-            <span style="font-weight: 600; font-size: 14px;">Select Plan:</span>
-            <select class="plan-select-input" onchange="window.location.href='view_my_diet.php?plan_id='+this.value">
-                <?php foreach($allPlans as $p): ?>
-                    <option value="<?php echo $p['diet_id']; ?>" <?php echo ($activePlan && $activePlan['diet_id'] == $p['diet_id']) ? 'selected' : ''; ?>>
-                        <?php echo htmlspecialchars($p['plan_name']); ?> 
-                        (<?php echo date('M d, Y', strtotime($p['created_at'])); ?>)
-                    </option>
-                <?php endforeach; ?>
-            </select>
+        <div style="text-align: right;">
+            <div class="plan-selector">
+                <i class="fas fa-history" style="color: var(--primary-color);"></i>
+                <span style="font-weight: 600; font-size: 14px; color: #64748b;">Select Plan:</span>
+                <select class="plan-select-input" onchange="window.location.href='view_my_diet.php?plan_id='+this.value">
+                    <?php foreach($allPlans as $p): ?>
+                        <option value="<?php echo $p['diet_id']; ?>" <?php echo ($activePlan && $activePlan['diet_id'] == $p['diet_id']) ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($p['plan_name']); ?> 
+                            (<?php echo date('M d, Y', strtotime($p['created_at'])); ?>)
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
         </div>
         <?php endif; ?>
 
         <?php if ($activePlan): ?>
             <div class="plan-header">
-                <i class="fas fa-apple-alt" style="font-size: 40px; color: var(--success-color); margin-bottom: 15px;"></i>
+                <div style="margin-bottom: 20px;">
+                    <i class="fas fa-apple-alt" style="font-size: 48px; color: var(--success-color); background: #f0fdf4; padding: 20px; border-radius: 50%;"></i>
+                </div>
+
                 <h1 class="plan-title"><?php echo htmlspecialchars($activePlan['plan_name']); ?></h1>
                 
                 <div class="trainer-info">
-                    Assigned by Coach <?php echo htmlspecialchars($activePlan['t_first'] . ' ' . $activePlan['t_last']); ?> 
+                    <i class="fas fa-user-circle"></i> Assigned by Coach <?php echo htmlspecialchars($activePlan['t_first'] . ' ' . $activePlan['t_last']); ?> 
                     on <?php echo date('F d, Y', strtotime($activePlan['created_at'])); ?>
                 </div>
 
-                <div class="plan-meta" style="margin-top: 15px;">
-                    <span><i class="fas fa-bullseye"></i> <?php echo htmlspecialchars($activePlan['diet_type']); ?></span>
-                    <span class="meta-badge"><?php echo $activePlan['target_calories']; ?> kcal/day</span>
+                <div class="plan-meta" style="margin-top: 20px;">
+                    <div class="meta-badge"><i class="fas fa-bullseye"></i> <?php echo htmlspecialchars($activePlan['diet_type']); ?></div>
+                    <div class="meta-badge" style="color: var(--primary-color); background: #eff6ff; border-color: #dbeafe;">
+                        <i class="fas fa-fire-alt"></i> <?php echo $activePlan['target_calories']; ?> kcal/day
+                    </div>
                 </div>
             </div>
             
@@ -154,18 +262,28 @@ if ($activePlan && !empty($activePlan['meal_details'])) {
 
                 <?php if(empty($mealData['breakfast']) && empty($mealData['lunch']) && empty($mealData['dinner'])): ?>
                      <div class="meal-card">
-                        <div class="meal-content">No specific meal details added yet.</div>
+                        <div class="meal-content" style="text-align: center; color: #94a3b8;">
+                            <i class="fas fa-info-circle"></i> No specific meal details added yet.
+                        </div>
                     </div>
                 <?php endif; ?>
             </div>
             
         <?php else: ?>
             <div class="empty-state">
-                <i class="fas fa-utensils" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
-                <h2>No Plan Assigned</h2>
-                <p>Your trainer hasn't assigned a diet plan yet.</p>
+                <div class="empty-icon-container">
+                    <i class="fas fa-utensils" style="font-size: 40px; color: var(--accent-color);"></i>
+                </div>
+                <h2 style="color: var(--primary-color); margin-bottom: 10px;">No Diet Plan Assigned</h2>
+                <p>Your trainer hasn't assigned a diet plan yet. <br>Nutrition is key! Reach out to your trainer.</p>
+                <a href="my_trainers.php" class="btn-action">View My Trainers</a>
+                 <div style="margin-top: 15px;">
+                    <a href="home.php" style="color: #64748b; font-size: 14px; text-decoration: none;">Back to Home</a>
+                </div>
             </div>
         <?php endif; ?>
     </div>
+
+    <?php include 'footer.php'; ?>
 </body>
 </html>

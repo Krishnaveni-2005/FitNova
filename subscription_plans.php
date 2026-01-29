@@ -18,11 +18,13 @@ $currentRole = $_SESSION['user_role'] ?? 'guest';
         :root {
             --primary-color: #0F2C59;
             --accent-color: #E63946;
-            --bg-color: #F8F9FA;
-            --text-color: #333333;
-            --text-light: #6C757D;
+            --bg-color: #f1f5f9;
+            --text-color: #1e293b;
+            --text-light: #64748b;
             --white: #FFFFFF;
-            --transition: all 0.3s ease;
+            --success: #10b981;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
 
         * {
@@ -35,26 +37,37 @@ $currentRole = $_SESSION['user_role'] ?? 'guest';
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 20px 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center; /* Vertical Center */
+            justify-content: center; /* Horizontal Center */
+            overflow-y: hidden; /* Try to prevent scroll if possible */
         }
 
         .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 60px 20px;
+            width: 100%;
+            max-width: 1200px;
+            padding: 0 20px;
             text-align: center;
+        }
+
+        .header-content {
+            margin-bottom: 30px;
         }
 
         h1 {
             font-family: 'Outfit', sans-serif;
-            font-size: 2.5rem;
+            font-size: 2.2rem; /* Nice and big */
             color: var(--primary-color);
-            margin-bottom: 15px;
+            margin-bottom: 8px;
+            font-weight: 800;
         }
 
         .subtitle {
-            font-size: 1.1rem;
+            font-size: 1rem;
             color: var(--text-light);
-            margin-bottom: 50px;
         }
 
         /* Toggle */
@@ -62,201 +75,205 @@ $currentRole = $_SESSION['user_role'] ?? 'guest';
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 15px;
-            margin-bottom: 60px;
+            gap: 12px;
+            margin-top: 15px;
         }
 
         .toggle-label {
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 0.95rem;
             color: var(--text-color);
         }
 
         .switch {
             position: relative;
             display: inline-block;
-            width: 60px;
-            height: 34px;
+            width: 50px;
+            height: 28px;
         }
 
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
+        .switch input { opacity: 0; width: 0; height: 0; }
 
         .slider {
             position: absolute;
             cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #cbd5e1;
+            transition: .3s;
             border-radius: 34px;
         }
 
         .slider:before {
             position: absolute;
             content: "";
-            height: 26px;
-            width: 26px;
-            left: 4px;
-            bottom: 4px;
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
             background-color: white;
-            transition: .4s;
+            transition: .3s;
             border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        input:checked+.slider {
-            background-color: var(--primary-color);
-        }
+        input:checked+.slider { background-color: var(--primary-color); }
+        input:checked+.slider:before { transform: translateX(22px); }
 
-        input:checked+.slider:before {
-            transform: translateX(26px);
-        }
-
-        /* Pricing Cards */
+        /* Pricing Cards Grid */
         .pricing-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            align-items: center; /* Align cards beautifully */
+            margin-top: 20px;
         }
 
         .plan-card {
             background: var(--white);
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            transition: var(--transition);
+            border-radius: 24px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
-            border: 2px solid transparent;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            height: 520px; /* Fixed height for uniformity */
         }
 
         .plan-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-hover);
         }
 
+        /* Scale up the popular card slightly */
         .plan-card.popular {
-            border-color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            transform: scale(1.03);
+            z-index: 10;
+            height: 540px; /* Slightly taller */
+        }
+        
+        .plan-card.popular:hover {
+            transform: scale(1.03) translateY(-8px);
         }
 
         .popular-tag {
             background: var(--primary-color);
             color: white;
-            padding: 5px 30px;
-            font-size: 0.8rem;
+            padding: 5px 40px;
+            font-size: 0.75rem;
             font-weight: 700;
             position: absolute;
             top: 20px;
-            right: -30px;
+            right: -35px;
             transform: rotate(45deg);
             text-transform: uppercase;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .plan-name {
             font-family: 'Outfit', sans-serif;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 700;
             color: var(--primary-color);
-            margin-bottom: 20px;
-        }
-
-        .price {
-            font-size: 3rem;
-            font-weight: 800;
-            color: var(--text-color);
             margin-bottom: 10px;
         }
 
-        .price span {
-            font-size: 1rem;
-            color: var(--text-light);
-            font-weight: 400;
+        .price {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-color);
+            line-height: 1;
+            margin-bottom: 5px;
         }
 
         .billing-text {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--text-light);
-            margin-bottom: 30px;
-            height: 20px;
+            margin-bottom: 25px;
+            font-weight: 500;
         }
 
         .features {
             list-style: none;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
             text-align: left;
+            flex-grow: 1;
+            padding: 0 10px;
         }
 
         .features li {
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             color: var(--text-color);
+            font-size: 0.95rem;
         }
 
-        .features li i {
-            color: #2ECC71;
+        .features li i { 
+            color: var(--success); 
+            font-size: 14px;
+            flex-shrink: 0;
         }
-
-        .features li.unavailable {
-            color: #ccc;
-            text-decoration: line-through;
+        
+        .features li.unavailable { 
+            color: #94a3b8; 
+            text-decoration: none; 
+            opacity: 0.7;
         }
-
-        .features li.unavailable i {
-            color: #ccc;
+        .features li.unavailable i { 
+            color: #cbd5e1; 
         }
 
         .btn-plan {
-            display: inline-block;
+            display: block;
             width: 100%;
-            padding: 15px;
+            padding: 14px;
             background: var(--primary-color);
             color: white;
-            border-radius: 50px;
+            border-radius: 12px;
             font-weight: 600;
             text-decoration: none;
-            transition: var(--transition);
+            transition: all 0.2s;
+            font-size: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(15, 44, 89, 0.2);
         }
 
         .btn-plan:hover {
-            background: #0a1f3f;
-            transform: scale(1.05);
+            background: #1A3C6B;
+            box-shadow: 0 10px 15px -3px rgba(15, 44, 89, 0.3);
+            transform: translateY(-1px);
         }
 
         .btn-outline {
-            background: transparent;
+            background: white;
             border: 2px solid var(--primary-color);
             color: var(--primary-color);
+            box-shadow: none;
         }
 
         .btn-outline:hover {
-            background: var(--primary-color);
-            color: white;
+            background: #f8fafc;
+            color: #1A3C6B;
+            border-color: #1A3C6B;
         }
 
         .btn-disabled {
-            background: #E9ECEF;
-            color: #ADB5BD;
-            cursor: not-allowed;
-            pointer-events: none;
+            background: #f1f5f9;
+            color: #94a3b8;
+            cursor: default;
+            box-shadow: none;
+            border: 1px solid #e2e8f0;
+        }
+        .btn-disabled:hover {
+            background: #f1f5f9;
+            transform: none;
+            box-shadow: none;
         }
 
-        .back-link {
-            display: inline-block;
-            margin-top: 40px;
-            color: var(--text-light);
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .back-link:hover {
-            color: var(--primary-color);
         }
     </style>
 </head>
@@ -293,15 +310,19 @@ $currentRole = $_SESSION['user_role'] ?? 'guest';
                 </ul>
                 <?php if ($currentRole === 'free'): ?>
                     <a href="#" class="btn-plan btn-outline btn-disabled">Current Plan</a>
-                <?php else: ?>
-                    <a href="freeuser_dashboard.php" class="btn-plan btn-outline">Switch to Basic</a>
+                <?php else:
+                    if ($currentRole === 'free') $backLink = 'freeuser_dashboard.php';
+                    elseif ($currentRole === 'lite') $backLink = 'liteuser_dashboard.php';
+                    elseif ($currentRole === 'pro') $backLink = 'prouser_dashboard.php';
+                ?>
+                    <a href="<?php echo $backLink; ?>" class="btn-plan btn-outline">Switch to Basic</a>
                 <?php endif; ?>
             </div>
 
-            <!-- Pro Plan -->
+            <!-- Lite Plan (Formerly Pro Spot, New Lite Details) -->
             <div class="plan-card popular">
                 <div class="popular-tag">Best Value</div>
-                <div class="plan-name">Pro Member</div>
+                <div class="plan-name">Lite Member</div>
                 <div class="price" id="proPrice">₹2,499</div>
                 <p class="billing-text" id="proBilling">per month</p>
                 <ul class="features">
@@ -312,41 +333,35 @@ $currentRole = $_SESSION['user_role'] ?? 'guest';
                     <li><i class="fas fa-check"></i> Priority Support</li>
                     <li class="unavailable"><i class="fas fa-times"></i> 1-on-1 Coaching</li>
                 </ul>
-                <?php if ($currentRole === 'pro'): ?>
+                <?php if ($currentRole === 'lite'): ?>
                     <a href="#" class="btn-plan btn-disabled">Current Plan</a>
                 <?php else: ?>
-                    <a href="#" class="btn-plan" id="btnPro">Get Started</a>
+                    <a href="#" class="btn-plan" id="btnLite">Get Started</a>
                 <?php endif; ?>
             </div>
 
-            <!-- Elite Plan -->
+            <!-- Pro Plan (Formerly Elite Spot, New Pro Details) -->
+            <!-- Pro Plan (Formerly Elite Spot, New Pro Details) -->
             <div class="plan-card">
-                <div class="plan-name">Elite</div>
+                <div class="plan-name">Pro</div>
                 <div class="price" id="elitePrice">₹4,999</div>
                 <p class="billing-text" id="eliteBilling">per month</p>
                 <ul class="features">
-                    <li><i class="fas fa-check"></i> Everything in Pro</li>
+                    <li><i class="fas fa-check"></i> Everything in Lite</li>
                     <li><i class="fas fa-check"></i> Dedicated Personal Coach</li>
                     <li><i class="fas fa-check"></i> Weekly Video Check-ins</li>
                     <li><i class="fas fa-check"></i> Personalized Meal Plans</li>
                     <li><i class="fas fa-check"></i> Live 1-on-1 Classes</li>
                     <li><i class="fas fa-check"></i> Exclusive FitShop Discounts</li>
                 </ul>
-                <?php if ($currentRole === 'elite'): ?>
+                <?php if ($currentRole === 'pro'): ?>
                     <a href="#" class="btn-plan btn-disabled">Current Plan</a>
                 <?php else: ?>
-                    <a href="#" class="btn-plan" id="btnElite">Go Elite</a>
+                    <a href="#" class="btn-plan" id="btnProHigh">Go Pro</a>
                 <?php endif; ?>
             </div>
         </div>
 
-        <?php
-        $backLink = 'home.php';
-        if ($currentRole === 'free') $backLink = 'freeuser_dashboard.php';
-        elseif ($currentRole === 'pro') $backLink = 'prouser_dashboard.php';
-        elseif ($currentRole === 'elite') $backLink = 'eliteuser_dashboard.php';
-        ?>
-        <a href="<?php echo $backLink; ?>" class="back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
     </div>
 
     <script>
@@ -360,8 +375,8 @@ $currentRole = $_SESSION['user_role'] ?? 'guest';
         const elitePrice = document.getElementById('elitePrice');
         const proBilling = document.getElementById('proBilling');
         const eliteBilling = document.getElementById('eliteBilling');
-        const btnPro = document.getElementById('btnPro');
-        const btnElite = document.getElementById('btnElite');
+        const btnLite = document.getElementById('btnLite');
+        const btnProHigh = document.getElementById('btnProHigh');
 
         let isYearly = false;
 
@@ -384,21 +399,21 @@ $currentRole = $_SESSION['user_role'] ?? 'guest';
             });
         }
 
-        if (btnPro) {
-            btnPro.addEventListener('click', (e) => {
+        if (btnLite) {
+            btnLite.addEventListener('click', (e) => {
                 e.preventDefault();
                 const billing = isYearly ? 'yearly' : 'monthly';
-                let redirectUrl = `payment.php?plan=pro&billing=${billing}`;
+                let redirectUrl = `payment.php?plan=lite&billing=${billing}`;
                 if (trainerId) redirectUrl += `&trainer_id=${trainerId}`;
                 window.location.href = redirectUrl;
             });
         }
 
-        if (btnElite) {
-            btnElite.addEventListener('click', (e) => {
+        if (btnProHigh) {
+            btnProHigh.addEventListener('click', (e) => {
                 e.preventDefault();
                 const billing = isYearly ? 'yearly' : 'monthly';
-                let redirectUrl = `payment.php?plan=elite&billing=${billing}`;
+                let redirectUrl = `payment.php?plan=pro&billing=${billing}`;
                 if (trainerId) redirectUrl += `&trainer_id=${trainerId}`;
                 window.location.href = redirectUrl;
             });

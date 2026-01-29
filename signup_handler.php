@@ -24,7 +24,7 @@ function getDashboardRedirect($role) {
         case "admin": return "admin_dashboard.php";
         case "trainer": return "trainer_dashboard.php";
         case "pro": return "prouser_dashboard.php";
-        case "elite": return "eliteuser_dashboard.php";
+        case "lite": return "liteuser_dashboard.php";
         default: return "freeuser_dashboard.php";
     }
 }
@@ -76,7 +76,12 @@ if (isset($data["action"]) && $data["action"] === "google_auth") {
             
             $response["status"] = "success";
             $response["message"] = "Login successful";
-            $response["redirect"] = getDashboardRedirect($role);
+            // Special redirect for Gym Owner
+            if ($user["email"] === 'ashakayaplackal@gmail.com') {
+                $response["redirect"] = "gym_owner_dashboard.php";
+            } else {
+                $response["redirect"] = getDashboardRedirect($role);
+            }
         } else {
             // SIGNING UP again from signup page
             $response["status"] = "success";
@@ -85,6 +90,13 @@ if (isset($data["action"]) && $data["action"] === "google_auth") {
         }
     } else {
         // NEW USER - SIGNING UP VIA GOOGLE
+        
+        // Strict Login Rule: If trying to login but account doesn't exist, deny.
+        if ($source === "login") {
+            echo json_encode(["status" => "error", "message" => "Account does not exist. Please sign up first."]);
+            exit();
+        }
+
         $insertStmt = $conn->prepare("INSERT INTO users (first_name, last_name, email, auth_provider, oauth_provider_id, is_email_verified) VALUES (?, ?, ?, 'google', ?, 1)");
         $insertStmt->bind_param("ssss", $firstName, $lastName, $email, $googleId);
         
@@ -167,8 +179,9 @@ else {
         $role = 'trainer';
         $account_status = 'pending';
         // Insert with trainer details (save path to certification)
-        $insertStmt = $conn->prepare("INSERT INTO users (first_name, last_name, email, phone, password_hash, auth_provider, role, account_status, trainer_specialization, trainer_experience, trainer_certification) VALUES (?, ?, ?, ?, ?, 'local', ?, ?, ?, ?, ?)");
-        $insertStmt->bind_param("ssssssssis", $firstName, $lastName, $email, $phone, $hashed_password, $role, $account_status, $trainerSpecialization, $trainerExperience, $trainerCertificationPath);
+        $trainerType = $data["trainerType"] ?? 'online';
+        $insertStmt = $conn->prepare("INSERT INTO users (first_name, last_name, email, phone, password_hash, auth_provider, role, account_status, trainer_specialization, trainer_experience, trainer_certification, trainer_type) VALUES (?, ?, ?, ?, ?, 'local', ?, ?, ?, ?, ?, ?)");
+        $insertStmt->bind_param("ssssssssiss", $firstName, $lastName, $email, $phone, $hashed_password, $role, $account_status, $trainerSpecialization, $trainerExperience, $trainerCertificationPath, $trainerType);
     } else {
         // Normal user
         $insertStmt = $conn->prepare("INSERT INTO users (first_name, last_name, email, phone, password_hash, auth_provider, role, account_status) VALUES (?, ?, ?, ?, ?, 'local', 'free', 'active')");

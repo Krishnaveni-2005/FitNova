@@ -65,7 +65,12 @@ if (isset($_GET['delete_id'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $planName = $conn->real_escape_string($_POST['plan_name']);
     $difficulty = $conn->real_escape_string($_POST['difficulty']);
-    $weeks = (int)$_POST['duration_weeks'];
+    // Default duration removed or set to a standard value if column is required (e.g., 4)
+    // For now we will just use a default of 4 in the background if the DB requires it, or remove it.
+    // Assuming DB column still exists, let's just default it to avoid breaking changes or remove if we did an ALTER.
+    // The user asked to remove it, implies visual removal. I will default it to 4 to prevent SQL errors if column is NOT NULL.
+    $weeks = 4; 
+    $freq = isset($_POST['days_per_week']) ? (int)$_POST['days_per_week'] : 3;
     
     // Encode Levels
     $levels = [
@@ -89,13 +94,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $check->close();
         
         if ($exists) {
-            $sql = "UPDATE trainer_workouts SET plan_name=?, difficulty=?, duration_weeks=?, exercises=? WHERE workout_id=?";
+            $sql = "UPDATE trainer_workouts SET plan_name=?, difficulty=?, days_per_week=?, exercises=? WHERE workout_id=?";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("ssisi", $planName, $difficulty, $weeks, $details, $existingId);
+            $stmt->bind_param("ssisi", $planName, $difficulty, $freq, $details, $existingId);
         } else {
-            $sql = "INSERT INTO trainer_workouts (trainer_id, user_id, client_name, plan_name, difficulty, duration_weeks, exercises) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO trainer_workouts (trainer_id, user_id, client_name, plan_name, difficulty, duration_weeks, days_per_week, exercises) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("iisssis", $trainerId, $clientId, $clientName, $planName, $difficulty, $weeks, $details);
+            $stmt->bind_param("iisssiis", $trainerId, $clientId, $clientName, $planName, $difficulty, $weeks, $freq, $details);
         }
         
         if ($stmt->execute()) {
@@ -116,14 +121,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
         if ($workoutId > 0) {
             // Update
-            $sql = "UPDATE trainer_workouts SET plan_name=?, difficulty=?, duration_weeks=?, exercises=? WHERE workout_id=? AND trainer_id=?";
+            $sql = "UPDATE trainer_workouts SET plan_name=?, difficulty=?, days_per_week=?, exercises=? WHERE workout_id=? AND trainer_id=?";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("ssisii", $planName, $difficulty, $weeks, $details, $workoutId, $trainerId);
+            $stmt->bind_param("ssisi", $planName, $difficulty, $freq, $details, $workoutId, $trainerId);
         } else {
             // New
-            $sql = "INSERT INTO trainer_workouts (trainer_id, user_id, client_name, plan_name, difficulty, duration_weeks, exercises) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO trainer_workouts (trainer_id, user_id, client_name, plan_name, difficulty, duration_weeks, days_per_week, exercises) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("iisssis", $trainerId, $clientId, $clientName, $planName, $difficulty, $weeks, $details);
+            $stmt->bind_param("iisssiis", $trainerId, $clientId, $clientName, $planName, $difficulty, $weeks, $freq, $details);
         }
 
         if ($stmt->execute()) {
@@ -216,6 +221,115 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 </div>
             </div>
 
+            <!-- Fetch Client Profile Logic -->
+            <?php
+                // Fetch Profile Data
+                $profSql = "SELECT * FROM client_profiles WHERE user_id = ?";
+                $pStmt = $conn->prepare($profSql);
+                $pStmt->bind_param("i", $assignTo);
+                $pStmt->execute();
+                $profRes = $pStmt->get_result();
+                $clientProfile = $profRes->fetch_assoc();
+                $pStmt->close();
+                
+                // Calculate Age
+                $age = 'N/A';
+                if ($clientProfile && !empty($clientProfile['dob'])) {
+                    $dob = new DateTime($clientProfile['dob']);
+                    $now = new DateTime();
+                    $age = $now->diff($dob)->y . ' yrs';
+                }
+            ?>
+
+            <!-- Client Profile Snapshot -->
+            <div class="card" style="margin-bottom: 25px; border-left: 5px solid var(--secondary-color);">
+                <?php if ($clientProfile): ?>
+                    <h3 style="margin-top: 0; margin-bottom: 20px; font-size: 18px; color: var(--primary-color); border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                        <i class="fas fa-id-card-alt"></i> Client Snapshot
+                    </h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; row-gap: 25px;">
+                        <!-- Row 1 -->
+                        <div>
+                            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 4px;">Basic Stats</div>
+                            <div style="font-weight: 700; font-size: 15px; color: #333;">
+                                <?php echo $age; ?> <span style="color: #ccc;">|</span>
+                                <?php echo htmlspecialchars(ucfirst($clientProfile['gender'] ?? '-')); ?>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 4px;">Body Composition</div>
+                            <div style="font-weight: 700; font-size: 15px; color: #333;">
+                                <?php echo $clientProfile['height_cm'] ? $clientProfile['height_cm'] . ' cm' : '-'; ?> <span style="color: #ccc;">|</span>
+                                <?php echo $clientProfile['weight_kg'] ? $clientProfile['weight_kg'] . ' kg' : '-'; ?>
+                            </div>
+                        </div>
+                        <div>
+                             <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 4px;">Target Weight</div>
+                             <div style="font-weight: 700; font-size: 15px; color: var(--success-color);">
+                                <i class="fas fa-bullseye" style="font-size: 12px;"></i>
+                                <?php echo $clientProfile['target_weight_kg'] ? $clientProfile['target_weight_kg'] . ' kg' : 'Not Set'; ?>
+                             </div>
+                        </div>
+                        <div>
+                             <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 4px;">Primary Goal</div>
+                             <div style="font-weight: 700; font-size: 14px; color: var(--primary-color);">
+                                <i class="fas fa-flag" style="font-size: 12px; color: var(--accent-color);"></i>
+                                <?php echo htmlspecialchars(ucwords(str_replace('_', ' ', $clientProfile['primary_goal'] ?? 'Not Set'))); ?>
+                             </div>
+                        </div>
+                        
+                        <!-- Row 2 -->
+                        <div>
+                             <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 4px;">Availability</div>
+                             <div style="font-weight: 600; font-size: 14px; color: #333;">
+                                <i class="far fa-calendar-check"></i> <?php echo $clientProfile['workout_days_per_week'] ? $clientProfile['workout_days_per_week'] . ' Days/Week' : '-'; ?>
+                             </div>
+                        </div>
+                        <div>
+                             <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 4px;">Equipment</div>
+                             <div style="font-weight: 600; font-size: 14px; color: #333;">
+                                <i class="fas fa-dumbbell"></i> <?php echo htmlspecialchars(ucwords(str_replace('_', ' ', $clientProfile['equipment_access'] ?? '-'))); ?>
+                             </div>
+                        </div>
+                         <div style="grid-column: span 2;">
+                             <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 4px;">Activity Level</div>
+                             <div style="font-weight: 600; font-size: 14px; color: var(--primary-color);">
+                                <?php echo htmlspecialchars(ucwords(str_replace('_', ' ', $clientProfile['activity_level'] ?? 'Unknown'))); ?>
+                             </div>
+                        </div>
+
+                        <!-- Row 3: Health Alerts spanning full width if needed -->
+                        <div style="grid-column: 1 / -1; border-top: 1px dashed #e2e8f0; padding-top: 15px; margin-top: 5px;">
+                            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 6px;">Health & Injuries Alert</div>
+                            <div style="font-weight: 500; font-size: 14px; color: #ef4444;">
+                                <?php 
+                                    $alerts = [];
+                                    if (!empty($clientProfile['injuries']) && strtolower($clientProfile['injuries']) !== 'none' && strtolower($clientProfile['injuries']) !== 'nothing') {
+                                        $alerts[] = '<span style="background: #fef2f2; padding: 5px 10px; border-radius: 6px; border: 1px solid #fecaca;"><i class="fas fa-ambulance"></i> <strong>Injury:</strong> ' . htmlspecialchars($clientProfile['injuries']) . '</span>';
+                                    }
+                                    if (!empty($clientProfile['medical_conditions']) && strtolower($clientProfile['medical_conditions']) !== 'none' && strtolower($clientProfile['medical_conditions']) !== 'nothing') {
+                                        $alerts[] = '<span style="background: #fff7ed; padding: 5px 10px; border-radius: 6px; border: 1px solid #fed7aa; color: #c2410c;"><i class="fas fa-heartbeat"></i> <strong>Condition:</strong> ' . htmlspecialchars($clientProfile['medical_conditions']) . '</span>';
+                                    }
+                                    
+                                    if (empty($alerts)) {
+                                        echo '<span style="color: #10b981; background: #f0fdf4; padding: 5px 10px; border-radius: 6px; border: 1px solid #bbf7d0;"><i class="fas fa-check-circle"></i> No reported injuries or conditions</span>';
+                                    } else {
+                                        echo '<div style="display: flex; flex-wrap: wrap; gap: 10px;">' . implode('', $alerts) . '</div>';
+                                    }
+                                ?>
+                            </div>
+                        </div>
+                    </div>
+
+                <?php else: ?>
+                    <div style="text-align: center; padding: 20px; color: #64748b;">
+                        <i class="fas fa-user-clock" style="font-size: 32px; color: #cbd5e1; margin-bottom: 10px;"></i>
+                        <p style="margin: 0;">This client has not set up their profile yet.</p>
+                        <p style="font-size: 12px; margin-top: 5px;">Ask them to complete the "Profile Setup" in their dashboard.</p>
+                    </div>
+                <?php endif; ?>
+            </div>
+
             <div class="card">
                 <form id="workoutFormClient" onsubmit="saveWorkout(event, 'save_workout')">
                     <input type="hidden" name="client_id" value="<?php echo $client['user_id']; ?>">
@@ -237,9 +351,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Duration (Weeks)</label>
-                            <input type="number" name="duration_weeks" class="form-control" placeholder="e.g. 4" 
-                                   value="<?php echo $currentPlan ? htmlspecialchars($currentPlan['duration_weeks']) : '4'; ?>" required>
+                            <label class="form-label">Frequency (Days/Week)</label>
+                            <!-- Auto-fill with client availability if new plan, otherwise use existing -->
+                            <?php 
+                                $defaultFreq = $clientProfile['workout_days_per_week'] ?? 3; 
+                                $freqVal = $currentPlan ? ($currentPlan['days_per_week'] ?? $defaultFreq) : $defaultFreq;
+                            ?>
+                            <input type="number" name="days_per_week" class="form-control" placeholder="e.g. 3" 
+                                   value="<?php echo htmlspecialchars($freqVal); ?>" min="1" max="7" required>
                         </div>
                     </div>
 
@@ -323,9 +442,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Duration (Weeks)</label>
-                            <input type="number" name="duration_weeks" class="form-control" placeholder="e.g. 4" 
-                                   value="<?php echo $pPlan ? htmlspecialchars($pPlan['duration_weeks']) : '4'; ?>" required>
+                            <label class="form-label">Frequency (Days/Week)</label>
+                            <input type="number" name="days_per_week" class="form-control" placeholder="e.g. 5" 
+                                   value="<?php echo $pPlan ? ($pPlan['days_per_week'] ?? 5) : '5'; ?>" min="1" max="7" required>
                         </div>
                     </div>
 

@@ -22,7 +22,7 @@ $adminInitials = strtoupper(substr($adminName, 0, 1) . substr(strrchr($adminName
 // Fetch Pending Trainers
 require "db_connect.php";
 $pendingTrainers = [];
-$sql = "SELECT * FROM users WHERE role = 'trainer' AND account_status = 'pending' ORDER BY created_at DESC";
+$sql = "SELECT * FROM users WHERE role = 'trainer' AND account_status = 'pending' AND trainer_type = 'online' ORDER BY created_at DESC";
 $result = $conn->query($sql);
 if ($result->num_rows > 0) {
     while($row = $result->fetch_assoc()) {
@@ -40,13 +40,16 @@ if ($resultActive->num_rows > 0) {
     }
 }
 
-// Fetch Specific Offline Trainers (Joshua, David, Elis)
+// Fetch Specific Offline Trainers (Removed demo trainers)
+// Fetch Active Offline Trainers (On-Site Staff)
 $offlineTrainers = [];
-$offlineNames = ["Joshua Joseph", "David John", "Elis Reji"];
-// Create a safe string for IN clause or construct OR checks. Using CONCAT for full name search
-$sqlOffline = "SELECT * FROM users 
-               WHERE role = 'trainer' 
-               AND CONCAT(first_name, ' ', last_name) IN ('Joshua Joseph', 'David John', 'Elis Reji')";
+$sqlOffline = "SELECT u.*, 
+               (SELECT check_in_time FROM trainer_attendance ta 
+                WHERE ta.trainer_id = u.user_id AND DATE(ta.check_in_time) = CURDATE() 
+                ORDER BY ta.check_in_time DESC LIMIT 1) as check_in_time
+               FROM users u 
+               WHERE u.role = 'trainer' AND u.trainer_type = 'offline' AND u.account_status = 'active'
+               ORDER BY u.first_name ASC";
 $resultOffline = $conn->query($sqlOffline);
 if ($resultOffline && $resultOffline->num_rows > 0) {
     while($row = $resultOffline->fetch_assoc()) {
@@ -71,6 +74,16 @@ $resultProducts = $conn->query($sqlProducts);
 if ($resultProducts && $resultProducts->num_rows > 0) {
     while($row = $resultProducts->fetch_assoc()) {
         $products[] = $row;
+    }
+}
+
+// Fetch Subscription Plans
+$subPlans = [];
+$sqlPlans = "SELECT * FROM subscription_plans";
+$resPlans = $conn->query($sqlPlans);
+if($resPlans && $resPlans->num_rows > 0) {
+    while($r = $resPlans->fetch_assoc()) {
+        $subPlans[] = $r;
     }
 }
 
@@ -492,8 +505,8 @@ $conn->close();
         /* Admin Grid Cards */
         .admin-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 15px;
         }
 
         .admin-card {
@@ -875,6 +888,9 @@ $conn->close();
             <a href="#" class="nav-item" onclick="showSection('orders')">
                 <i class="fas fa-shopping-cart"></i><span>Orders</span>
             </a>
+            <a href="#" class="nav-item" onclick="showSection('subscriptions')">
+                <i class="fas fa-crown"></i><span>Subscriptions</span>
+            </a>
 
             <a href="#" class="nav-item" onclick="showSection('offline')">
                 <i class="fas fa-building"></i><span>Offline Gym</span>
@@ -957,6 +973,14 @@ $conn->close();
                 </div>
 
 
+
+                <div class="hub-card" onclick="showSection('subscriptions')">
+                    <div class="hub-icon" style="background: #eef2ff; color: #4f46e5;">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <div class="hub-title">Subscriptions</div>
+                    <div class="hub-desc">Manage user plans and membership tiers.</div>
+                </div>
 
                 <div class="hub-card" onclick="showSection('offline')">
                     <div class="hub-icon" style="background: #fff7ed; color: #c2410c;">
@@ -1226,6 +1250,82 @@ $conn->close();
                 <?php else: ?>
                     <p style="padding: 20px; color: #64748b; font-style: italic;">No registered clients found.</p>
                 <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Subscriptions Section -->
+        <div id="subscriptions-section" class="section">
+            <button class="btn-hub-back" onclick="showSection('hub')">
+                <i class="fas fa-arrow-left"></i> Back to Hub
+            </button>
+            <div class="top-bar">
+                <h2>Subscription Management</h2>
+            </div>
+            
+            <div class="management-section">
+                <div class="section-title">
+                    <span>Plan Management</span>
+                </div>
+                <div class="admin-grid">
+                    <?php foreach($subPlans as $plan): ?>
+                    <div class="admin-card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background:var(--primary-color); color:white;">
+                                <i class="fas fa-certificate"></i>
+                            </div>
+                            <span class="badge badge-active"><?php echo htmlspecialchars($plan['name']); ?></span>
+                        </div>
+                        <div class="card-title">Monthly: ₹<?php echo number_format($plan['price_monthly']); ?></div>
+                        <div class="card-subtitle">Yearly: ₹<?php echo number_format($plan['price_yearly']); ?></div>
+                        <div class="card-actions">
+                            <button class="action-btn" onclick='openPlanModal(<?php echo json_encode($plan, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'>Edit Details</button>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+
+            <div class="management-section">
+                <div class="section-title">
+                    <span>Client Plans</span>
+                    <span class="badge badge-active"><?php echo count($clients); ?> Users</span>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Client Name</th>
+                                <th>Email</th>
+                                <th>Current Plan</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($clients as $client): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($client['first_name'] . ' ' . $client['last_name']); ?></td>
+                                <td><?php echo htmlspecialchars($client['email']); ?></td>
+                                <td>
+                                    <span class="badge" style="background: <?php echo ($client['role'] == 'elite' ? '#fdf2f8' : ($client['role'] == 'pro' ? '#eef2ff' : '#f1f5f9')); ?>; color: <?php echo ($client['role'] == 'elite' ? '#ec4899' : ($client['role'] == 'pro' ? '#4f46e5' : '#475569')); ?>;">
+                                        <?php echo ucfirst($client['role']); ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge <?php echo ($client['account_status'] === 'active' ? 'badge-active' : 'badge-inactive'); ?>">
+                                        <?php echo ucfirst($client['account_status']); ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="action-btn" onclick="openSubscriptionModal(<?php echo $client['user_id']; ?>, '<?php echo htmlspecialchars(addslashes($client['first_name'] . ' ' . $client['last_name'])); ?>', '<?php echo $client['role']; ?>')">
+                                        <i class="fas fa-edit"></i> Edit Plan
+                                    </button>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -1514,31 +1614,41 @@ $conn->close();
                 <div class="section-title">Trainers On Site</div>
                 <?php if (count($offlineTrainers) > 0): ?>
                 <div class="admin-grid">
-                    <?php foreach ($offlineTrainers as $trainer): ?>
+                    <?php foreach ($offlineTrainers as $trainer): 
+                        $isCheckedIn = !empty($trainer['check_in_time']);
+                        $statusBadgeClass = $isCheckedIn ? 'badge-active' : 'badge-inactive';
+                        $statusText = $isCheckedIn ? 'On Site' : 'Off Duty';
+                        $checkInDisplay = $isCheckedIn ? 'Checked In - ' . date('h:i A', strtotime($trainer['check_in_time'])) : 'Not Checked In';
+                        $zone = $isCheckedIn ? 'General Gym Floor' : 'N/A';
+                    ?>
                         <div class="admin-card">
                             <div class="card-header">
                                 <div>
-                                    <div class="card-icon" style="background: #f0fdf4; color: #16a34a;">
+                                    <div class="card-icon" style="background: <?php echo $isCheckedIn ? '#f0fdf4' : '#f1f5f9'; ?>; color: <?php echo $isCheckedIn ? '#16a34a' : '#64748b'; ?>;">
                                         <i class="fas fa-id-badge"></i>
                                     </div>
                                 </div>
-                                <span class="badge badge-active">On Site</span>
+                                <span class="badge <?php echo $statusBadgeClass; ?>"><?php echo $statusText; ?></span>
                             </div>
                             <div class="card-title"><?php echo htmlspecialchars($trainer['first_name'] . ' ' . $trainer['last_name']); ?></div>
                             <div class="card-subtitle"><?php echo htmlspecialchars($trainer['email']); ?></div>
                             <div class="card-info">
                                 <div class="info-row">
                                     <span class="info-label">Shift Status</span>
-                                    <span class="info-value">Checked In - <?php echo date('H:i'); ?></span>
+                                    <span class="info-value"><?php echo $checkInDisplay; ?></span>
                                 </div>
                                 <div class="info-row">
                                     <span class="info-label">Current Zone</span>
-                                    <span class="info-value">General Gym Floor</span>
+                                    <span class="info-value"><?php echo $zone; ?></span>
                                 </div>
                             </div>
                             <div class="card-actions">
                                 <button class="action-btn" onclick="viewTrainerSchedule(<?php echo $trainer['user_id']; ?>)">View Schedule</button>
-                                <button class="action-btn" style="color: #64748b;" onclick="clockOutTrainer(<?php echo $trainer['user_id']; ?>, '<?php echo htmlspecialchars($trainer['first_name'] . ' ' . $trainer['last_name']); ?>')">Clock Out</button>
+                                <?php if($isCheckedIn): ?>
+                                    <button class="action-btn" style="color: #64748b;" onclick="clockOutTrainer(<?php echo $trainer['user_id']; ?>, '<?php echo htmlspecialchars($trainer['first_name'] . ' ' . $trainer['last_name']); ?>')">Clock Out</button>
+                                <?php else: ?>
+                                    <button class="action-btn" disabled style="color: #94a3b8; cursor: not-allowed; opacity: 0.7;">Clock Out</button>
+                                <?php endif; ?>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -1703,7 +1813,141 @@ $conn->close();
         </div>
     </div>
 
+    <!-- Edit Plan Modal -->
+    <div id="planModal" class="modal">
+        <div class="modal-content" style="width: 500px;">
+            <span class="close" onclick="closeModal('planModal')">&times;</span>
+            <div class="modal-header">
+                <h2>Edit Plan: <span id="plan_name_title"></span></h2>
+            </div>
+            <form id="planForm" onsubmit="event.preventDefault(); savePlan();">
+                <input type="hidden" id="plan_id">
+                <div class="detail-row">
+                    <label class="detail-label">Monthly Price (₹)</label>
+                    <input type="number" id="plan_price_m" class="editable-input" style="width:100%" step="0.01">
+                </div>
+                <div class="detail-row">
+                    <label class="detail-label">Yearly Price (₹)</label>
+                    <input type="number" id="plan_price_y" class="editable-input" style="width:100%" step="0.01">
+                </div>
+                <div class="detail-row">
+                    <label class="detail-label">Features (One per line)</label>
+                    <textarea id="plan_features" class="editable-input" style="width:100%; height:150px; resize:vertical; background:#f8fafc; border:1px solid #e2e8f0; padding:10px;"></textarea>
+                </div>
+                <div style="text-align: right; margin-top:20px;">
+                     <button type="submit" class="admin-btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Subscription Modal -->
+    <div id="subscriptionModal" class="modal">
+        <div class="modal-content" style="width: 400px;">
+            <span class="close" onclick="closeModal('subscriptionModal')">&times;</span>
+            <div class="modal-header">
+                <h2>Edit Subscription Plan</h2>
+            </div>
+            <div id="subModalBody">
+                <form id="subscriptionForm" onsubmit="event.preventDefault(); saveSubscription();">
+                    <input type="hidden" id="sub_user_id">
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; color: #64748b; font-size: 14px;">User</label>
+                        <div id="sub_user_name" style="font-weight: 600; font-size: 16px; color: #1e293b;"></div>
+                    </div>
+                    <div style="margin-bottom: 25px;">
+                        <label for="sub_role" style="display: block; margin-bottom: 8px; color: #64748b; font-size: 14px;">Membership Tier</label>
+                        <select id="sub_role" style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px;">
+                            <option value="free">Free Member</option>
+                            <option value="lite">Lite Member (Formerly Pro)</option>
+                            <option value="pro">Pro Member (Formerly Elite)</option>
+                        </select>
+                    </div>
+                    <div style="text-align: right;">
+                         <button type="submit" class="admin-btn btn-primary" style="width: 100%; justify-content: center;">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Existing functions...
+
+        // Subscription Management
+        function openSubscriptionModal(userId, userName, currentRole) {
+            document.getElementById('subscriptionModal').style.display = 'block';
+            document.getElementById('sub_user_id').value = userId;
+            document.getElementById('sub_user_name').innerText = userName;
+            document.getElementById('sub_role').value = currentRole;
+        }
+
+        function saveSubscription() {
+            const userId = document.getElementById('sub_user_id').value;
+            const newRole = document.getElementById('sub_role').value;
+
+            fetch('admin_subscription_action.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId, new_role: newRole })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Request failed');
+            });
+        }
+
+        // Plan Management JS
+        function openPlanModal(plan) {
+            document.getElementById('planModal').style.display = 'block';
+            document.getElementById('plan_name_title').innerText = plan.name;
+            document.getElementById('plan_id').value = plan.plan_id;
+            document.getElementById('plan_price_m').value = plan.price_monthly;
+            document.getElementById('plan_price_y').value = plan.price_yearly;
+            
+            // Features
+            let features = '';
+            try {
+                const fData = typeof plan.features === 'string' ? JSON.parse(plan.features) : plan.features;
+                features = Array.isArray(fData) ? fData.join('\n') : fData;
+            } catch(e) { features = plan.features; }
+            document.getElementById('plan_features').value = features;
+        }
+
+        function savePlan() {
+             const data = {
+                 plan_id: document.getElementById('plan_id').value,
+                 price_monthly: document.getElementById('plan_price_m').value,
+                 price_yearly: document.getElementById('plan_price_y').value,
+                 features: document.getElementById('plan_features').value
+             };
+             
+             fetch('admin_plan_update.php', {
+                 method: 'POST',
+                 headers: {'Content-Type': 'application/json'},
+                 body: JSON.stringify(data)
+             })
+             .then(res => res.json())
+             .then(data => {
+                 if(data.status === 'success') {
+                     alert(data.message);
+                     location.reload();
+                 } else {
+                     alert(data.message);
+                 }
+             })
+             .catch(err => console.error(err));
+        }
+
         function showSection(section) {
             // Update sidebar active state
             document.querySelectorAll('.nav-item').forEach(item => {
@@ -2055,8 +2299,27 @@ $conn->close();
 
         // Trainer Attendance Management
         function viewTrainerSchedule(trainerId) {
-            // Redirect to trainer schedule page
-            window.open('trainer_schedule.php?trainer_id=' + trainerId, '_blank');
+            // Open in modal instead of new tab
+            const modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100%';
+            modal.style.height = '100%';
+            modal.style.backgroundColor = 'rgba(0,0,0,0.5)';
+            modal.style.zIndex = '9999';
+            modal.style.display = 'flex';
+            modal.style.justifyContent = 'center';
+            modal.style.alignItems = 'center';
+            
+            modal.innerHTML = `
+                <div style="background:white; width:90%; height:90%; border-radius:12px; overflow:hidden; position:relative; box-shadow:0 10px 40px rgba(0,0,0,0.2);">
+                    <button onclick="this.closest('div').parentElement.remove()" style="position:absolute; top:15px; right:20px; z-index:100; background:#ef4444; color:white; border:none; width:30px; height:30px; border-radius:50%; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 5px rgba(0,0,0,0.2);"><i class="fas fa-times"></i></button>
+                    <iframe src="trainer_schedule.php?trainer_id=${trainerId}" style="width:100%; height:100%; border:none;"></iframe>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
         }
 
         function clockOutTrainer(trainerId, trainerName) {

@@ -10,35 +10,26 @@ $userName = $_SESSION['user_name'] ?? 'User';
 $dashboardLink = 'login.php';
 $gymOwnerPhone = '9495868854'; // Fallback default
 
-// Fetch Gym Owner Phone
-require_once 'db_connect.php'; 
-$adminEmail = 'ashakayaplackal@gmail.com';
-$phoneSql = "SELECT phone FROM users WHERE email = ?";
-$stmt = $conn->prepare($phoneSql);
-if ($stmt) {
-    $stmt->bind_param("s", $adminEmail);
-    $stmt->execute();
-    $res = $stmt->get_result();
-    if ($res->num_rows > 0) {
-        $row = $res->fetch_assoc();
-        if (!empty($row['phone'])) {
-            $gymOwnerPhone = $row['phone'];
-        }
-    }
-    $stmt->close();
-}
+// Gym Owner Phone
+$gymOwnerPhone = '9495868854';
 
 if ($isLoggedIn) {
-    if (isset($_SESSION['user_email']) && $_SESSION['user_email'] === 'ashakayaplackal@gmail.com') {
-        $dashboardLink = 'gym_admin_dashboard.php';
-    } else {
-        switch ($userRole) {
-            case 'admin': $dashboardLink = 'admin_dashboard.php'; break;
-            case 'trainer': $dashboardLink = 'trainer_dashboard.php'; break;
-            case 'pro': $dashboardLink = 'prouser_dashboard.php'; break;
-            case 'elite': $dashboardLink = 'eliteuser_dashboard.php'; break;
-            default: $dashboardLink = 'freeuser_dashboard.php'; break;
-        }
+    // Default Role-Based Dashboard
+    switch ($userRole) {
+        case 'admin': $dashboardLink = 'admin_dashboard.php'; break;
+        case 'trainer': $dashboardLink = 'trainer_dashboard.php'; break;
+        case 'pro': $dashboardLink = 'prouser_dashboard.php'; break;
+        case 'elite': $dashboardLink = 'eliteuser_dashboard.php'; break;
+        case 'lite': $dashboardLink = 'liteuser_dashboard.php'; break;
+        default: $dashboardLink = 'freeuser_dashboard.php'; break;
+    }
+
+    $dashboardLabel = 'Dashboard';
+
+    // explicit override for Gym Owner
+    if (isset($_SESSION['user_email']) && strtolower($_SESSION['user_email']) === 'ashakayaplackal@gmail.com') {
+        $dashboardLink = 'gym_owner_dashboard.php';
+        $dashboardLabel = 'Owner Panel';
     }
 }
 ?>
@@ -217,12 +208,8 @@ if ($isLoggedIn) {
             <?php endif; ?>
             
             <?php if ($isLoggedIn): ?>
-                <a href="<?php echo $dashboardLink; ?>" class="nav-link">Dashboard</a>
-                <?php if ((isset($isHomePage) && $isHomePage) || basename($_SERVER['PHP_SELF']) == 'home.php'): ?>
-                    <a href="signup.php" class="btn-signup">Sign up</a>
-                <?php else: ?>
-                    <a href="logout.php" class="btn-signup" style="background: var(--accent-color);">Logout</a>
-                <?php endif; ?>
+                <a href="<?php echo $dashboardLink; ?>" class="nav-link"><?php echo $dashboardLabel ?? 'Dashboard'; ?></a>
+                <a href="logout.php" class="btn-signup" style="background: var(--accent-color);">Logout</a>
             <?php else: ?>
                 <a href="#" onclick="handleTalkToExperts(event)" class="nav-link">Talk with Experts</a>
                 <a href="signup.php" class="btn-signup">Sign up</a>

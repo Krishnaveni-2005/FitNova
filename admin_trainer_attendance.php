@@ -4,8 +4,12 @@ require 'db_connect.php';
 
 header('Content-Type: application/json');
 
-// Check admin authentication
-if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
+// Check admin authentication or Gym Owner
+$allowed_gym_owner = 'ashakayaplackal@gmail.com';
+if (
+    (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') && 
+    (!isset($_SESSION['user_email']) || strtolower($_SESSION['user_email']) !== $allowed_gym_owner)
+) {
     echo json_encode(['status' => 'error', 'message' => 'Unauthorized access']);
     exit();
 }

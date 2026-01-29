@@ -222,9 +222,10 @@ if (!$trainer) {
             cursor: pointer;
         }
 
+        /* Compact Layout Styles */
         .profile-hero {
             background: linear-gradient(135deg, var(--primary-color) 0%, #1a4d8f 100%);
-            padding: 80px 0 60px;
+            padding: 40px 0 50px; /* Reduced padding */
             color: white;
             position: relative;
             overflow: hidden;
@@ -242,7 +243,7 @@ if (!$trainer) {
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1100px; /* Slightly tighter container */
             margin: 0 auto;
             padding: 0 20px;
             position: relative;
@@ -251,123 +252,125 @@ if (!$trainer) {
         .profile-header {
             display: flex;
             align-items: center;
-            gap: 40px;
-            margin-bottom: 40px;
+            gap: 30px;
+            margin-bottom: 20px; /* Reduced margin */
         }
         
         .profile-image {
-            width: 200px;
-            height: 200px;
-            border-radius: 20px;
+            width: 140px; /* Smaller image */
+            height: 140px;
+            border-radius: 16px;
             object-fit: cover;
-            border: 5px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
         }
         
         .profile-info h1 {
-            font-size: 3rem;
+            font-size: 2.2rem; /* Smaller font */
             font-weight: 800;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
         
         .specialization {
             display: inline-block;
             background: var(--accent-color);
             color: white;
-            padding: 8px 20px;
+            padding: 5px 15px; /* Smaller padding */
             border-radius: 50px;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             font-weight: 600;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
         
         .profile-stats {
             display: flex;
-            gap: 30px;
-            margin-top: 20px;
+            gap: 20px;
+            margin-top: 10px;
         }
         
         .stat-item {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+            font-size: 0.9rem;
         }
         
         .stat-item i {
-            font-size: 1.2rem;
+            font-size: 1rem;
             color: var(--accent-color);
         }
         
         .content-section {
             background: white;
-            margin: -40px auto 40px;
-            border-radius: 20px;
-            padding: 50px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-            max-width: 1200px;
+            margin: -30px auto 30px; /* Tighter overlap */
+            border-radius: 16px;
+            padding: 30px; /* Reduced padding */
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+            max-width: 1100px;
         }
         
         .section-title {
-            font-size: 2rem;
+            font-size: 1.6rem;
             font-weight: 700;
             color: var(--primary-color);
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 3px solid var(--accent-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--accent-color);
         }
         
         .about-text {
-            font-size: 1.1rem;
-            line-height: 1.8;
+            font-size: 1rem;
+            line-height: 1.6;
             color: var(--text-light);
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
         
         .info-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-bottom: 40px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px; /* Reduced gap */
+            margin-bottom: 30px;
         }
         
         .info-card {
             background: var(--bg-light);
-            padding: 25px;
-            border-radius: 15px;
-            border-left: 4px solid var(--accent-color);
+            padding: 20px; /* Reduced padding */
+            border-radius: 12px;
+            border-left: 3px solid var(--accent-color);
         }
         
         .info-card h3 {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             color: var(--primary-color);
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
         
         .info-card p {
             color: var(--text-light);
-            line-height: 1.6;
+            line-height: 1.5;
+            font-size: 0.95rem;
         }
         
         .cta-section {
             background: linear-gradient(135deg, var(--primary-color) 0%, #1a4d8f 100%);
-            padding: 40px;
-            border-radius: 15px;
+            padding: 30px; /* Reduced padding */
+            border-radius: 12px;
             text-align: center;
             color: white;
-            margin-top: 40px;
+            margin-top: 30px;
         }
         
         .cta-section h3 {
-            font-size: 1.8rem;
-            margin-bottom: 15px;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
         }
         
         .cta-section p {
-            font-size: 1.1rem;
-            margin-bottom: 25px;
+            font-size: 1rem;
+            margin-bottom: 20px;
             opacity: 0.9;
         }
         
@@ -375,33 +378,33 @@ if (!$trainer) {
             display: inline-block;
             background: white;
             color: var(--primary-color);
-            padding: 15px 40px;
+            padding: 12px 30px; /* Smaller button */
             border-radius: 50px;
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 700;
             text-decoration: none;
             transition: all 0.3s ease;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
         }
         
         .btn-book:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
         }
         
         .btn-back {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             color: white;
             text-decoration: none;
-            font-size: 1rem;
-            margin-bottom: 30px;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
             transition: all 0.3s ease;
         }
         
         .btn-back:hover {
-            gap: 15px;
+            gap: 12px;
         }
         
         .certifications-list {
@@ -410,10 +413,11 @@ if (!$trainer) {
         }
         
         .certifications-list li {
-            padding: 10px 0;
-            padding-left: 30px;
+            padding: 6px 0;
+            padding-left: 25px;
             position: relative;
             color: var(--text-light);
+            font-size: 0.9rem;
         }
         
         .certifications-list li::before {
@@ -422,27 +426,28 @@ if (!$trainer) {
             left: 0;
             color: var(--accent-color);
             font-weight: bold;
-            font-size: 1.2rem;
+            font-size: 1rem;
         }
         
         @media (max-width: 768px) {
             .profile-header {
                 flex-direction: column;
                 text-align: center;
+                gap: 15px;
             }
             
             .profile-info h1 {
-                font-size: 2rem;
+                font-size: 1.8rem;
             }
             
             .content-section {
-                padding: 30px 20px;
-                margin: -20px 20px 20px;
+                padding: 20px;
+                margin: -20px 15px 20px;
             }
             
             .profile-stats {
                 flex-direction: column;
-                gap: 15px;
+                gap: 10px;
             }
         }
     </style>
@@ -531,6 +536,15 @@ if (!$trainer) {
                             <li><?php echo htmlspecialchars(trim($cert)); ?></li>
                         <?php endforeach; ?>
                     </ul>
+                    
+                    <?php if(!empty($trainer['trainer_certification'])): ?>
+                        <div style="margin-top: 20px; padding-top: 15px; border-top: 1px dashed #eee;">
+                            <h4 style="font-size: 0.95rem; margin-bottom: 10px; color: var(--primary-color);">Verified Certificate</h4>
+                            <a href="<?php echo htmlspecialchars($trainer['trainer_certification']); ?>" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; background: #eef2ff; color: var(--primary-color); padding: 8px 15px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: 0.2s;">
+                                <i class="fas fa-file-pdf"></i> View Official Document
+                            </a>
+                        </div>
+                    <?php endif; ?>
                     <div style="margin-top: 20px; border-top: 1px dashed #eee; padding-top: 15px;">
                         <h4 style="font-size: 0.9rem; color: #888; margin-bottom: 15px; font-weight: 600;">Credentials Showcase</h4>
                         <?php if(!empty($achievements)): ?>
@@ -563,9 +577,14 @@ if (!$trainer) {
                 </div>
                 
                 <div class="info-card">
-                    <h3><i class="fas fa-envelope"></i> Contact</h3>
-                    <p><?php echo htmlspecialchars($trainer['email'] ?? 'trainer@fitnova.com'); ?></p>
-                    <p style="margin-top: 10px; font-size: 0.95rem;">
+                    <h3><i class="fas fa-address-book"></i> Contact</h3>
+                    <p style="margin-bottom: 8px;"><i class="fas fa-envelope" style="color:var(--accent-color); width:20px;"></i> <?php echo htmlspecialchars($trainer['email'] ?? 'trainer@fitnova.com'); ?></p>
+                    
+                    <?php if(!empty($trainer['phone'])): ?>
+                        <p style="margin-bottom: 8px;"><i class="fas fa-phone" style="color:var(--accent-color); width:20px;"></i> <?php echo htmlspecialchars($trainer['phone']); ?></p>
+                    <?php endif; ?>
+
+                    <p style="margin-top: 15px; font-size: 0.9rem; color: #888; border-top: 1px solid #eee; padding-top: 10px;">
                         Available for online and in-person training sessions.
                     </p>
                 </div>

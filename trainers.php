@@ -33,16 +33,18 @@ if ($result && $result->num_rows > 0) {
         .category-section { margin-bottom: 60px; }
         .cat-title { font-size: 1.8rem; color: var(--primary-color); margin-bottom: 25px; border-left: 5px solid var(--accent-color); padding-left: 15px; }
         
-        .trainer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; }
-        .trainer-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: 0.3s; text-align: center; }
-        .trainer-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+        .trainer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+        .trainer-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: 0.3s; text-align: center; display: flex; flex-direction: column; padding-bottom: 15px; }
+        .trainer-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
         
-        .t-img { width: 100%; height: 260px; object-fit: cover; background: #eee; }
-        .t-info { padding: 25px; }
-        .t-name { font-size: 1.4rem; font-weight: 700; color: #333; margin-bottom: 5px; }
-        .t-spec { color: var(--accent-color); font-weight: 600; font-size: 0.9rem; margin-bottom: 15px; display: block; }
-        .t-bio { font-size: 0.9rem; color: #666; margin-bottom: 20px; }
-        .btn-book { display: inline-block; padding: 10px 25px; background: var(--primary-color); color: white; border-radius: 50px; text-decoration: none; font-size: 0.9rem; transition: 0.3s; }
+        /* Compact Image Style */
+        .t-img { width: 100px; height: 100px; object-fit: cover; border-radius: 50%; margin: 20px auto 10px; display: block; border: 3px solid #f8f9fa; }
+        
+        .t-info { padding: 0 15px 10px; display: flex; flex-direction: column; height: 100%; }
+        .t-name { font-size: 1.1rem; font-weight: 700; color: #333; margin-bottom: 3px; }
+        .t-spec { color: var(--accent-color); font-weight: 600; font-size: 0.8rem; margin-bottom: 10px; display: block; }
+        .t-bio { font-size: 0.85rem; color: #666; margin-bottom: 15px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .btn-book { display: inline-block; padding: 6px 20px; background: var(--primary-color); color: white; border-radius: 50px; text-decoration: none; font-size: 0.8rem; transition: 0.3s; margin-top: auto; align-self: center; }
         .btn-book:hover { background: var(--accent-color); }
     </style>
 </head>

@@ -11,6 +11,16 @@ if (strlen($initials) < 2) $initials = strtoupper(substr($userName, 0, 2));
 
 require "db_connect.php";
 $userId = $_SESSION['user_id'];
+
+// Sync Role
+$checkRole = $conn->query("SELECT role FROM users WHERE user_id = $userId")->fetch_assoc();
+if ($checkRole && $checkRole['role'] !== 'free') {
+    $_SESSION['user_role'] = $checkRole['role'];
+    if ($checkRole['role'] === 'lite') { header("Location: liteuser_dashboard.php"); exit(); }
+    if ($checkRole['role'] === 'pro') { header("Location: prouser_dashboard.php"); exit(); }
+    if ($checkRole['role'] === 'trainer') { header("Location: trainer_dashboard.php"); exit(); }
+    if ($checkRole['role'] === 'admin') { header("Location: admin_dashboard.php"); exit(); }
+}
 $profileCheck = $conn->query("SELECT weight_kg FROM client_profiles WHERE user_id = $userId");
 $hasProfile = ($profileCheck->num_rows > 0);
 $profileWeight = "72kg"; // default
@@ -906,7 +916,7 @@ $uFnStmt->close();
             </div>
             <h2>Unlock Full Access</h2>
             <p>You are currently on the <strong>Free Plan</strong>.</p>
-            <p class="highlight-text">Upgrade to <strong>Pro</strong> or <strong>Elite</strong> to access Personal Trainers, Custom Diet Plans, and more!</p>
+            <p class="highlight-text">Upgrade to <strong>Lite</strong> or <strong>Pro</strong> to access Personal Trainers, Custom Diet Plans, and more!</p>
             
             <div class="modal-features">
                 <div class="feature-item"><i class="fas fa-check-circle"></i> Personal Trainer Access</div>

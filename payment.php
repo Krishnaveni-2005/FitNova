@@ -17,6 +17,7 @@ if (!isset($_SESSION['user_id'])) {
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;900&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
         :root {
             --primary-color: #0F2C59;
@@ -264,48 +265,12 @@ if (!isset($_SESSION['user_id'])) {
     <div class="checkout-container">
         <!-- Payment Details -->
         <div class="checkout-left">
-            <h2>Select Payment Method</h2>
-
-            <div class="payment-methods">
-                <div class="payment-method active" onclick="selectMethod('card')">
-                    <i class="fas fa-credit-card"></i> Card
-                </div>
-                <div class="payment-method" onclick="selectMethod('gpay')">
-                    <i class="fab fa-google-pay" style="font-size: 2rem;"></i> Google Pay / UPI
-                </div>
-            </div>
-
-            <!-- Card Form -->
-            <div id="card-form" class="form-section active">
-                <h3>Credit or Debit Card</h3>
-                <form id="cardPaymentForm">
-                    <div class="form-group">
-                        <label class="form-label">Name on Card</label>
-                        <input type="text" class="form-input" placeholder="e.g. Rahul Kumar" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Card Number</label>
-                        <input type="text" class="form-input" placeholder="0000 0000 0000 0000" maxlength="19" required>
-                    </div>
-                </form>
-            </div>
-
-            <!-- UPI/Gpay Form -->
-            <div id="gpay-form" class="form-section">
-                <h3>Pay via UPI</h3>
-                <p style="margin-bottom: 20px; color: #666; font-size: 0.95rem;">Enter your VPA (Virtual Payment
-                    Address) to verify and pay.</p>
-                <form id="upiPaymentForm">
-                    <div class="form-group">
-                        <label class="form-label">UPI ID</label>
-                        <div style="position: relative;">
-                            <input type="text" class="form-input" placeholder="username@oksbi" required>
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/f/f2/Google_Pay_Logo.svg"
-                                alt="GPay"
-                                style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); height: 20px; opacity: 0.7;">
-                        </div>
-                    </div>
-                </form>
+            <h2>Complete Your Payment</h2>
+            
+            <div style="background: #f8f9fa; padding: 30px; border-radius: 12px; margin-bottom: 30px; text-align: center; border-left: 4px solid var(--primary-color);">
+                <i class="fas fa-shield-alt" style="color: var(--primary-color); font-size: 3rem; margin-bottom: 20px;"></i>
+                <h3 style="margin-bottom: 15px; font-size: 1.3rem; color: var(--primary-color);">Secure Payment via Razorpay</h3>
+                <p style="color: #666; line-height: 1.6; font-size: 1rem;">Click the button below to proceed with a secure payment gateway.</p>
             </div>
 
             <button type="button" class="btn-pay" id="payBtn">Pay ₹2499.00</button>
@@ -357,96 +322,130 @@ if (!isset($_SESSION['user_id'])) {
         
         // Setup Data (INR)
         const plans = {
-            pro: { name: 'Pro Member', monthly: 2499, yearly: 7999 },
-            elite: { name: 'Elite Member', monthly: 4999, yearly: 8999 }
+            lite: { name: 'Lite Member', monthly: 2499, yearly: 7999 },
+            pro: { name: 'Pro Member', monthly: 4999, yearly: 8999 }
         };
+
 
         // Validate Plan
         if (!plan || !plans[plan]) {
-             // Default to 'pro' if invalid or missing, OR redirect. 
-             // To be safe and avoid crash, let's default to 'pro' if invalid, 
-             // or redirect if that's preferred. 
-             // Given the user wants it to work, redirecting to options is safer UX.
-             window.location.href = 'subscription_plans.php';
-             // return; // Stop execution (though href redirect will handle it)
+             console.warn('Invalid plan:', plan);
+             // Default to 'lite' if invalid
+             plan = 'lite';
         }
 
         const selectedPlan = plans[plan];
-        // Ensure selectedPlan exists before accessing properties
-        if (selectedPlan) {
-            const basePrice = cycle === 'yearly' ? selectedPlan.yearly : selectedPlan.monthly;
-            const tax = basePrice * 0.18;
-            const total = basePrice + tax;
-            
-            // Formatting currency
-            const formatINR = (amt) => '₹' + amt.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    
-            // Render Data
-            document.getElementById('planName').innerText = selectedPlan.name;
-            document.getElementById('billingCycle').innerText = cycle.charAt(0).toUpperCase() + cycle.slice(1) + ' Plan';
-            document.getElementById('planPrice').innerText = formatINR(basePrice);
-            document.getElementById('taxAmount').innerText = formatINR(tax);
-            document.getElementById('totalPrice').innerText = formatINR(total);
-            document.getElementById('payBtn').innerText = 'Pay ' + formatINR(total);
-        }
+        const basePrice = cycle === 'yearly' ? selectedPlan.yearly : selectedPlan.monthly;
+        const tax = basePrice * 0.18;
+        const total = basePrice + tax;
+        
+        // Formatting currency
+        const formatINR = (amt) => '₹' + amt.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        // Render Data
+        document.getElementById('planName').innerText = selectedPlan.name;
+        document.getElementById('billingCycle').innerText = cycle.charAt(0).toUpperCase() + cycle.slice(1) + ' Plan';
+        document.getElementById('planPrice').innerText = formatINR(basePrice);
+        document.getElementById('taxAmount').innerText = formatINR(tax);
+        document.getElementById('totalPrice').innerText = formatINR(total);
+        document.getElementById('payBtn').innerText = 'Pay ' + formatINR(total);
+        
+        console.log('Payment page loaded:', { plan, cycle, basePrice, tax, total });
 
 
 
-        // Toggle Payment Method
-        function selectMethod(method) {
-            // UI Toggle
-            document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('active'));
-            if (method === 'card') document.querySelector('.payment-method:nth-child(1)').classList.add('active');
-            else document.querySelector('.payment-method:nth-child(2)').classList.add('active');
-
-            // Form Toggle
-            document.querySelectorAll('.form-section').forEach(el => el.classList.remove('active'));
-            document.getElementById(method + '-form').classList.add('active');
-        }
-
-        // Handle Payment
+        // Handle Payment with Razorpay
         document.getElementById('payBtn').addEventListener('click', function () {
+            console.log('Pay button clicked');
             const btn = this;
-            const originalText = btn.innerText;
-
-            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Processing...';
-            btn.style.opacity = '0.8';
-            btn.disabled = true;
-
-            // Send actual update to backend
-            fetch('payment_handler.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    plan: plan,
-                    billing: cycle,
-                    trainer_id: urlParams.get('trainer_id')
-                })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        btn.innerHTML = '<i class="fas fa-check-circle"></i> Payment Successful';
-                        btn.style.backgroundColor = '#2ECC71';
-
-                        setTimeout(() => {
-                            alert('Payment Successful! Welcome to ' + selectedPlan.name);
-                            window.location.href = data.redirect;
-                        }, 1000);
-                    } else {
-                        alert('Error: ' + data.message);
-                        btn.innerHTML = originalText;
+            
+            // Check if Razorpay is loaded
+            if (typeof Razorpay === 'undefined') {
+                console.error('Razorpay SDK not loaded');
+                alert('Payment gateway is loading. Please wait a moment and try again.');
+                return;
+            }
+            
+            console.log('Razorpay SDK loaded successfully');
+            const totalAmount = total * 100; // Convert to paise (Razorpay uses smallest currency unit)
+            console.log('Opening Razorpay with amount:', totalAmount, 'paise (₹' + total + ')');
+            
+            var options = {
+                "key": "rzp_test_S9XwIrDZ3gAbfv", // Razorpay Key ID
+                "amount": totalAmount, // Amount in paise
+                "currency": "INR",
+                "name": "FitNova",
+                "description": selectedPlan.name + " - " + cycle.charAt(0).toUpperCase() + cycle.slice(1) + " Plan",
+                "image": "https://via.placeholder.com/100x100.png?text=FitNova", // Your logo URL
+                "handler": function (response) {
+                    // Payment successful
+                    btn.innerHTML = '<i class="fas fa-check-circle"></i> Payment Successful';
+                    btn.style.backgroundColor = '#2ECC71';
+                    btn.disabled = true;
+                    
+                    // Send payment details to backend
+                    fetch('payment_handler.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            plan: plan,
+                            billing: cycle,
+                            trainer_id: urlParams.get('trainer_id'),
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_signature: response.razorpay_signature
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            setTimeout(() => {
+                                alert('Payment Successful! Welcome to ' + selectedPlan.name);
+                                window.location.href = data.redirect;
+                            }, 1000);
+                        } else {
+                            alert('Error updating subscription: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Payment received but error updating subscription. Please contact support.');
+                    });
+                },
+                "prefill": {
+                    "name": "", // Can be populated from session
+                    "email": "",
+                    "contact": ""
+                },
+                "theme": {
+                    "color": "#0F2C59" // Your primary color
+                },
+                "modal": {
+                    "ondismiss": function() {
+                        btn.innerHTML = btn.getAttribute('data-original-text') || 'Pay ₹' + total.toFixed(2);
                         btn.disabled = false;
                         btn.style.opacity = '1';
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred during payment processing.');
-                    btn.innerHTML = originalText;
+                }
+            };
+            
+            // Store original text
+            btn.setAttribute('data-original-text', btn.innerText);
+            
+            try {
+                var rzp = new Razorpay(options);
+                rzp.on('payment.failed', function (response){
+                    alert('Payment Failed: ' + response.error.description);
+                    btn.innerHTML = btn.getAttribute('data-original-text');
                     btn.disabled = false;
                     btn.style.opacity = '1';
                 });
+                
+                rzp.open();
+            } catch (error) {
+                console.error('Razorpay Error:', error);
+                alert('Error initializing payment gateway. Please refresh the page and try again.');
+            }
         });
     </script>
 </body>

@@ -1,10 +1,25 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'pro') {
+if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit();
 }
 require "db_connect.php";
+
+// Sync Role - This dashboard serves 'pro' users now (restored to original dashboard)
+$userId = $_SESSION['user_id'];
+$checkRole = $conn->query("SELECT role FROM users WHERE user_id = $userId")->fetch_assoc();
+$realRole = $checkRole['role'] ?? 'free';
+$_SESSION['user_role'] = $realRole;
+
+if ($realRole !== 'pro') {
+    if ($realRole === 'free') { header("Location: freeuser_dashboard.php"); exit(); }
+    if ($realRole === 'lite') { header("Location: liteuser_dashboard.php"); exit(); } 
+    if ($realRole === 'trainer') { header("Location: trainer_dashboard.php"); exit(); }
+    if ($realRole === 'admin') { header("Location: admin_dashboard.php"); exit(); }
+    header('Location: login.php');
+    exit();
+}
 
 // Ensure table exists (Self-healing)
 $conn->query("CREATE TABLE IF NOT EXISTS user_notifications (
@@ -836,6 +851,7 @@ $uFnStmt->close();
             }
         }
     </style>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 
 <body>
@@ -869,6 +885,9 @@ $uFnStmt->close();
             </a>
             <a href="client_profile_setup.php" class="menu-item">
                 <i class="fas fa-user-circle"></i> Profile
+            </a>
+            <a href="macro_calculator.php" class="menu-item">
+                <i class="fas fa-calculator"></i> Macro Calculator
             </a>
             <a href="fitshop.php" class="menu-item">
                 <i class="fas fa-store"></i> FitShop
@@ -1195,20 +1214,16 @@ $uFnStmt->close();
                 $scheduleSql = "SELECT ts.*, t.first_name as trainer_first, t.last_name as trainer_last 
                                 FROM trainer_schedules ts
                                 JOIN users t ON ts.trainer_id = t.user_id
-                                WHERE (
-                                    ts.client_name = ? 
-                                    OR ts.client_name = ? 
-                                    OR ts.client_name LIKE CONCAT(?, '%')
-                                    OR ? LIKE CONCAT(ts.client_name, '%')
-                                )
-                                AND ts.status = 'upcoming'
+                                WHERE ts.client_name LIKE CONCAT(?, '%')
                                 AND ts.session_date >= CURDATE()
+                                AND ts.status != 'cancelled'
                                 ORDER BY ts.session_date ASC, ts.session_time ASC
                                 LIMIT 3";
                 $stmt = $conn->prepare($scheduleSql);
                 $mySchedules = [];
                 if ($stmt) {
-                    $stmt->bind_param("ssss", $dbFullName, $userName, $firstNameOnly, $dbFullName);
+                    // Use just the first part of the first name for robust matching (ignoring middle names/spacing issues)
+                    $stmt->bind_param("s", $firstNameOnly);
                     $stmt->execute();
                     $mySchedules = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                     $stmt->close();
@@ -1305,15 +1320,81 @@ $uFnStmt->close();
                     <?php endif; ?>
                 </div>
 
+                <?php 
+                // Dynamic Macros Calculation Logic
+                $showMacros = false;
+                $valP = 0; $valC = 0; $valF = 0;
+                $sourceLabel = "";
+
+                // 1. Get Assigned Diet Timestamp
+                $assignedDate = 0;
+                $assignedPlan = null;
+                if (!empty($assignedDiets) && isset($assignedDiets[0]['target_calories']) && $assignedDiets[0]['target_calories'] > 0) {
+                    $assignedPlan = $assignedDiets[0];
+                    $assignedDate = strtotime($assignedPlan['created_at']);
+                }
+
+                // 2. Get Calculated Macros Timestamp
+                $calcDate = 0;
+                $calcMacros = null;
+                $checkCol = $conn->query("SHOW COLUMNS FROM client_profiles LIKE 'custom_macros_json'");
+                if ($checkCol && $checkCol->num_rows > 0) {
+                     $macroSql = "SELECT custom_macros_json FROM client_profiles WHERE user_id = ?";
+                     $mStmt = $conn->prepare($macroSql);
+                     $mStmt->bind_param("i", $userId);
+                     $mStmt->execute();
+                     $mRes = $mStmt->get_result()->fetch_assoc();
+                     $mStmt->close();
+                     
+                     if ($mRes && !empty($mRes['custom_macros_json'])) {
+                         $decoded = json_decode($mRes['custom_macros_json'], true);
+                         if (isset($decoded['daily_calories']) && $decoded['daily_calories'] > 0) {
+                             $calcMacros = $decoded;
+                             // Use calculated_at if exists, else default to 1 (older than any real plan unless plan is 0)
+                             $calcDate = isset($decoded['calculated_at']) ? strtotime($decoded['calculated_at']) : 1;
+                         }
+                     }
+                }
+
+                // 3. Compare and Select
+                // Prefer Calculated if it's NEWER than assigned setup, or if no assigned setup exists
+                if ($calcMacros && ($calcDate >= $assignedDate)) {
+                     $valP = $calcMacros['protein'];
+                     $valC = $calcMacros['carbs'];
+                     $valF = $calcMacros['fats'];
+                     $showMacros = true;
+                     $sourceLabel = "From Calculator";
+                } elseif ($assignedPlan) {
+                    $calTarget = $assignedPlan['target_calories'];
+                    $dType = strtolower($assignedPlan['diet_type'] ?? 'balanced');
+                    
+                    // Ratio Logic
+                    $rP = 0.30; $rC = 0.50; $rF = 0.20;
+                    if (strpos($dType, 'keto') !== false) { $rP = 0.25; $rC = 0.05; $rF = 0.70; }
+                    elseif (strpos($dType, 'muscle') !== false) { $rP = 0.40; $rC = 0.40; $rF = 0.20; }
+                    elseif (strpos($dType, 'weight loss') !== false) { $rP = 0.40; $rC = 0.30; $rF = 0.30; }
+
+                    $valP = round(($calTarget * $rP) / 4);
+                    $valC = round(($calTarget * $rC) / 4);
+                    $valF = round(($calTarget * $rF) / 9);
+                    $showMacros = true;
+                    $sourceLabel = "From Trainer Plan";
+                }
+
+                if ($showMacros):
+                ?>
                 <div class="section-card">
                     <div class="section-header">
                         <h3 class="section-title">Today's Macros</h3>
-                        <a href="#" class="view-all">Log Meal</a>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="font-size:11px; background:#eef2ff; color:#0F2C59; padding:2px 8px; border-radius:10px; font-weight:600;"><?php echo htmlspecialchars($sourceLabel); ?></span>
+                            <a href="#" class="view-all">Log Meal</a>
+                        </div>
                     </div>
                     <div style="display: flex; gap: 20px; align-items: center; justify-content: space-around;">
                         <div style="text-align: center;">
                             <span
-                                style="display: block; font-size: 24px; font-weight: 700; color: var(--primary-color);">165g</span>
+                                style="display: block; font-size: 24px; font-weight: 700; color: var(--primary-color);"><?php echo $valP; ?>g</span>
                             <span style="font-size: 13px; color: var(--text-light);">Protein</span>
                             <div
                                 style="width: 60px; height: 4px; background: #e9ecef; margin: 5px auto; border-radius: 2px;">
@@ -1324,7 +1405,7 @@ $uFnStmt->close();
                         </div>
                         <div style="text-align: center;">
                             <span
-                                style="display: block; font-size: 24px; font-weight: 700; color: var(--accent-color);">240g</span>
+                                style="display: block; font-size: 24px; font-weight: 700; color: var(--accent-color);"><?php echo $valC; ?>g</span>
                             <span style="font-size: 13px; color: var(--text-light);">Carbs</span>
                             <div
                                 style="width: 60px; height: 4px; background: #e9ecef; margin: 5px auto; border-radius: 2px;">
@@ -1335,7 +1416,7 @@ $uFnStmt->close();
                         </div>
                         <div style="text-align: center;">
                             <span
-                                style="display: block; font-size: 24px; font-weight: 700; color: var(--secondary-color);">75g</span>
+                                style="display: block; font-size: 24px; font-weight: 700; color: var(--secondary-color);"><?php echo $valF; ?>g</span>
                             <span style="font-size: 13px; color: var(--text-light);">Fats</span>
                             <div
                                 style="width: 60px; height: 4px; background: #e9ecef; margin: 5px auto; border-radius: 2px;">
@@ -1346,6 +1427,7 @@ $uFnStmt->close();
                         </div>
                     </div>
                 </div>
+                <?php endif; ?>
             </div>
 
             <!-- Right Column: Progress -->
@@ -1606,24 +1688,51 @@ $uFnStmt->close();
         }
 
         function subscribeGym() {
-            if (confirm('Confirm subscription to Offline Gym Access for ₹10/month?')) {
-                // In a real app, this would redirect to Stripe/Payment Gateway
-                // Here we verify update directly
-                fetch('subscribe_offline_gym.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'subscribe' })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Subscription Successful! Welcome to FitNova Gyms.');
-                        location.reload();
-                    } else {
-                        alert('Error: ' + data.message);
-                    }
-                });
-            }
+            var options = {
+                "key": "rzp_test_S9XwIrDZ3gAbfv",
+                "amount": 1000,
+                "currency": "INR",
+                "name": "FitNova Gym Access",
+                "description": "Offline Gym Access Subscription",
+                "image": "https://via.placeholder.com/100x100.png?text=FitNova",
+                "handler": function (response) {
+                    fetch('subscribe_offline_gym.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            action: 'subscribe',
+                            payment_id: response.razorpay_payment_id 
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Payment Successful! Your gym access is now active.');
+                            location.reload();
+                        } else {
+                            alert('Error activating subscription: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Payment received but error activating subscription.');
+                    });
+                },
+                "prefill": {
+                    "name": "<?php echo htmlspecialchars($userName); ?>",
+                    "email": "",
+                    "contact": ""
+                },
+                "theme": {
+                    "color": "#0F2C59"
+                }
+            };
+            
+            var rzp1 = new Razorpay(options);
+            rzp1.on('payment.failed', function (response){
+                alert('Payment Failed: ' + response.error.description);
+            });
+            rzp1.open();
         }
     </script>
 </body>

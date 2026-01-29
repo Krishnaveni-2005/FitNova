@@ -5,8 +5,8 @@ if (isset($_SESSION['user_id'])) {
     switch ($role) {
         case "admin": header("Location: admin_dashboard.php"); break;
         case "trainer": header("Location: trainer_dashboard.php"); break;
-        case "pro": header("Location: prouser_dashboard.php"); break;
-        case "elite": header("Location: eliteuser_dashboard.php"); break;
+        case "pro": header("Location: eliteuser_dashboard.php"); break;
+        case "lite": header("Location: prouser_dashboard.php"); break;
         default: header("Location: freeuser_dashboard.php"); break;
     }
     exit();
@@ -443,6 +443,19 @@ if (isset($_SESSION['user_id'])) {
 
                 <div id="trainerFields" style="display: none;">
                     <div class="form-group">
+                        <label>Trainer Type</label>
+                        <div style="display: flex; gap: 20px; align-items: center; padding: 10px 0;">
+                            <label style="font-weight: normal; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="radio" name="trainerType" value="online" checked style="width: 18px; height: 18px;"> 
+                                Online Trainer
+                            </label>
+                            <label style="font-weight: normal; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="radio" name="trainerType" value="offline" style="width: 18px; height: 18px;"> 
+                                Offline Trainer
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label>Specialization</label>
                         <select id="trainerSpecialization" class="form-control">
                             <option value="">Select Specialization</option>
@@ -662,6 +675,7 @@ if (isset($_SESSION['user_id'])) {
                 const isTrainer = document.getElementById("isTrainer").checked;
                 if (isTrainer) {
                     formData.append('isTrainer', '1');
+                    formData.append('trainerType', document.querySelector('input[name="trainerType"]:checked').value);
                     formData.append('trainerSpecialization', inputs.trainerSpecialization.el.value);
                     formData.append('trainerExperience', inputs.trainerExperience.el.value);
                     // Append file

@@ -6,7 +6,7 @@ if (isset($_SESSION['user_id'])) {
         case "admin": header("Location: admin_dashboard.php"); break;
         case "trainer": header("Location: trainer_dashboard.php"); break;
         case "pro": header("Location: prouser_dashboard.php"); break;
-        case "elite": header("Location: eliteuser_dashboard.php"); break;
+        case "lite": header("Location: liteuser_dashboard.php"); break;
         default: header("Location: freeuser_dashboard.php"); break;
     }
     exit();

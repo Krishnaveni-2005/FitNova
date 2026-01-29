@@ -1,104 +1,145 @@
 <?php
 session_start();
 
-// Check if user is logged in
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_role'])) {
+// Check if user is logged in and is an admin
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
     header("Location: login.php");
     exit();
 }
 
-$allowed_roles = ['gym_admin', 'admin'];
-$allowed_emails = ['ashakayaplackal@gmail.com'];
-$user_email = $_SESSION['user_email'] ?? '';
-
-if (!in_array($_SESSION['user_role'], $allowed_roles) && !in_array($user_email, $allowed_emails)) {
+// Additional security: Only allow the specific admin email
+if ($_SESSION['user_email'] !== 'krishnavenirnair2005@gmail.com') {
+    session_destroy();
     header("Location: login.php");
     exit();
 }
 
-// Get gym admin info from session
-$adminName = $_SESSION['user_name'] ?? 'Gym Admin';
+// Get admin info from session
+$adminName = $_SESSION['user_name'] ?? 'Admin';
 $adminEmail = $_SESSION['user_email'];
 $adminInitials = strtoupper(substr($adminName, 0, 1) . substr(strrchr($adminName, ' '), 1, 1));
 
-// Fetch Gym Equipment from DB
+// Fetch Pending Trainers
 require "db_connect.php";
+$pendingTrainers = [];
+$sql = "SELECT * FROM users WHERE role = 'trainer' AND account_status = 'pending' ORDER BY created_at DESC";
+$result = $conn->query($sql);
+if ($result->num_rows > 0) {
+    while($row = $result->fetch_assoc()) {
+        $pendingTrainers[] = $row;
+    }
+}
+
+// Fetch Active Trainers (All users with role='trainer' and status!='pending')
+$activeTrainers = [];
+$sqlActive = "SELECT * FROM users WHERE role = 'trainer' AND account_status != 'pending' ORDER BY created_at DESC";
+$resultActive = $conn->query($sqlActive);
+if ($resultActive->num_rows > 0) {
+    while($row = $resultActive->fetch_assoc()) {
+        $activeTrainers[] = $row;
+    }
+}
+
+// Fetch Specific Offline Trainers (Removed demo trainers)
+$offlineTrainers = [];
+// Removed hardcoded fetch for Joshua, David, Elis
+// You can construct a query here if you need to fetch specific trainers dynamically
+// For now, we leave this empty as per request to remove demo trainers
+
+// Fetch Clients (All Statuses)
+$clients = [];
+$sqlClients = "SELECT * FROM users WHERE role IN ('free', 'pro', 'elite') ORDER BY created_at DESC";
+$resultClients = $conn->query($sqlClients);
+if ($resultClients->num_rows > 0) {
+    while($row = $resultClients->fetch_assoc()) {
+        $clients[] = $row;
+    }
+}
+
+// Fetch All Products
+$products = [];
+$sqlProducts = "SELECT * FROM products ORDER BY name ASC";
+$resultProducts = $conn->query($sqlProducts);
+if ($resultProducts && $resultProducts->num_rows > 0) {
+    while($row = $resultProducts->fetch_assoc()) {
+        $products[] = $row;
+    }
+}
+
+// Fetch Subscription Plans
+$subPlans = [];
+$sqlPlans = "SELECT * FROM subscription_plans";
+$resPlans = $conn->query($sqlPlans);
+if($resPlans && $resPlans->num_rows > 0) {
+    while($r = $resPlans->fetch_assoc()) {
+        $subPlans[] = $r;
+    }
+}
+
+// Fetch Today's Classes (Trainer Schedules)
+$todaysClasses = [];
+$todayDate = date('Y-m-d');
+$sqlClasses = "SELECT ts.*, u.first_name as trainer_first, u.last_name as trainer_last 
+               FROM trainer_schedules ts 
+               JOIN users u ON ts.trainer_id = u.user_id 
+               WHERE ts.session_date = '$todayDate' 
+               ORDER BY ts.session_time ASC";
+$resultClasses = $conn->query($sqlClasses);
+if ($resultClasses && $resultClasses->num_rows > 0) {
+    while($row = $resultClasses->fetch_assoc()) {
+        $todaysClasses[] = $row;
+    }
+}
+
+// Fetch System Overview Stats
+$sqlTotalUsers = "SELECT COUNT(*) as count FROM users";
+$totalUsersCount = $conn->query($sqlTotalUsers)->fetch_assoc()['count'];
+
+$activeTrainersCount = count($activeTrainers); // Already fetched above
+
+// Fetch Recent Activity (New Users)
+$recentActivities = [];
+$sqlActivity = "SELECT * FROM users ORDER BY created_at DESC LIMIT 5";
+$resultActivity = $conn->query($sqlActivity);
+if ($resultActivity->num_rows > 0) {
+    while($row = $resultActivity->fetch_assoc()) {
+        $recentActivities[] = $row;
+    }
+}
+
+// Fetch Gym Equipment from DB
 $gymEquipment = [];
 $sqlEquip = "SELECT * FROM gym_equipment";
 $resultEquip = $conn->query($sqlEquip);
-if ($resultEquip && $resultEquip->num_rows > 0) {
+if ($resultEquip->num_rows > 0) {
     while($row = $resultEquip->fetch_assoc()) {
         $gymEquipment[] = $row;
     }
 }
 
-// Fetch Trainer Attendance
-$trainersOnSite = [];
-// Safe check for missing tables
-$sqlTrainers = "SELECT u.*, ta.check_in_time, ta.check_out_time, ta.status 
-                FROM trainer_attendance ta 
-                JOIN users u ON ta.trainer_id = u.user_id 
-                WHERE DATE(ta.check_in_time) = CURDATE() 
-                ORDER BY ta.check_in_time DESC";
-$resultTrainers = $conn->query($sqlTrainers);
-if ($resultTrainers && $resultTrainers->num_rows > 0) {
-    while($row = $resultTrainers->fetch_assoc()) {
-        $trainersOnSite[] = $row;
+// Fetch Shop Orders
+$shopOrders = [];
+$sqlOrders = "SELECT o.*, u.first_name, u.last_name, u.email,
+              (SELECT COUNT(*) FROM shop_order_items WHERE order_id = o.order_id) as item_count
+              FROM shop_orders o
+              JOIN users u ON o.user_id = u.user_id
+              ORDER BY o.order_date DESC";
+$resultOrders = $conn->query($sqlOrders);
+if ($resultOrders && $resultOrders->num_rows > 0) {
+    while($row = $resultOrders->fetch_assoc()) {
+        $shopOrders[] = $row;
     }
 }
-
-// Get today's stats
-$todayDate = date('Y-m-d');
-$todayMembersCount = 0;
-// Check if table exists to avoid fatal error
-$checkTable = $conn->query("SHOW TABLES LIKE 'gym_check_ins'");
-if ($checkTable && $checkTable->num_rows > 0) {
-    $sqlTodayMembers = "SELECT COUNT(DISTINCT user_id) as count FROM gym_check_ins WHERE DATE(check_in_time) = '$todayDate'";
-    $res = $conn->query($sqlTodayMembers);
-    if($res) $todayMembersCount = $res->fetch_assoc()['count'] ?? 0;
-}
-
-// Fetch Active Offline Clients
-$offlineClients = [];
-$gymColCheck = $conn->query("SHOW COLUMNS FROM users LIKE 'gym_membership_status'");
-if ($gymColCheck && $gymColCheck->num_rows > 0) {
-    $sqlClients = "SELECT * FROM users WHERE gym_membership_status = 'active'";
-    $resClients = $conn->query($sqlClients);
-    if ($resClients && $resClients->num_rows > 0) {
-        while($row = $resClients->fetch_assoc()) {
-            $offlineClients[] = $row;
-        }
-    }
-}
-
-// Fetch Gym Schedule Settings
-$gymSettings = [
-    'gym_open_time' => '05:00 AM',
-    'gym_close_time' => '10:00 PM',
-    'gym_status' => 'open'
-];
-$sqlSettings = "SELECT * FROM gym_settings";
-$resSettings = $conn->query($sqlSettings);
-if ($resSettings && $resSettings->num_rows > 0) {
-    while($row = $resSettings->fetch_assoc()) {
-        $gymSettings[$row['setting_key']] = $row['setting_value'];
-    }
-}
-
-$activeTrainersCount = 0;
-$activeTrainersCount = 3;
-// $sqlActiveTrainers = "SELECT COUNT(*) as count FROM trainer_attendance WHERE DATE(check_in_time) = CURDATE() AND status = 'checked_in'";
-// $resAct = $conn->query($sqlActiveTrainers);
-// if($resAct) $activeTrainersCount = $resAct->fetch_assoc()['count'] ?? 0;
 
 $conn->close();
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gym Admin Dashboard - FitNova</title>
+    <title>Admin Control Panel - FitNova</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -114,8 +155,8 @@ $conn->close();
             color: #334155;
         }
 
-        /* Sidebar */
-        .gym-sidebar {
+        /* Bright Admin Sidebar */
+        .admin-sidebar {
             position: fixed;
             left: 0;
             top: 0;
@@ -127,20 +168,20 @@ $conn->close();
             box-shadow: 4px 0 10px rgba(0, 0, 0, 0.02);
         }
 
-        .gym-header {
+        .admin-header {
             padding: 24px 20px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             background: linear-gradient(135deg, #0F2C59 0%, #1A3C6B 100%);
         }
 
-        .gym-header h1 {
+        .admin-header h1 {
             color: white;
             font-size: 24px;
             font-weight: 800;
             margin-bottom: 4px;
         }
 
-        .gym-header p {
+        .admin-header p {
             color: rgba(255, 255, 255, 0.8);
             font-size: 12px;
             text-transform: uppercase;
@@ -240,7 +281,6 @@ $conn->close();
             justify-content: center;
             gap: 8px;
             transition: all 0.2s;
-            text-decoration: none;
         }
 
         .logout-btn:hover {
@@ -248,8 +288,8 @@ $conn->close();
             color: white;
         }
 
-        /* Main Content */
-        .gym-main {
+        /* Main Admin Content */
+        .admin-main {
             margin-left: 260px;
             padding: 30px;
             min-height: 100vh;
@@ -273,8 +313,45 @@ $conn->close();
             color: #1e293b;
         }
 
-        /* Stats Grid */
-        .stats-grid {
+        .top-bar-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .admin-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #0F2C59;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1A3C6B;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        /* Admin Stats Grid */
+        .admin-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px;
@@ -301,15 +378,26 @@ $conn->close();
         }
 
         .stat-box:nth-child(1)::before {
-            background: linear-gradient(90deg, #10b981, #14b8a6);
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
         }
 
         .stat-box:nth-child(2)::before {
-            background: linear-gradient(90deg, #3b82f6, #2563eb);
+            background: linear-gradient(90deg, #ec4899, #f43f5e);
         }
 
         .stat-box:nth-child(3)::before {
+            background: linear-gradient(90deg, #10b981, #14b8a6);
+        }
+
+        .stat-box:nth-child(4)::before {
             background: linear-gradient(90deg, #f59e0b, #ef4444);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
         }
 
         .stat-icon {
@@ -320,20 +408,24 @@ $conn->close();
             align-items: center;
             justify-content: center;
             font-size: 22px;
-            margin-bottom: 16px;
         }
 
         .stat-box:nth-child(1) .stat-icon {
+            background: #eef2ff;
+            color: #4f46e5;
+        }
+
+        .stat-box:nth-child(2) .stat-icon {
+            background: #fdf2f8;
+            color: #ec4899;
+        }
+
+        .stat-box:nth-child(3) .stat-icon {
             background: #ecfdf5;
             color: #10b981;
         }
 
-        .stat-box:nth-child(2) .stat-icon {
-            background: #eff6ff;
-            color: #3b82f6;
-        }
-
-        .stat-box:nth-child(3) .stat-icon {
+        .stat-box:nth-child(4) .stat-icon {
             background: #fffbeb;
             color: #f59e0b;
         }
@@ -351,7 +443,33 @@ $conn->close();
             font-weight: 500;
         }
 
-        /* Management Section */
+        .stat-trend {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+        }
+
+        .trend-up {
+            color: #059669;
+        }
+
+        .trend-down {
+            color: #dc2626;
+        }
+
+        /* Management Sections */
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
         .management-section {
             background: #ffffff;
             padding: 30px;
@@ -368,16 +486,19 @@ $conn->close();
             margin-bottom: 20px;
             padding-bottom: 16px;
             border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        /* Equipment Grid */
-        .equipment-grid {
+        /* Admin Grid Cards */
+        .admin-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
             gap: 20px;
         }
 
-        .equipment-card {
+        .admin-card {
             background: #fcfdfe;
             padding: 20px;
             border-radius: 10px;
@@ -385,58 +506,51 @@ $conn->close();
             transition: all 0.2s;
         }
 
-        .equipment-card:hover {
+        .admin-card:hover {
             border-color: #0F2C59;
             transform: translateY(-2px);
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
 
-        .equipment-header {
+        .card-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             margin-bottom: 16px;
         }
 
-        .equipment-name {
+        .card-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .card-title {
             font-size: 16px;
             font-weight: 600;
             color: #1e293b;
+            margin-bottom: 4px;
         }
 
-        .status-badge {
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
+        .card-subtitle {
+            font-size: 13px;
+            color: #64748b;
         }
 
-        .status-available {
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        .status-maintenance {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .status-unavailable {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .equipment-info {
-            margin: 12px 0;
+        .card-info {
+            margin: 16px 0;
         }
 
         .info-row {
             display: flex;
             justify-content: space-between;
             padding: 8px 0;
-            font-size: 13px;
             border-bottom: 1px solid #f1f5f9;
+            font-size: 13px;
         }
 
         .info-label {
@@ -448,10 +562,39 @@ $conn->close();
             font-weight: 600;
         }
 
-        .equipment-actions {
+        .badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-active {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .badge-inactive {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .badge-pending {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+
+        .card-actions {
             display: flex;
             gap: 8px;
             margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #f1f5f9;
         }
 
         .action-btn {
@@ -468,19 +611,19 @@ $conn->close();
         }
 
         .action-btn:hover {
-            background: #0F2C59;
-            color: white;
-            border-color: #0F2C59;
+            background: #f8fafc;
+            color: #4f46e5;
+            border-color: #4f46e5;
         }
 
-        /* Trainer Table */
-        .trainer-table {
+        /* Data Table */
+        .data-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
 
-        .trainer-table th {
+        .data-table th {
             padding: 12px;
             text-align: left;
             font-size: 12px;
@@ -490,40 +633,216 @@ $conn->close();
             border-bottom: 2px solid #f1f5f9;
         }
 
-        .trainer-table td {
+        .data-table td {
             padding: 16px 12px;
             border-bottom: 1px solid #f1f5f9;
             font-size: 14px;
             color: #475569;
         }
 
-        .trainer-table tr:hover {
+        .data-table tr:hover {
             background: #f8fafc;
         }
 
-        .btn-primary {
-            background: #0F2C59;
+        .welcome-banner {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            padding: 24px 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
             color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.2);
+        }
+
+        .welcome-banner h3 {
+            font-size: 22px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .welcome-banner p {
+            opacity: 0.9;
+            font-size: 15px;
+        }
+
+        /* Grid Menu Hub Styles */
+        .hub-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .hub-card {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            text-align: center;
             cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+        }
+
+        .hub-card:hover {
+            transform: translateY(-10px);
+            border-color: #4f46e5;
+            box-shadow: 0 20px 25px -5px rgba(79, 70, 229, 0.1), 0 10px 10px -5px rgba(79, 70, 229, 0.04);
+        }
+
+        .hub-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+
+        .hub-card:hover .hub-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .hub-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .hub-desc {
+            font-size: 14px;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        .btn-hub-back {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+            padding: 8px 16px;
+            border-radius: 8px;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            margin-bottom: 20px;
             transition: all 0.2s;
         }
 
-        .btn-primary:hover {
-            background: #1A3C6B;
-            transform: translateY(-1px);
+        .btn-hub-back:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        @media (max-width: 1024px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+            }
+
+            .admin-main {
+                margin-left: 0;
+            }
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 2000; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.5); 
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto; 
+            padding: 30px; 
+            border: 1px solid #888; 
+            width: 500px; 
+            max-width: 90%;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: modalFadeIn 0.3s;
+        }
+        @keyframes modalFadeIn {
+            from {opacity: 0; transform: translateY(-20px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .close:hover,
+        .close:focus {
+            color: #333;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .modal-header {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .modal-header h2 {
+            margin: 0;
+            color: #1e293b;
+        }
+        .detail-row {
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            font-weight: 600;
+            color: #64748b;
+            font-size: 14px;
+        }
+        .detail-value {
+            color: #334155;
+            font-weight: 500;
+            text-align: right;
+        }
+        .editable-input {
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 5px 10px;
+            font-family: inherit;
+            font-size: 14px;
         }
     </style>
+
 </head>
+
 <body>
-    <!-- Sidebar -->
-    <div class="gym-sidebar">
-        <div class="gym-header">
+    <!-- Admin Sidebar -->
+    <div class="admin-sidebar">
+        <div class="admin-header">
             <h1>FitNova</h1>
-            <p>Gym Management</p>
+            <p>Admin Control Panel</p>
         </div>
 
         <div class="admin-info">
@@ -531,128 +850,727 @@ $conn->close();
                 <div class="admin-avatar"><?php echo $adminInitials; ?></div>
                 <div>
                     <div class="admin-name"><?php echo htmlspecialchars($adminName); ?></div>
-                    <div class="admin-role">Gym Owner</div>
+                    <div class="admin-role">System Administrator</div>
                 </div>
             </div>
         </div>
 
         <nav class="nav-menu">
-            <div class="nav-item active" onclick="showSection('dashboard')">
-                <i class="fas fa-home"></i>
-                <span>Dashboard</span>
-            </div>
-            <div class="nav-item" onclick="showSection('equipment')">
-                <i class="fas fa-dumbbell"></i>
-                <span>Equipment</span>
-            </div>
-            <div class="nav-item" onclick="showSection('trainers')">
-                <i class="fas fa-user-tie"></i>
-                <span>Trainers On-Site</span>
-            </div>
-            <div class="nav-item" onclick="showSection('members')">
-                <i class="fas fa-users"></i>
-                <span>Clients</span>
-            </div>
-        </nav>
+            <a href="#" class="nav-item active" onclick="showSection('hub')">
+                <i class="fas fa-th-large"></i><span>Control Hub</span>
+            </a>
+            <a href="#" class="nav-item" onclick="showSection('dashboard')">
+                <i class="fas fa-chart-line"></i><span>Overview</span>
+            </a>
+            <a href="#" class="nav-item" onclick="showSection('clients')">
+                <i class="fas fa-users"></i><span>Clients</span>
+            </a>
+            <a href="#" class="nav-item" onclick="showSection('trainers')">
+                <i class="fas fa-user-tie"></i><span>Trainers</span>
+            </a>
+            <a href="#" class="nav-item" onclick="showSection('products')">
+                <i class="fas fa-box-open"></i><span>Products</span>
+            </a>
+            <a href="#" class="nav-item" onclick="showSection('classes')">
+                <i class="fas fa-dumbbell"></i><span>Classes</span>
+            </a>
+            <a href="#" class="nav-item" onclick="showSection('orders')">
+                <i class="fas fa-shopping-cart"></i><span>Orders</span>
+            </a>
+            <a href="#" class="nav-item" onclick="showSection('subscriptions')">
+                <i class="fas fa-crown"></i><span>Subscriptions</span>
+            </a>
 
-        <a href="logout.php" class="logout-btn">
-            <i class="fas fa-sign-out-alt"></i>
-            <span>Logout</span>
-        </a>
+            <a href="#" class="nav-item" onclick="showSection('offline')">
+                <i class="fas fa-building"></i><span>Offline Gym</span>
+            </a>
+            <button class="logout-btn" onclick="logout()" style="position: relative; margin: 40px 20px 0; width: calc(100% - 40px); bottom: 0; left: 0;">
+                <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+            </button>
+        </nav>
     </div>
 
-    <!-- Main Content -->
-    <div class="gym-main">
-        <div class="top-bar">
-            <h2>Gym Admin Dashboard</h2>
-            <div style="color: #64748b; font-size: 14px;">
-                <i class="far fa-calendar"></i> <?php echo date('l, F j, Y'); ?>
+    <!-- Main Admin Content -->
+    <div class="admin-main">
+        
+        <!-- Control Hub Section (Grid Menu) -->
+        <div id="hub-section" class="section active">
+            <div class="top-bar">
+                <h2>Administrative Control Hub</h2>
+                <div class="top-bar-actions">
+                    <span class="badge badge-active">Active Session</span>
+                </div>
+            </div>
+
+            <div class="hub-grid">
+                <div class="hub-card" onclick="showSection('dashboard')">
+                    <div class="hub-icon" style="background: #eef2ff; color: #4f46e5;">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="hub-title">System Overview</div>
+                    <div class="hub-desc">View real-time analytics, user growth, and revenue statistics.</div>
+                </div>
+
+                <div class="hub-card" onclick="showSection('clients')">
+                    <div class="hub-icon" style="background: #fdf2f8; color: #ec4899;">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="hub-title">Client Management</div>
+                    <div class="hub-desc">Manage all registered members, handle subscriptions and profiles.</div>
+                </div>
+
+                <div class="hub-card" onclick="showSection('trainers')">
+                    <div class="hub-icon" style="background: #ecfdf5; color: #10b981;">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <div class="hub-title">Trainer Portal</div>
+                    <div class="hub-desc">Verify trainer applications and manage the professional database.</div>
+                </div>
+
+                <div class="hub-card" onclick="showSection('products')">
+                    <div class="hub-icon" style="background: #e0f2fe; color: #0284c7;">
+                        <i class="fas fa-box-open"></i>
+                    </div>
+                    <div class="hub-title">Products</div>
+                    <div class="hub-desc">Manage shop inventory, categories, and product listings.</div>
+                </div>
+
+                <div class="hub-card" onclick="showSection('classes')">
+                    <div class="hub-icon" style="background: #fdf4ff; color: #d946ef;">
+                        <i class="fas fa-dumbbell"></i>
+                    </div>
+                    <div class="hub-title">Classes</div>
+                    <div class="hub-desc">Schedule and manage fitness classes and sessions.</div>
+                </div>
+
+                <div class="hub-card" onclick="showSection('orders')">
+                    <div class="hub-icon" style="background: #fff1f2; color: #e11d48;">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="hub-title">Orders</div>
+                    <div class="hub-desc">Track and process customer orders and shipments.</div>
+                </div>
+
+
+
+                <div class="hub-card" onclick="showSection('subscriptions')">
+                    <div class="hub-icon" style="background: #eef2ff; color: #4f46e5;">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <div class="hub-title">Subscriptions</div>
+                    <div class="hub-desc">Manage user plans and membership tiers.</div>
+                </div>
+
+                <div class="hub-card" onclick="showSection('offline')">
+                    <div class="hub-icon" style="background: #fff7ed; color: #c2410c;">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div class="hub-title">Offline Gym</div>
+                    <div class="hub-desc">Manage physical gym equipment and track on-site trainers.</div>
+                </div>
+
+                <div class="hub-card" onclick="showSection('reports')">
+                    <div class="hub-icon" style="background: #f1f5f9; color: #475569;">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="hub-title">Reports & Logs</div>
+                    <div class="hub-desc">Generate detailed reports and monitor security audit logs.</div>
+                </div>
+
+
+
+                <div class="hub-card" onclick="showSection('settings')">
+                    <div class="hub-icon" style="background: #ede9fe; color: #8b5cf6;">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    <div class="hub-title">System Settings</div>
+                    <div class="hub-desc">Access global configuration and administrative preferences.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shop Orders Section -->
+        <div id="orders-section" class="section">
+            <button class="btn-hub-back" onclick="showSection('hub')">
+                <i class="fas fa-arrow-left"></i> Back to Hub
+            </button>
+            
+            <div class="top-bar">
+                <h2>Shop Orders</h2>
+                <div class="top-bar-actions">
+                    <button class="admin-btn btn-primary" onclick="location.reload()">
+                        <i class="fas fa-sync-alt"></i> Refresh Data
+                    </button>
+                </div>
+            </div>
+            
+            <div class="management-section">
+                <div class="section-title">
+                    <span>Recent Orders</span>
+                    <span class="badge badge-active"><?php echo count($shopOrders); ?> Orders</span>
+                </div>
+                
+                <div style="overflow-x: auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Client</th>
+                                <th>Items</th>
+                                <th>Total</th>
+                                <th>Date</th>
+                                <th>Delivery Date</th>
+                                <th>Status</th>
+                                <th>Phone</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (count($shopOrders) > 0): ?>
+                                <?php foreach ($shopOrders as $order): ?>
+                                <tr>
+                                    <td>#<?php echo $order['order_id']; ?></td>
+                                    <td><?php echo htmlspecialchars($order['first_name'] . ' ' . $order['last_name']); ?><br>
+                                        <small style="color:#888"><?php echo htmlspecialchars($order['email']); ?></small>
+                                    </td>
+                                    <td><?php echo $order['item_count']; ?> items</td>
+                                    <td style="font-weight:600">₹<?php echo number_format($order['total_amount'], 2); ?></td>
+                                    <td><?php echo date('M d, Y', strtotime($order['order_date'])); ?></td>
+                                    <td><?php echo htmlspecialchars($order['delivery_date']); ?></td>
+                                    <td>
+                                        <span class="badge <?php echo $order['order_status'] == 'Placed' ? 'badge-pending' : 'badge-active'; ?>">
+                                            <?php echo htmlspecialchars($order['order_status']); ?>
+                                        </span>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($order['zip']); // Using zip as placeholder if no phone stored. Address is text. ?></td> 
+                                </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="8" style="text-align:center; padding: 20px;">No orders found.</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
         <!-- Dashboard Section -->
-        <div id="dashboard" class="section active">
-            <div class="stats-grid">
-                <div class="stat-box">
-                    <div class="stat-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="stat-value"><?php echo count($offlineClients); ?></div>
-                    <div class="stat-label">Clients</div>
-                </div>
-
-                <div class="stat-box">
-                    <div class="stat-icon">
-                        <i class="fas fa-user-tie"></i>
-                    </div>
-                    <div class="stat-value"><?php echo $activeTrainersCount; ?></div>
-                    <div class="stat-label">Trainers On-Site</div>
-                </div>
-
-                <div class="stat-box">
-                    <div class="stat-icon">
-                        <i class="fas fa-dumbbell"></i>
-                    </div>
-                    <div class="stat-value"><?php echo count($gymEquipment); ?></div>
-                    <div class="stat-label">Total Equipment</div>
+        <div id="dashboard-section" class="section">
+            <button class="btn-hub-back" onclick="showSection('hub')">
+                <i class="fas fa-arrow-left"></i> Back to Hub
+            </button>
+            <div class="top-bar">
+                <h2>System Overview</h2>
+                <div class="top-bar-actions">
+                    <button class="admin-btn btn-secondary" onclick="window.location.href='admin_export_csv.php'"><i class="fas fa-download"></i> Export Data</button>
+                    <button class="admin-btn btn-primary" onclick="location.reload()"><i class="fas fa-sync"></i> Refresh</button>
                 </div>
             </div>
 
-            <!-- Quick Actions -->
+            <!-- Admin Stats -->
+            <div class="admin-stats">
+                <div class="stat-box">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-value"><?php echo number_format($totalUsersCount); ?></div>
+                            <div class="stat-label">Total Registered Users</div>
+                        </div>
+                        <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    </div>
+                    <div class="stat-trend trend-up">
+                        <i class="fas fa-arrow-up"></i><span>Live Count</span>
+                    </div>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-value"><?php echo number_format($activeTrainersCount); ?></div>
+                            <div class="stat-label">Active Trainers</div>
+                        </div>
+                        <div class="stat-icon"><i class="fas fa-dumbbell"></i></div>
+                    </div>
+                    <div class="stat-trend trend-up">
+                        <i class="fas fa-check-circle"></i><span>Verified Professionals</span>
+                    </div>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-value">₹0.00</div>
+                            <div class="stat-label">Monthly Revenue</div>
+                        </div>
+                        <div class="stat-icon"><i class="fas fa-rupee-sign"></i></div>
+                    </div>
+                    <div class="stat-trend trend-up">
+                        <span>No payment gateway active</span>
+                    </div>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-value">99.9%</div>
+                            <div class="stat-label">System Uptime</div>
+                        </div>
+                        <div class="stat-icon"><i class="fas fa-server"></i></div>
+                    </div>
+                    <div class="stat-trend trend-up">
+                        <i class="fas fa-check"></i><span>All systems operational</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
             <div class="management-section">
-                <div class="section-title">Quick Actions</div>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                    <button class="btn-primary" onclick="showSection('equipment')">
-                        <i class="fas fa-dumbbell"></i> Manage Equipment
-                    </button>
-                    <button class="btn-primary" onclick="showSection('trainers')">
-                        <i class="fas fa-user-tie"></i> View Trainers
-                    </button>
-                    <button class="btn-primary" onclick="showSection('members')">
-                        <i class="fas fa-users"></i> View Clients
-                    </button>
+                <div class="section-title">Recent System Activity</div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Event Type</th>
+                            <th>User/Entity</th>
+                            <th>Details</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (count($recentActivities) > 0): ?>
+                            <?php foreach ($recentActivities as $activity): ?>
+                            <tr>
+                                <td><?php echo date('M d, Y H:i', strtotime($activity['created_at'])); ?></td>
+                                <td>
+                                    <?php 
+                                        if ($activity['role'] === 'trainer') echo 'Trainer Application';
+                                        elseif ($activity['role'] === 'admin') echo 'Admin Created';
+                                        else echo 'New User Registration';
+                                    ?>
+                                </td>
+                                <td><?php echo htmlspecialchars($activity['email']); ?></td>
+                                <td>
+                                    <?php echo ucfirst($activity['role']); ?> account created via <?php echo ucfirst($activity['auth_provider']); ?>
+                                </td>
+                                <td>
+                                    <span class="badge <?php echo ($activity['account_status'] === 'active' ? 'badge-active' : 'badge-pending'); ?>">
+                                        <?php echo ucfirst($activity['account_status']); ?>
+                                    </span>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr><td colspan="5" style="text-align:center;">No recent activity found</td></tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <!-- Client Management Section -->
+        <div id="clients-section" class="section">
+            <button class="btn-hub-back" onclick="showSection('hub')">
+                <i class="fas fa-arrow-left"></i> Back to Hub
+            </button>
+            <div class="top-bar">
+                <h2>Client Management</h2>
+                <button class="admin-btn btn-primary"><i class="fas fa-user-plus"></i> Add New Client</button>
+            </div>
+
+            <div class="management-section">
+                <div class="section-title">
+                    <span>All Registered Clients (<?php echo count($clients); ?>)</span>
+                    <input type="text" placeholder="Search clients..." id="clientSearch" onkeyup="filterClients()"
+                        style="padding: 8px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; color: #1e293b;">
+                </div>
+                
+                <?php if(count($clients) > 0): ?>
+                <div class="admin-grid" id="clientsGrid">
+                    <?php foreach ($clients as $client): ?>
+                        <div class="admin-card client-card" data-name="<?php echo strtolower($client['first_name'] . ' ' . $client['last_name']); ?>" data-email="<?php echo strtolower($client['email']); ?>">
+                            <div class="card-header">
+                                <div>
+                                    <div class="card-icon" style="background: <?php echo ($client['role'] == 'elite' ? '#fdf2f8' : ($client['role'] == 'pro' ? '#eef2ff' : '#f1f5f9')); ?>; color: <?php echo ($client['role'] == 'elite' ? '#ec4899' : ($client['role'] == 'pro' ? '#4f46e5' : '#475569')); ?>;">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                </div>
+                                <span class="badge <?php echo ($client['account_status'] === 'active' ? 'badge-active' : 'badge-inactive'); ?>">
+                                    <?php echo ucfirst($client['account_status']); ?>
+                                </span>
+                            </div>
+                            <div class="card-title"><?php echo htmlspecialchars($client['first_name'] . ' ' . $client['last_name']); ?></div>
+                            <div class="card-subtitle"><?php echo htmlspecialchars($client['email']); ?></div>
+                            <div class="card-info">
+                                <div class="info-row">
+                                    <span class="info-label">Member Type</span>
+                                    <span class="info-value"><?php echo ucfirst($client['role']); ?> Member</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Joined</span>
+                                    <span class="info-value"><?php echo date('M d, Y', strtotime($client['created_at'])); ?></span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Phone</span>
+                                    <span class="info-value"><?php echo htmlspecialchars($client['phone'] ?? 'N/A'); ?></span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Auth Provider</span>
+                                    <span class="info-value"><?php echo ucfirst($client['auth_provider']); ?></span>
+                                </div>
+                            </div>
+                            <div class="card-actions">
+                                <button class="action-btn" onclick='viewClientDetails(<?php echo json_encode($client, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'>View Details</button>
+                                <button class="action-btn" style="color: #dc2626; border-color: #fee2e2; background: #fef2f2;" onclick="handleClientAction(<?php echo $client['user_id']; ?>, 'delete')">Remove</button>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                <?php else: ?>
+                    <p style="padding: 20px; color: #64748b; font-style: italic;">No registered clients found.</p>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Subscriptions Section -->
+        <div id="subscriptions-section" class="section">
+            <button class="btn-hub-back" onclick="showSection('hub')">
+                <i class="fas fa-arrow-left"></i> Back to Hub
+            </button>
+            <div class="top-bar">
+                <h2>Subscription Management</h2>
+            </div>
+            
+            <div class="management-section">
+                <div class="section-title">
+                    <span>Plan Management</span>
+                </div>
+                <div class="admin-grid">
+                    <?php foreach($subPlans as $plan): ?>
+                    <div class="admin-card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background:var(--primary-color); color:white;">
+                                <i class="fas fa-certificate"></i>
+                            </div>
+                            <span class="badge badge-active"><?php echo htmlspecialchars($plan['name']); ?></span>
+                        </div>
+                        <div class="card-title">Monthly: ₹<?php echo number_format($plan['price_monthly']); ?></div>
+                        <div class="card-subtitle">Yearly: ₹<?php echo number_format($plan['price_yearly']); ?></div>
+                        <div class="card-actions">
+                            <button class="action-btn" onclick='openPlanModal(<?php echo json_encode($plan, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'>Edit Details</button>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
 
-            <!-- Schedule Management -->
-            <div class="management-section" style="margin-top: 20px;">
-                <div class="section-title">Manage Schedule</div>
-                <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap;">
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #475569;">Opening Time</label>
-                        <input type="text" id="sched_open" value="<?php echo htmlspecialchars($gymSettings['gym_open_time']); ?>" style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; width: 120px;" placeholder="05:00 AM">
-                    </div>
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #475569;">Closing Time</label>
-                        <input type="text" id="sched_close" value="<?php echo htmlspecialchars($gymSettings['gym_close_time']); ?>" style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; width: 120px;" placeholder="10:00 PM">
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 10px; height: 42px;">
-                        <input type="checkbox" id="sched_closed" style="width: 18px; height: 18px;" <?php echo $gymSettings['gym_status'] === 'closed' ? 'checked' : ''; ?>>
-                        <label for="sched_closed" style="font-weight: 500; color: #ef4444;">Mark Gym as Closed Today</label>
-                    </div>
-                    <button onclick="submitSchedule()" class="btn-primary" style="background: #0f172a;">Save Schedule</button>
+            <div class="management-section">
+                <div class="section-title">
+                    <span>Client Plans</span>
+                    <span class="badge badge-active"><?php echo count($clients); ?> Users</span>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Client Name</th>
+                                <th>Email</th>
+                                <th>Current Plan</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($clients as $client): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($client['first_name'] . ' ' . $client['last_name']); ?></td>
+                                <td><?php echo htmlspecialchars($client['email']); ?></td>
+                                <td>
+                                    <span class="badge" style="background: <?php echo ($client['role'] == 'elite' ? '#fdf2f8' : ($client['role'] == 'pro' ? '#eef2ff' : '#f1f5f9')); ?>; color: <?php echo ($client['role'] == 'elite' ? '#ec4899' : ($client['role'] == 'pro' ? '#4f46e5' : '#475569')); ?>;">
+                                        <?php echo ucfirst($client['role']); ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge <?php echo ($client['account_status'] === 'active' ? 'badge-active' : 'badge-inactive'); ?>">
+                                        <?php echo ucfirst($client['account_status']); ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="action-btn" onclick="openSubscriptionModal(<?php echo $client['user_id']; ?>, '<?php echo htmlspecialchars(addslashes($client['first_name'] . ' ' . $client['last_name'])); ?>', '<?php echo $client['role']; ?>')">
+                                        <i class="fas fa-edit"></i> Edit Plan
+                                    </button>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
-        <!-- Equipment Section -->
-        <div id="equipment" class="section" style="display: none;">
+        <!-- Trainer Management Section -->
+        <div id="trainers-section" class="section">
+            <button class="btn-hub-back" onclick="showSection('hub')">
+                <i class="fas fa-arrow-left"></i> Back to Hub
+            </button>
+            <div class="top-bar">
+                <h2>Trainer Management</h2>
+                <button class="admin-btn btn-primary"><i class="fas fa-user-plus"></i> Add New Trainer</button>
+            </div>
             <div class="management-section">
-                <div class="section-title">Gym Equipment Management</div>
-                <div class="equipment-grid">
-                    <?php foreach ($gymEquipment as $equip): 
-                        // Normalize keys if needed (though we fetch * so it should be id, name)
-                        $eId = $equip['id'];
-                        $eName = $equip['name'];
-                    ?>
-                        <div class="equipment-card">
-                            <div class="equipment-header">
-                                <div class="equipment-name"><?php echo htmlspecialchars($eName); ?></div>
-                                <span class="status-badge status-<?php echo strtolower($equip['status']); ?>">
+                <div class="section-title">Pending Trainer Approvals</div>
+                
+                <?php if (count($pendingTrainers) > 0): ?>
+                <div class="admin-grid">
+                    <?php foreach ($pendingTrainers as $trainer): ?>
+                        <div class="admin-card">
+                            <div class="card-header">
+                                <div>
+                                    <div class="card-icon" style="background: #fff7ed; color: #ea580c;">
+                                        <i class="fas fa-user-clock"></i>
+                                    </div>
+                                </div>
+                                <span class="badge badge-pending">Pending</span>
+                            </div>
+                            <div class="card-title"><?php echo htmlspecialchars($trainer['first_name'] . ' ' . $trainer['last_name']); ?></div>
+                            <div class="card-subtitle"><?php echo htmlspecialchars($trainer['email']); ?></div>
+                            <div class="card-info">
+                                <div class="info-row">
+                                    <span class="info-label">Specialization</span>
+                                    <span class="info-value"><?php echo htmlspecialchars($trainer['trainer_specialization'] ?? 'N/A'); ?></span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Experience</span>
+                                    <span class="info-value"><?php echo htmlspecialchars($trainer['trainer_experience'] ?? '0'); ?> Years</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Certification</span>
+                                    <span class="info-value">
+                                        <?php if (!empty($trainer['trainer_certification'])): ?>
+                                            <a href="<?php echo htmlspecialchars($trainer['trainer_certification']); ?>" target="_blank" style="color: blue; text-decoration: underline;">View File</a>
+                                        <?php else: ?>
+                                            Not Uploaded
+                                        <?php endif; ?>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-actions">
+                                <button class="action-btn" style="color: #059669; border: 1px solid #059669; background: #ecfdf5;" onclick="handleTrainerAction(<?php echo $trainer['user_id']; ?>, 'approve')">Approve</button>
+                                <button class="action-btn" style="color: #dc2626; border: 1px solid #dc2626; background: #fef2f2;" onclick="handleTrainerAction(<?php echo $trainer['user_id']; ?>, 'reject')">Reject</button>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                <?php else: ?>
+                    <p style="padding: 20px; color: #64748b; font-style: italic;">No pending trainer requests.</p>
+                <?php endif; ?>
+            </div>
+
+            <div class="management-section">
+                <div class="section-title">
+                    <span>Active Trainers (<?php echo count($activeTrainers); ?>)</span>
+                    <input type="text" placeholder="Search trainers..." id="trainerSearch" onkeyup="filterTrainers()"
+                        style="padding: 8px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; color: #1e293b;">
+                </div>
+                <?php if (count($activeTrainers) > 0): ?>
+                <div class="admin-grid" id="activeTrainersGrid">
+                    <?php foreach ($activeTrainers as $trainer): ?>
+                        <div class="admin-card trainer-card" data-name="<?php echo strtolower($trainer['first_name'] . ' ' . $trainer['last_name']); ?>" data-email="<?php echo strtolower($trainer['email']); ?>">
+                            <div class="card-header">
+                                <div>
+                                    <div class="card-icon" style="background: #f0fdf4; color: #16a34a;">
+                                        <i class="fas fa-user-check"></i>
+                                    </div>
+                                </div>
+                                <span class="badge badge-active">Active</span>
+                            </div>
+                            <div class="card-title"><?php echo htmlspecialchars($trainer['first_name'] . ' ' . $trainer['last_name']); ?></div>
+                            <div class="card-subtitle"><?php echo htmlspecialchars($trainer['email']); ?></div>
+                            <div class="card-info">
+                                <div class="info-row">
+                                    <span class="info-label">Specialization</span>
+                                    <span class="info-value"><?php echo htmlspecialchars($trainer['trainer_specialization'] ?? 'N/A'); ?></span>
+                                </div>
+                            </div>
+                            <div class="card-actions">
+                                <button class="action-btn" onclick='viewTrainerDetails(<?php echo json_encode($trainer, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'>View Profile</button>
+                                <button class="action-btn" style="color: #dc2626;" onclick="handleTrainerAction(<?php echo $trainer['user_id']; ?>, 'delete')">Remove</button>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                <?php else: ?>
+                    <p style="padding: 20px; color: #64748b; font-style: italic;">No trainers found.</p>
+                <?php endif; ?>
+            </div>
+        </div>
+
+
+
+        <!-- Products Section -->
+        <div id="products-section" class="section">
+            <button class="btn-hub-back" onclick="showSection('hub')">
+                <i class="fas fa-arrow-left"></i> Back to Hub
+            </button>
+            <div class="top-bar">
+                <h2>Product Management</h2>
+                <button class="admin-btn btn-primary" onclick="openProductModal()"><i class="fas fa-plus"></i> Add New Product</button>
+            </div>
+            <div class="management-section">
+                <div class="section-title">Inventory & Listings (<?php echo count($products); ?>)</div>
+                
+                <?php if (count($products) > 0): ?>
+                <div class="admin-grid">
+                    <?php foreach ($products as $product): ?>
+                        <div class="admin-card">
+                            <div style="height: 140px; background: #f1f5f9; border-radius: 8px; margin-bottom: 15px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                                <img src="<?php echo htmlspecialchars($product['image_url']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                            <div class="card-title"><?php echo htmlspecialchars($product['name']); ?></div>
+                            <div class="card-subtitle"><?php echo ucfirst($product['category']); ?></div>
+                            <div class="card-info">
+                                <div class="info-row">
+                                    <span class="info-label">Price</span>
+                                    <span class="info-value">₹<?php echo number_format($product['price']); ?></span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Rating</span>
+                                    <span class="info-value">⭐ <?php echo $product['rating']; ?> (<?php echo $product['review_count']; ?>)</span>
+                                </div>
+                            </div>
+                            <div class="card-actions">
+                                <button class="action-btn" onclick='openProductModal(<?php echo json_encode($product, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'>Edit</button>
+                                <button class="action-btn" style="color: #dc2626;" onclick="deleteProduct(<?php echo $product['product_id']; ?>)">Delete</button>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                <?php else: ?>
+                    <p style="padding: 20px; color: #64748b; font-style: italic;">No products found in the database.</p>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Classes Section -->
+        <div id="classes-section" class="section">
+            <button class="btn-hub-back" onclick="showSection('hub')">
+                <i class="fas fa-arrow-left"></i> Back to Hub
+            </button>
+            <div class="top-bar">
+                <h2>Class Management</h2>
+                <button class="admin-btn btn-primary"><i class="fas fa-calendar-plus"></i> Schedule Class</button>
+            </div>
+            <div class="management-section">
+                <div class="section-title">Today's Sessions</div>
+                
+                <?php if (count($todaysClasses) > 0): ?>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Class / Session</th>
+                                <th>Trainer</th>
+                                <th>Status</th>
+                                <th>Client(s)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($todaysClasses as $class): ?>
+                            <tr>
+                                <td style="font-weight: 700; color: #0F2C59;"><?php echo date('h:i A', strtotime($class['session_time'])); ?></td>
+                                <td><?php echo htmlspecialchars($class['session_type']); ?></td>
+                                <td><?php echo htmlspecialchars($class['trainer_first'] . ' ' . $class['trainer_last']); ?></td>
+                                <td>
+                                    <span class="badge <?php echo ($class['status'] === 'completed' ? 'badge-active' : 'badge-pending'); ?>">
+                                        <?php echo ucfirst($class['status']); ?>
+                                    </span>
+                                </td>
+                                <td><?php echo htmlspecialchars($class['client_name']); ?></td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                <?php else: ?>
+                    <div style="text-align: center; padding: 60px 20px; color: #64748b;">
+                        <i class="fas fa-calendar-times" style="font-size: 48px; margin-bottom: 20px; display: block; opacity: 0.5;"></i>
+                        <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">No classes is going on</h3>
+                        <p>There are no scheduled sessions for today.</p>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Orders Section -->
+        <div id="orders-section" class="section">
+            <button class="btn-hub-back" onclick="showSection('hub')">
+                <i class="fas fa-arrow-left"></i> Back to Hub
+            </button>
+            <div class="top-bar">
+                <h2>Order Management</h2>
+            </div>
+            <div class="management-section">
+                <div class="section-title">Recent Orders</div>
+                <p style="color: #64748b; padding: 40px; text-align: center;">
+                    <i class="fas fa-shopping-cart" style="font-size: 48px; margin-bottom: 16px; display: block;"></i>
+                    Order processing system coming soon.
+                </p>
+            </div>
+        </div>
+
+        <!-- Site Administration Section -->
+        <div id="site-section" class="section">
+            <button class="btn-hub-back" onclick="showSection('hub')">
+                <i class="fas fa-arrow-left"></i> Back to Hub
+            </button>
+            <div class="top-bar">
+                <h2>Site Administration</h2>
+            </div>
+            <div class="management-section">
+                <div class="section-title">Site Configuration</div>
+                <p style="color: #64748b; padding: 40px; text-align: center;">
+                    <i class="fas fa-server" style="font-size: 48px; margin-bottom: 16px; display: block;"></i>
+                    Site administration tools coming soon.
+                </p>
+            </div>
+        </div>
+
+        <!-- Offline Gym Management Section -->
+        <div id="offline-section" class="section">
+            <button class="btn-hub-back" onclick="showSection('hub')">
+                <i class="fas fa-arrow-left"></i> Back to Hub
+            </button>
+            <div class="top-bar">
+            <div class="top-bar">
+                <div>
+                    <h3 style="color: var(--primary-color); font-size: 1.1rem; margin-bottom: 5px; display:flex; align-items:center;">
+                        <i class="fas fa-user-circle" style="margin-right: 8px;"></i> Owner: Asha Kayaplackal
+                    </h3>
+                    <h2>Offline Gym Management</h2>
+                </div>
+                <div class="top-bar-actions">
+                    <button class="admin-btn btn-primary"><i class="fas fa-plus"></i> Add Equipment</button>
+                </div>
+            </div>
+
+            <!-- Equipment Details -->
+            <div class="management-section">
+                <div class="section-title">Equipment Status Details</div>
+                <div class="admin-grid">
+                    <?php if (count($gymEquipment) > 0): ?>
+                    <?php foreach ($gymEquipment as $equip): ?>
+                        <div class="admin-card">
+                            <div class="card-header">
+                                <div>
+                                    <div class="card-icon" style="background: <?php echo ($equip['color_class'] == 'success' ? '#dcfce7' : ($equip['color_class'] == 'warning' ? '#fef3c7' : '#fee2e2')); ?>; color: <?php echo ($equip['color_class'] == 'success' ? '#16a34a' : ($equip['color_class'] == 'warning' ? '#d97706' : '#dc2626')); ?>;">
+                                        <i class="<?php echo htmlspecialchars($equip['icon']); ?>"></i>
+                                    </div>
+                                </div>
+                                <span class="badge" style="background: <?php echo ($equip['color_class'] == 'success' ? '#dcfce7' : ($equip['color_class'] == 'warning' ? '#fef3c7' : '#fee2e2')); ?>; color: <?php echo ($equip['color_class'] == 'success' ? '#16a34a' : ($equip['color_class'] == 'warning' ? '#d97706' : '#dc2626')); ?>;">
                                     <?php echo htmlspecialchars($equip['status']); ?>
                                 </span>
                             </div>
-                            <div class="equipment-info">
+                            <div class="card-title"><?php echo htmlspecialchars($equip['name']); ?></div>
+                            <div class="card-info">
                                 <div class="info-row">
                                     <span class="info-label">Total Units</span>
                                     <span class="info-value"><?php echo $equip['total_units']; ?></span>
@@ -661,471 +1579,730 @@ $conn->close();
                                     <span class="info-label">Available</span>
                                     <span class="info-value"><?php echo $equip['available_units']; ?></span>
                                 </div>
-                                <div class="info-row">
-                                    <span class="info-label">In Use</span>
-                                    <span class="info-value"><?php echo $equip['total_units'] - $equip['available_units']; ?></span>
+                                <div class="progress-container" style="height: 6px; background: #f1f5f9; border-radius: 10px; margin-top: 10px; overflow: hidden;">
+                                    <div class="progress-bar" style="width: <?php echo ($equip['available_units'] / $equip['total_units']) * 100; ?>%; height: 100%; object-fit: cover; background: <?php echo ($equip['color_class'] == 'success' ? '#22c55e' : ($equip['color_class'] == 'warning' ? '#f59e0b' : '#ef4444')); ?>; border-radius: 10px;"></div>
                                 </div>
                             </div>
-                            <div class="equipment-actions">
-                                <button class="action-btn" onclick="updateEquipmentStatus(<?php echo $eId; ?>, 'available')">
-                                    <i class="fas fa-check"></i> Available
-                                </button>
-                                <button class="action-btn" onclick="updateEquipmentStatus(<?php echo $eId; ?>, 'maintenance')">
-                                    <i class="fas fa-wrench"></i> Maintenance
-                                </button>
-                                <button class="action-btn" onclick="openEditModal(<?php echo $eId; ?>, '<?php echo addslashes($eName); ?>', <?php echo $equip['total_units']; ?>, <?php echo $equip['available_units']; ?>)">
-                                    <i class="fas fa-edit"></i> Edit
-                                </button>
+                            <div class="card-actions">
+                                <button class="action-btn" onclick="openUpdateEquipmentModal(<?php echo $equip['id']; ?>, '<?php echo htmlspecialchars($equip['name']); ?>', <?php echo $equip['total_units']; ?>, <?php echo $equip['available_units']; ?>)">Update Status</button>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                    <?php else: ?>
+                        <p style="padding: 20px;">No equipment data found.</p>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- Trainers On Site -->
+            <div class="management-section">
+                <div class="section-title">Trainers On Site</div>
+                <?php if (count($offlineTrainers) > 0): ?>
+                <div class="admin-grid">
+                    <?php foreach ($offlineTrainers as $trainer): ?>
+                        <div class="admin-card">
+                            <div class="card-header">
+                                <div>
+                                    <div class="card-icon" style="background: #f0fdf4; color: #16a34a;">
+                                        <i class="fas fa-id-badge"></i>
+                                    </div>
+                                </div>
+                                <span class="badge badge-active">On Site</span>
+                            </div>
+                            <div class="card-title"><?php echo htmlspecialchars($trainer['first_name'] . ' ' . $trainer['last_name']); ?></div>
+                            <div class="card-subtitle"><?php echo htmlspecialchars($trainer['email']); ?></div>
+                            <div class="card-info">
+                                <div class="info-row">
+                                    <span class="info-label">Shift Status</span>
+                                    <span class="info-value">Checked In - <?php echo date('H:i'); ?></span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Current Zone</span>
+                                    <span class="info-value">General Gym Floor</span>
+                                </div>
+                            </div>
+                            <div class="card-actions">
+                                <button class="action-btn" onclick="viewTrainerSchedule(<?php echo $trainer['user_id']; ?>)">View Schedule</button>
+                                <button class="action-btn" style="color: #64748b;" onclick="clockOutTrainer(<?php echo $trainer['user_id']; ?>, '<?php echo htmlspecialchars($trainer['first_name'] . ' ' . $trainer['last_name']); ?>')">Clock Out</button>
                             </div>
                         </div>
                     <?php endforeach; ?>
                 </div>
+                <?php else: ?>
+                    <p style="padding: 20px; color: #64748b; font-style: italic;">No trainers currently marked as on-site.</p>
+                <?php endif; ?>
             </div>
         </div>
 
-        <!-- Trainers Section -->
-        <div id="trainers" class="section" style="display: none;">
+        <!-- Reports Section -->
+        <div id="reports-section" class="section">
+            <button class="btn-hub-back" onclick="showSection('hub')">
+                <i class="fas fa-arrow-left"></i> Back to Hub
+            </button>
+            <div class="top-bar">
+                <h2>Reports & Analytics</h2>
+                <button class="admin-btn btn-primary"><i class="fas fa-download"></i> Export All Reports</button>
+            </div>
             <div class="management-section">
-                <div class="section-title">Trainers On-Site Today</div>
-                <table class="trainer-table">
-                    <thead>
-                        <tr>
-                            <th>Trainer Name</th>
-                            <th>Check-In Time</th>
-                            <th>Check-Out Time</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        $staticTrainers = [
-                            [
-                                'user_id' => 'static_1',
-                                'first_name' => 'Joshua',
-                                'last_name' => 'Joseph',
-                                'email' => 'joshua.joseph@fitnova.com',
-                                'trainer_specialization' => 'Gym Trainer',
-                                'trainer_experience' => 5,
-                                'bio' => 'Expert in functional training and HIIT.',
-                                'check_in_time' => date('Y-m-d 07:00:00'),
-                                'check_out_time' => null,
-                                'status' => 'checked_in'
-                            ],
-                            [
-                                'user_id' => 'static_2',
-                                'first_name' => 'David',
-                                'last_name' => 'John',
-                                'email' => 'david.john@fitnova.com',
-                                'trainer_specialization' => 'Strength Coach',
-                                'trainer_experience' => 4,
-                                'bio' => 'Strength and conditioning specialist.',
-                                'check_in_time' => date('Y-m-d 07:30:00'),
-                                'check_out_time' => null,
-                                'status' => 'checked_in'
-                            ],
-                            [
-                                'user_id' => 'static_3',
-                                'first_name' => 'Elis',
-                                'last_name' => 'Reji',
-                                'email' => 'elis.reji@fitnova.com',
-                                'trainer_specialization' => 'Fitness Instructor',
-                                'trainer_experience' => 3,
-                                'bio' => 'Certified yoga instructor and wellness coach.',
-                                'check_in_time' => date('Y-m-d 08:00:00'),
-                                'check_out_time' => null,
-                                'status' => 'checked_in'
-                            ]
-                        ];
-
-                        foreach ($staticTrainers as $trainer): 
-                        ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($trainer['first_name'] . ' ' . $trainer['last_name']); ?></td>
-                            <td><?php echo date('h:i A', strtotime($trainer['check_in_time'])); ?></td>
-                            <td>-</td>
-                            <td>
-                                <span class="status-badge status-available">
-                                    checked_in
-                                </span>
-                            </td>
-                            <td>
-                                <div style="display:flex; gap:5px;">
-                                    <button class="action-btn" onclick="if(confirm('Check out this trainer?')){ alert('Trainer checked out successfully!'); location.reload(); }" title="Check Out">
-                                        <i class="fas fa-sign-out-alt"></i> Out
-                                    </button>
-                                    <button class="action-btn" onclick="viewTrainer(<?php echo htmlspecialchars(json_encode($trainer)); ?>)" title="View Profile">
-                                        <i class="fas fa-eye"></i> View
-                                    </button>
-                                    <button class="action-btn" onclick="editTrainer(<?php echo htmlspecialchars(json_encode($trainer)); ?>)" title="Edit Profile">
-                                        <i class="fas fa-edit"></i> Edit
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                <div class="section-title">System Analytics & Reports</div>
+                <p style="color: #64748b; padding: 40px; text-align: center;">
+                    <i class="fas fa-chart-bar" style="font-size: 48px; margin-bottom: 16px; display: block;"></i>
+                    Advanced analytics and reporting features coming soon.
+                </p>
             </div>
         </div>
 
-        <!-- Clients Section -->
-        <div id="members" class="section" style="display: none;">
+        <!-- Settings Section -->
+        <div id="settings-section" class="section">
+            <button class="btn-hub-back" onclick="showSection('hub')">
+                <i class="fas fa-arrow-left"></i> Back to Hub
+            </button>
+            <div class="top-bar">
+                <h2>System Settings</h2>
+                <button class="admin-btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
+            </div>
             <div class="management-section">
-                <div class="section-title">Offline Gym Clients</div>
-                <table class="trainer-table">
-                    <thead>
-                        <tr>
-                            <th>User Name</th>
-                            <th>Email</th>
-                            <th>Status Detail</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (count($offlineClients) > 0): ?>
-                            <?php foreach ($offlineClients as $client): ?>
-                                <tr>
-                                    <td>
-                                        <div style="display:flex; align-items:center;">
-                                            <div style="width:35px; height:35px; background:#e2e8f0; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-right:10px; color:#64748b;">
-                                                <i class="fas fa-user"></i>
-                                            </div>
-                                            <?php echo htmlspecialchars($client['first_name'] . ' ' . $client['last_name']); ?>
-                                        </div>
-                                    </td>
-                                    <td><?php echo htmlspecialchars($client['email']); ?></td>
-                                    <td>
-                                        <span class="status-badge status-available" style="background:#e0f2fe; color:#0369a1;">
-                                            <i class="fas fa-check-circle"></i> Paid (+₹10)
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <button class="action-btn" title="View Details" onclick="viewClient(<?php echo htmlspecialchars(json_encode($client)); ?>)">
-                                            <i class="fas fa-eye"></i> View
-                                        </button>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <tr>
-                                <td colspan="4" style="text-align: center; padding: 40px; color: #64748b;">
-                                    No clients have subscribed to offline gym yet.
-                                </td>
-                            </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+                <div class="section-title">Configuration & Preferences</div>
+                <p style="color: #64748b; padding: 40px; text-align: center;">
+                    <i class="fas fa-cog" style="font-size: 48px; margin-bottom: 16px; display: block;"></i>
+                    System configuration panel coming soon.
+                </p>
             </div>
         </div>
     </div>
 
-    <!-- Edit Modal -->
-    <div id="editModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000;">
-        <div style="background:white; width:90%; max-width:400px; margin:100px auto; padding:20px; border-radius:10px; position:relative;">
-            <h3 style="margin-bottom:15px; color:#1e293b;">Edit Equipment</h3>
-            <input type="hidden" id="edit_id">
-            <div style="margin-bottom:15px;">
-                <label style="display:block; margin-bottom:5px; color:#64748b; font-size:14px;">Equipment Name</label>
-                <input type="text" id="edit_name" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:6px;">
+    <!-- Client Detail Modal -->
+    <div id="clientModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('clientModal')">&times;</span>
+            <div class="modal-header">
+                <h2>Client Details</h2>
             </div>
-            <div style="margin-bottom:15px;">
-                <label style="display:block; margin-bottom:5px; color:#64748b; font-size:14px;">Total Units</label>
-                <input type="number" id="edit_total" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:6px;">
-            </div>
-            <div style="margin-bottom:20px;">
-                <label style="display:block; margin-bottom:5px; color:#64748b; font-size:14px;">Available Units</label>
-                <input type="number" id="edit_available" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:6px;">
-            </div>
-            <div style="display:flex; justify-content:flex-end; gap:10px;">
-                <button onclick="document.getElementById('editModal').style.display='none'" style="padding:8px 15px; border:none; background:#e2e8f0; border-radius:6px; cursor:pointer;">Cancel</button>
-                <button onclick="submitEdit()" class="btn-primary">Save Changes</button>
+            <div id="modalBody">
+                <!-- Content will be injected by JS -->
             </div>
         </div>
     </div>
 
-    <!-- View Trainer Modal -->
-    <div id="viewTrainerModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000;">
-        <div style="background:white; width:90%; max-width:500px; margin:80px auto; padding:25px; border-radius:10px; position:relative; max-height: 80vh; overflow-y: auto;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:10px;">
-                <h3 style="margin:0; color:#1e293b;">Trainer Profile</h3>
-                <span onclick="document.getElementById('viewTrainerModal').style.display='none'" style="cursor:pointer; font-size:1.5rem;">&times;</span>
+    <!-- Trainer Detail Modal -->
+    <div id="trainerModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('trainerModal')">&times;</span>
+            <div class="modal-header">
+                <h2>Trainer Profile</h2>
             </div>
-            <div style="text-align:center; margin-bottom:20px;">
-                <div style="width:80px; height:80px; background:#e2e8f0; border-radius:50%; margin:0 auto 10px; display:flex; align-items:center; justify-content:center; font-size:2rem; color:#64748b;">
-                    <i class="fas fa-user"></i>
-                </div>
-                <h2 id="view_name" style="font-size:1.5rem; margin-bottom:5px;"></h2>
-                <p id="view_email" style="color:#64748b; font-size:0.9rem;"></p>
+            <div id="trainerModalBody">
+                <!-- Content injected by JS -->
             </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:20px;">
-                <div style="background:#f8fafc; padding:15px; border-radius:8px;">
-                    <label style="display:block; font-size:12px; color:#64748b; text-transform:uppercase; margin-bottom:5px;">Specialization</label>
-                    <div id="view_spec" style="font-weight:600; color:#0F2C59;"></div>
-                </div>
-                <div style="background:#f8fafc; padding:15px; border-radius:8px;">
-                    <label style="display:block; font-size:12px; color:#64748b; text-transform:uppercase; margin-bottom:5px;">Experience</label>
-                    <div id="view_exp" style="font-weight:600; color:#0F2C59;"></div>
-                </div>
+        </div>
+    </div>
+
+    <!-- Product Modal (Add/Edit) -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('productModal')">&times;</span>
+            <div class="modal-header">
+                <h2 id="productModalTitle">Add New Product</h2>
+            </div>
+            <div id="productModalBody">
+                <form id="productForm" onsubmit="event.preventDefault(); saveProduct();">
+                    <input type="hidden" id="p_id" name="product_id">
+                    
+                    <div class="detail-row">
+                        <label class="detail-label">Product Name</label>
+                        <input type="text" id="p_name" name="name" class="editable-input" style="display:block; width: 60%;" required>
+                    </div>
+
+                    <div class="detail-row">
+                        <label class="detail-label">Category</label>
+                        <select id="p_category" name="category" class="editable-input" style="display:block; width: 60%;">
+                            <option value="men">Men's Wear</option>
+                            <option value="women">Women's Wear</option>
+                            <option value="supplements">Supplements</option>
+                            <option value="equipment">Equipment</option>
+                        </select>
+                    </div>
+
+                    <div class="detail-row">
+                        <label class="detail-label">Price (₹)</label>
+                        <input type="number" id="p_price" name="price" step="0.01" class="editable-input" style="display:block; width: 60%;" required>
+                    </div>
+
+                    <div class="detail-row">
+                        <label class="detail-label">Image URL (Optional)</label>
+                        <input type="text" id="p_image" name="image_url" class="editable-input" style="display:block; width: 60%;" placeholder="https://...">
+                    </div>
+
+                    <div class="detail-row">
+                        <label class="detail-label">Or Upload Image</label>
+                        <input type="file" id="p_image_file" name="image_file" class="editable-input" style="display:block; width: 60%;" accept="image/*">
+                        <small style="color: #64748b; font-size: 11px;">Recommended: JPG/PNG, Max 2MB</small>
+                    </div>
+
+                    <div class="detail-row">
+                        <label class="detail-label">Description</label>
+                        <textarea id="p_description" name="description" class="editable-input" style="display:block; width: 100%; height: 80px; resize: vertical;" placeholder="Product description..."></textarea>
+                    </div>
+
+                    <div style="margin-top: 20px; text-align: right;">
+                        <button type="button" class="action-btn" onclick="closeModal('productModal')">Cancel</button>
+                        <button type="submit" class="admin-btn btn-primary">Save Product</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Equipment Update Modal -->
+    <div id="equipmentModal" class="modal">
+        <div class="modal-content" style="width: 400px;">
+            <span class="close" onclick="closeModal('equipmentModal')">&times;</span>
+            <div class="modal-header">
+                <h2>Update Equipment Status</h2>
             </div>
             <div>
-                <label style="display:block; font-size:12px; color:#64748b; text-transform:uppercase; margin-bottom:5px;">Bio</label>
-                <p id="view_bio" style="line-height:1.6; color:#334155; font-size:0.95rem;"></p>
+                <form id="equipmentForm" onsubmit="event.preventDefault(); saveEquipmentStatus();">
+                    <input type="hidden" id="eq_id">
+                    
+                    <div class="detail-row">
+                        <label class="detail-label">Equipment</label>
+                        <span class="detail-value" id="eq_name_display" style="font-weight: 700;"></span>
+                    </div>
+
+                    <div class="detail-row">
+                        <label class="detail-label">Total Units</label>
+                        <span class="detail-value" id="eq_total_display"></span>
+                    </div>
+
+                    <div class="detail-row">
+                        <label class="detail-label">Available Now</label>
+                        <input type="number" id="eq_available" class="editable-input" style="display:block; width: 80px; text-align: right;" min="0" required>
+                    </div>
+
+                    <div style="margin-top: 20px; text-align: right;">
+                         <button type="button" class="action-btn" onclick="closeModal('equipmentModal')">Cancel</button>
+                         <button type="submit" class="admin-btn btn-primary">Update Status</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 
-    <!-- Edit Trainer Modal -->
-    <div id="editTrainerModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000;">
-        <div style="background:white; width:90%; max-width:500px; margin:80px auto; padding:25px; border-radius:10px; position:relative;">
-            <h3 style="margin-bottom:20px; color:#1e293b;">Edit Trainer Profile</h3>
-            <input type="hidden" id="edit_trainer_id">
-            <div style="display:flex; gap:15px; margin-bottom:15px;">
-                <div style="flex:1;">
-                    <label style="display:block; margin-bottom:5px; color:#64748b;">First Name</label>
-                    <input type="text" id="edit_trainer_fname" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:6px;">
-                </div>
-                <div style="flex:1;">
-                    <label style="display:block; margin-bottom:5px; color:#64748b;">Last Name</label>
-                    <input type="text" id="edit_trainer_lname" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:6px;">
-                </div>
+    <!-- Edit Plan Modal -->
+    <div id="planModal" class="modal">
+        <div class="modal-content" style="width: 500px;">
+            <span class="close" onclick="closeModal('planModal')">&times;</span>
+            <div class="modal-header">
+                <h2>Edit Plan: <span id="plan_name_title"></span></h2>
             </div>
-            <div style="display:flex; gap:15px; margin-bottom:15px;">
-                <div style="flex:1;">
-                    <label style="display:block; margin-bottom:5px; color:#64748b;">Specialization</label>
-                    <input type="text" id="edit_trainer_spec" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:6px;">
+            <form id="planForm" onsubmit="event.preventDefault(); savePlan();">
+                <input type="hidden" id="plan_id">
+                <div class="detail-row">
+                    <label class="detail-label">Monthly Price (₹)</label>
+                    <input type="number" id="plan_price_m" class="editable-input" style="width:100%" step="0.01">
                 </div>
-                <div style="flex:1;">
-                    <label style="display:block; margin-bottom:5px; color:#64748b;">Experience (Yrs)</label>
-                    <input type="number" step="0.5" id="edit_trainer_exp" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:6px;">
+                <div class="detail-row">
+                    <label class="detail-label">Yearly Price (₹)</label>
+                    <input type="number" id="plan_price_y" class="editable-input" style="width:100%" step="0.01">
                 </div>
-            </div>
-            <div style="margin-bottom:20px;">
-                <label style="display:block; margin-bottom:5px; color:#64748b;">Bio</label>
-                <textarea id="edit_trainer_bio" rows="4" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:6px; font-family:inherit;"></textarea>
-            </div>
-            <div style="display:flex; justify-content:flex-end; gap:10px;">
-                <button onclick="document.getElementById('editTrainerModal').style.display='none'" style="padding:8px 15px; border:none; background:#e2e8f0; border-radius:6px; cursor:pointer;">Cancel</button>
-                <button onclick="submitTrainerEdit()" class="btn-primary">Save Changes</button>
-            </div>
+                <div class="detail-row">
+                    <label class="detail-label">Features (One per line)</label>
+                    <textarea id="plan_features" class="editable-input" style="width:100%; height:150px; resize:vertical; background:#f8fafc; border:1px solid #e2e8f0; padding:10px;"></textarea>
+                </div>
+                <div style="text-align: right; margin-top:20px;">
+                     <button type="submit" class="admin-btn btn-primary">Save Changes</button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <!-- View Client Modal -->
-    <div id="viewClientModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000;">
-        <div style="background:white; width:90%; max-width:500px; margin:80px auto; padding:25px; border-radius:10px; position:relative;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:10px;">
-                <h3 style="margin:0; color:#1e293b;">Client Details</h3>
-                <span onclick="document.getElementById('viewClientModal').style.display='none'" style="cursor:pointer; font-size:1.5rem;">&times;</span>
+    <!-- Subscription Modal -->
+    <div id="subscriptionModal" class="modal">
+        <div class="modal-content" style="width: 400px;">
+            <span class="close" onclick="closeModal('subscriptionModal')">&times;</span>
+            <div class="modal-header">
+                <h2>Edit Subscription Plan</h2>
             </div>
-            <div style="text-align:center; margin-bottom:20px;">
-                <div style="width:70px; height:70px; background:#e0f2fe; border-radius:50%; margin:0 auto 10px; display:flex; align-items:center; justify-content:center; font-size:1.8rem; color:#0369a1;">
-                    <i class="fas fa-user"></i>
-                </div>
-                <h2 id="client_view_name" style="font-size:1.4rem; margin-bottom:5px;"></h2>
-                <span style="background:#dcfce7; color:#166534; padding:2px 10px; border-radius:15px; font-size:0.8rem; font-weight:600;">Active Offline Member</span>
-            </div>
-            <div style="background:#f8fafc; padding:20px; border-radius:8px;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">
-                    <span style="color:#64748b;">Email</span>
-                    <strong id="client_view_email" style="color:#334155;"></strong>
-                </div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">
-                    <span style="color:#64748b;">Role</span>
-                    <strong id="client_view_role" style="color:#334155; text-transform:capitalize;"></strong>
-                </div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:0;">
-                    <span style="color:#64748b;">Joined Date</span>
-                    <strong id="client_view_date" style="color:#334155;"></strong>
-                </div>
-            </div>
-            <div style="margin-top:20px; text-align:center;">
-                <button onclick="document.getElementById('viewClientModal').style.display='none'" class="btn-primary" style="width:100%;">Close</button>
+            <div id="subModalBody">
+                <form id="subscriptionForm" onsubmit="event.preventDefault(); saveSubscription();">
+                    <input type="hidden" id="sub_user_id">
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; color: #64748b; font-size: 14px;">User</label>
+                        <div id="sub_user_name" style="font-weight: 600; font-size: 16px; color: #1e293b;"></div>
+                    </div>
+                    <div style="margin-bottom: 25px;">
+                        <label for="sub_role" style="display: block; margin-bottom: 8px; color: #64748b; font-size: 14px;">Membership Tier</label>
+                        <select id="sub_role" style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px;">
+                            <option value="free">Free Member</option>
+                            <option value="lite">Lite Member (Formerly Pro)</option>
+                            <option value="pro">Pro Member (Formerly Elite)</option>
+                        </select>
+                    </div>
+                    <div style="text-align: right;">
+                         <button type="submit" class="admin-btn btn-primary" style="width: 100%; justify-content: center;">Save Changes</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 
     <script>
-        function showSection(sectionId) {
-            // Hide all sections
-            document.querySelectorAll('.section').forEach(section => {
-                section.style.display = 'none';
-            });
-            
-            // Remove active class from all nav items
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            
-            // Show selected section
-            document.getElementById(sectionId).style.display = 'block';
-            
-            // Add active class to clicked nav item
-            event.target.closest('.nav-item').classList.add('active');
+        // Existing functions...
+
+        // Subscription Management
+        function openSubscriptionModal(userId, userName, currentRole) {
+            document.getElementById('subscriptionModal').style.display = 'block';
+            document.getElementById('sub_user_id').value = userId;
+            document.getElementById('sub_user_name').innerText = userName;
+            document.getElementById('sub_role').value = currentRole;
         }
 
-        function updateEquipmentStatus(equipmentId, status) {
-            if (confirm(`Update equipment status to ${status}?`)) {
-                fetch('update_equipment_status.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        equipment_id: equipmentId,
-                        status: status
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Equipment status updated successfully!');
-                        location.reload();
-                    } else {
-                        alert('Error updating equipment status');
-                    }
-                });
-            }
-        }
+        function saveSubscription() {
+            const userId = document.getElementById('sub_user_id').value;
+            const newRole = document.getElementById('sub_role').value;
 
-        function checkOutTrainer(trainerId) {
-            if (confirm('Check out this trainer?')) {
-                fetch('trainer_checkout.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        trainer_id: trainerId
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Trainer checked out successfully!');
-                        location.reload();
-                    } else {
-                        alert('Error checking out trainer');
-                    }
-                });
-            }
-        }
-
-        function openEditModal(id, name, total, available) {
-            document.getElementById('edit_id').value = id;
-            document.getElementById('edit_name').value = name;
-            document.getElementById('edit_total').value = total;
-            document.getElementById('edit_available').value = available;
-            document.getElementById('editModal').style.display = 'block';
-        }
-
-        function submitEdit() {
-            const id = document.getElementById('edit_id').value;
-            const name = document.getElementById('edit_name').value;
-            const total = document.getElementById('edit_total').value;
-            const available = document.getElementById('edit_available').value;
-
-            fetch('update_equipment_details.php', {
+            fetch('admin_subscription_action.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id, name, total, available })
+                body: JSON.stringify({ user_id: userId, new_role: newRole })
             })
             .then(res => res.json())
             .then(data => {
-                if(data.success) {
-                    alert('Equipment updated!');
+                if(data.status === 'success') {
+                    alert(data.message);
                     location.reload();
                 } else {
-                    alert('Error updating: ' + (data.message || 'Unknown error'));
+                    alert('Error: ' + data.message);
                 }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Request failed');
             });
         }
 
-        function viewTrainer(trainer) {
-            document.getElementById('view_name').textContent = trainer.first_name + ' ' + trainer.last_name;
-            document.getElementById('view_email').textContent = trainer.email;
-            document.getElementById('view_spec').textContent = trainer.trainer_specialization || 'General Fitness';
-            document.getElementById('view_exp').textContent = (trainer.trainer_experience || '0') + ' Years';
-            document.getElementById('view_bio').textContent = trainer.bio || 'No biography available.';
-            document.getElementById('viewTrainerModal').style.display = 'block';
+        // Plan Management JS
+        function openPlanModal(plan) {
+            document.getElementById('planModal').style.display = 'block';
+            document.getElementById('plan_name_title').innerText = plan.name;
+            document.getElementById('plan_id').value = plan.plan_id;
+            document.getElementById('plan_price_m').value = plan.price_monthly;
+            document.getElementById('plan_price_y').value = plan.price_yearly;
+            
+            // Features
+            let features = '';
+            try {
+                const fData = typeof plan.features === 'string' ? JSON.parse(plan.features) : plan.features;
+                features = Array.isArray(fData) ? fData.join('\n') : fData;
+            } catch(e) { features = plan.features; }
+            document.getElementById('plan_features').value = features;
         }
 
-        function editTrainer(trainer) {
-            document.getElementById('edit_trainer_id').value = trainer.user_id;
-            document.getElementById('edit_trainer_fname').value = trainer.first_name;
-            document.getElementById('edit_trainer_lname').value = trainer.last_name;
-            document.getElementById('edit_trainer_spec').value = trainer.trainer_specialization || '';
-            document.getElementById('edit_trainer_exp').value = trainer.trainer_experience || '';
-            document.getElementById('edit_trainer_bio').value = trainer.bio || '';
-            document.getElementById('editTrainerModal').style.display = 'block';
+        function savePlan() {
+             const data = {
+                 plan_id: document.getElementById('plan_id').value,
+                 price_monthly: document.getElementById('plan_price_m').value,
+                 price_yearly: document.getElementById('plan_price_y').value,
+                 features: document.getElementById('plan_features').value
+             };
+             
+             fetch('admin_plan_update.php', {
+                 method: 'POST',
+                 headers: {'Content-Type': 'application/json'},
+                 body: JSON.stringify(data)
+             })
+             .then(res => res.json())
+             .then(data => {
+                 if(data.status === 'success') {
+                     alert(data.message);
+                     location.reload();
+                 } else {
+                     alert(data.message);
+                 }
+             })
+             .catch(err => console.error(err));
         }
 
-        function submitTrainerEdit() {
+        function showSection(section) {
+            // Update sidebar active state
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('onclick').includes(`'${section}'`)) {
+                    item.classList.add('active');
+                }
+            });
+            
+            // Show corresponding section
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(section + '-section').classList.add('active');
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout from the admin panel?')) {
+                window.location.href = 'logout.php';
+            }
+        }
+        function filterTrainers() {
+            const input = document.getElementById('trainerSearch');
+            const filter = input.value.toLowerCase();
+            const cards = document.getElementsByClassName('trainer-card');
+
+            for (let i = 0; i < cards.length; i++) {
+                const name = cards[i].getAttribute('data-name');
+                const email = cards[i].getAttribute('data-email');
+                if (name.includes(filter) || email.includes(filter)) {
+                    cards[i].style.display = "";
+                } else {
+                    cards[i].style.display = "none";
+                }
+            }
+        }
+
+        function handleTrainerAction(trainerId, action) {
+            if (!confirm(`Are you sure you want to ${action} this trainer?`)) return;
+
+            fetch('admin_trainer_action.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: action, trainer_id: trainerId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Request failed');
+            });
+        }
+        function handleClientAction(clientId, action) {
+             const actionText = action === 'delete' ? 'permanently delete' : action;
+             if (!confirm(`Are you sure you want to ${actionText} this client?`)) return;
+
+             fetch('admin_client_action.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: action, client_id: clientId })
+             })
+             .then(res => res.json())
+             .then(data => {
+                 if(data.status === 'success') {
+                     alert(data.message);
+                     location.reload();
+                 } else {
+                     alert('Error: ' + data.message);
+                 }
+             })
+             .catch(err => {
+                 console.error(err);
+                 alert('Request failed');
+             });
+        }
+
+        function filterClients() {
+            const input = document.getElementById('clientSearch');
+            const filter = input.value.toLowerCase();
+            const cards = document.getElementsByClassName('client-card');
+
+            for (let i = 0; i < cards.length; i++) {
+                const name = cards[i].getAttribute('data-name');
+                const email = cards[i].getAttribute('data-email');
+                if (name.includes(filter) || email.includes(filter)) {
+                    cards[i].style.display = "";
+                } else {
+                    cards[i].style.display = "none";
+                }
+            }
+        }
+
+        // Modal Functions
+        // Trainer Modal Function
+        // Trainer Modal Function - Editable Version
+        function viewTrainerDetails(trainer) {
+            const modal = document.getElementById('trainerModal');
+            const body = document.getElementById('trainerModalBody');
+            
+            // Format certs - editable as text for now
+            const certs = trainer.certifications || '';
+            
+            // Fallback for image
+            const imgHtml = trainer.image_url 
+                ? `<img src="${trainer.image_url}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">` 
+                : '<i class="fas fa-user"></i>';
+
+            body.innerHTML = `
+                <form id="editTrainerForm" onsubmit="event.preventDefault(); saveTrainerDetails(${trainer.user_id});">
+                    <div style="display: flex; gap: 20px; margin-bottom: 20px; align-items: start;">
+                        <div style="width: 100px; height: 100px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; color: #64748b; flex-shrink: 0;">
+                            ${imgHtml}
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="display:flex; gap: 10px; margin-bottom: 10px;">
+                                <input type="text" id="t_first_name" class="editable-input" value="${trainer.first_name}" style="font-weight:700; color:#0F2C59; width: 48%;" placeholder="First Name">
+                                <input type="text" id="t_last_name" class="editable-input" value="${trainer.last_name}" style="font-weight:700; color:#0F2C59; width: 48%;" placeholder="Last Name">
+                            </div>
+                            <input type="email" id="t_email" class="editable-input" value="${trainer.email}" style="width: 100%; color: #64748b; margin-bottom: 8px;">
+                            <span class="badge badge-active" style="text-transform: capitalize;">${trainer.account_status}</span>
+                        </div>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Phone</span>
+                        <input type="text" id="t_phone" class="editable-input" value="${trainer.phone || ''}" style="width: 60%; text-align: right;">
+                    </div>
+                    
+                    <div class="detail-row">
+                        <span class="detail-label">Specialization</span>
+                        <input type="text" id="t_spec" class="editable-input" value="${trainer.trainer_specialization || trainer.specialization || ''}" style="width: 60%; text-align: right;">
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Experience (Years)</span>
+                        <input type="number" id="t_exp" class="editable-input" value="${trainer.experience_years || 0}" style="width: 60%; text-align: right;">
+                    </div>
+
+                    <div class="detail-row" style="border-bottom: none;">
+                        <div style="width:100%">
+                            <span class="detail-label">About</span>
+                            <textarea id="t_bio" class="editable-input" style="width: 100%; height: 100px; margin-top: 8px; resize: vertical; padding: 10px;">${trainer.bio || ''}</textarea>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px; text-align: right; border-top: 1px solid #eee; padding-top: 20px;">
+                         <button type="button" class="action-btn" onclick="closeModal('trainerModal')">Cancel</button>
+                         <button type="submit" class="admin-btn btn-primary" style="display: inline-flex;">Save Changes</button>
+                    </div>
+                </form>
+            `;
+            
+            modal.style.display = "block";
+        }
+
+        function saveTrainerDetails(trainerId) {
             const data = {
-                user_id: document.getElementById('edit_trainer_id').value,
-                first_name: document.getElementById('edit_trainer_fname').value,
-                last_name: document.getElementById('edit_trainer_lname').value,
-                specialization: document.getElementById('edit_trainer_spec').value,
-                experience: document.getElementById('edit_trainer_exp').value,
-                bio: document.getElementById('edit_trainer_bio').value
+                trainer_id: trainerId,
+                first_name: document.getElementById('t_first_name').value,
+                last_name: document.getElementById('t_last_name').value,
+                email: document.getElementById('t_email').value,
+                phone: document.getElementById('t_phone').value,
+                trainer_specialization: document.getElementById('t_spec').value,
+                experience_years: document.getElementById('t_exp').value,
+                bio: document.getElementById('t_bio').value
             };
 
-            fetch('update_trainer_profile_admin.php', {
+            fetch('admin_trainer_update.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             })
             .then(res => res.json())
             .then(data => {
-                if(data.success) {
-                    alert('Trainer profile updated successfully!');
+                if(data.status === 'success') {
+                    alert(data.message);
                     location.reload();
                 } else {
-                    alert('Error updating profile: ' + (data.message || 'Unknown error'));
+                    alert('Error: ' + data.message);
                 }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Request failed');
             });
         }
 
-        function viewClient(client) {
-            document.getElementById('client_view_name').textContent = client.first_name + ' ' + client.last_name;
-            document.getElementById('client_view_email').textContent = client.email;
-            document.getElementById('client_view_role').textContent = client.role;
-            // Simple date formatting
-            let dateStr = client.created_at; 
-            if(dateStr) {
-                dateStr = new Date(dateStr).toLocaleDateString();
-            } else {
-                dateStr = 'N/A';
-            }
-            document.getElementById('client_view_date').textContent = dateStr;
+        function viewClientDetails(client) {
+            const modal = document.getElementById('clientModal');
+            const body = document.getElementById('modalBody');
             
-            document.getElementById('viewClientModal').style.display = 'block';
+            body.innerHTML = `
+                <div class="detail-row">
+                    <span class="detail-label">Full Name</span>
+                    <span class="detail-value">${client.first_name} ${client.last_name}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Email Address</span>
+                    <span class="detail-value">${client.email}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Phone Number</span>
+                    <span class="detail-value">${client.phone || 'N/A'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Membership Type</span>
+                    <span class="detail-value" style="text-transform: capitalize;">${client.role}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Account Status</span>
+                    <span class="detail-value" style="text-transform: capitalize;">${client.account_status}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Joined Date</span>
+                    <span class="detail-value">${new Date(client.created_at).toLocaleDateString()}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Auth Provider</span>
+                    <span class="detail-value" style="text-transform: capitalize;">${client.auth_provider || 'Local'}</span>
+                </div>
+            `;
+            
+            modal.style.display = "block";
         }
 
-        function submitSchedule() {
-            const openTime = document.getElementById('sched_open').value;
-            const closeTime = document.getElementById('sched_close').value;
-            const isClosed = document.getElementById('sched_closed').checked ? 'closed' : 'open';
+        function closeModal(modalId) {
+            document.getElementById(modalId || 'clientModal').style.display = "none";
+        }
 
-            fetch('update_gym_schedule.php', {
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = "none";
+            }
+        }
+
+        // Product Management Functions
+        function openProductModal(product = null) {
+            const modal = document.getElementById('productModal');
+            document.getElementById('productForm').reset();
+            
+            if (product) {
+                document.getElementById('productModalTitle').innerText = 'Edit Product';
+                document.getElementById('p_id').value = product.product_id;
+                document.getElementById('p_name').value = product.name;
+                document.getElementById('p_category').value = product.category;
+                document.getElementById('p_price').value = product.price;
+                document.getElementById('p_image').value = product.image_url;
+                document.getElementById('p_description').value = product.description || '';
+            } else {
+                document.getElementById('productModalTitle').innerText = 'Add New Product';
+                document.getElementById('p_id').value = '';
+                document.getElementById('p_description').value = '';
+            }
+            
+            modal.style.display = "block";
+        }
+
+        function saveProduct() {
+            const formData = new FormData(document.getElementById('productForm'));
+            formData.append('action', 'save');
+
+            fetch('admin_product_action.php', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    gym_open_time: openTime,
-                    gym_close_time: closeTime,
-                    gym_status: isClosed
-                })
+                body: formData
             })
             .then(res => res.json())
             .then(data => {
-                if (data.success) {
-                    alert('Schedule updated successfully!');
+                if(data.status === 'success') {
+                    alert(data.message);
                     location.reload();
                 } else {
-                    alert('Error updating schedule: ' + data.message);
+                    alert('Error: ' + data.message);
                 }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Request failed');
+            });
+        }
+
+        function deleteProduct(id) {
+            if(!confirm('Are you sure you want to delete this product?')) return;
+            
+            const formData = new FormData();
+            formData.append('action', 'delete');
+            formData.append('product_id', id);
+
+            fetch('admin_product_action.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Request failed');
+            });
+        }
+
+        // Equipment Management
+        function openUpdateEquipmentModal(id, name, total, current) {
+            document.getElementById('equipmentModal').style.display = 'block';
+            document.getElementById('eq_id').value = id;
+            document.getElementById('eq_name_display').innerText = name;
+            document.getElementById('eq_total_display').innerText = total;
+            document.getElementById('eq_available').value = current;
+            document.getElementById('eq_available').max = total;
+        }
+
+        function saveEquipmentStatus() {
+            const id = document.getElementById('eq_id').value;
+            const available = document.getElementById('eq_available').value;
+
+            fetch('admin_equipment_action.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'update_status', id: id, available: available })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    alert(data.message);
+                    location.reload(); 
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Request failed');
+            });
+        }
+
+        // Trainer Attendance Management
+        function viewTrainerSchedule(trainerId) {
+            // Redirect to trainer schedule page
+            window.open('trainer_schedule.php?trainer_id=' + trainerId, '_blank');
+        }
+
+        function clockOutTrainer(trainerId, trainerName) {
+            if (!confirm(`Are you sure you want to clock out ${trainerName}?`)) return;
+
+            fetch('admin_trainer_attendance.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'clock_out', trainer_id: trainerId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Request failed');
             });
         }
     </script>
 </body>
+
 </html>
+
+

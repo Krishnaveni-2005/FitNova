@@ -39,14 +39,14 @@
         .section-title { font-size: 2rem; color: var(--primary-color); margin-bottom: 30px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
 
         /* Grids */
-        .data-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 60px; }
+        .data-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-bottom: 60px; }
         .data-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.05); transition: 0.3s; }
         .data-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
-        .data-img { height: 200px; background-size: cover; background-position: center; }
-        .data-info { padding: 25px; }
-        .data-info h3 { font-size: 1.3rem; margin-bottom: 10px; color: var(--primary-color); }
-        .data-info p { color: #666; font-size: 0.95rem; line-height: 1.5; margin-bottom: 15px; }
-        .btn-link { color: var(--accent-color); font-weight: 600; text-decoration: none; }
+        .data-img { height: 160px; background-size: cover; background-position: center; }
+        .data-info { padding: 20px; }
+        .data-info h3 { font-size: 1.1rem; margin-bottom: 10px; color: var(--primary-color); }
+        .data-info p { color: #666; font-size: 0.9rem; line-height: 1.4; margin-bottom: 15px; }
+        .btn-link { color: var(--accent-color); font-weight: 600; text-decoration: none; font-size: 0.9rem; }
     </style>
 </head>
 <body>

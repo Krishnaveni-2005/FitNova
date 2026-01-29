@@ -370,8 +370,7 @@ $errors = 0;
 $defaultPassword = password_hash('FitNova2026', PASSWORD_DEFAULT);
 
 foreach ($trainersData as $trainer) {
-    // Check if trainer already exists
-    $checkQuery = "SELECT id FROM users WHERE email = ?";
+    $checkQuery = "SELECT user_id FROM users WHERE email = ?";
     $checkStmt = $conn->prepare($checkQuery);
     $checkStmt->bind_param("s", $trainer['email']);
     $checkStmt->execute();
@@ -389,14 +388,17 @@ foreach ($trainersData as $trainer) {
     $imagePath = 'assets/trainers/' . $trainer['image'];
     
     $insertQuery = "INSERT INTO users (
-        first_name, last_name, email, phone, password, role, 
-        specialization, profile_picture, account_status, bio, 
-        certifications, experience_years, created_at
+        first_name, last_name, email, phone, password_hash, role, 
+        trainer_specialization, profile_picture, account_status, bio, 
+        trainer_certification, trainer_experience, created_at
     ) VALUES (?, ?, ?, ?, ?, 'trainer', ?, ?, 'active', ?, ?, ?, NOW())";
     
     $insertStmt = $conn->prepare($insertQuery);
+    // Fixed bind_param string: 10 params (ssssisssss => wait count 10?)
+    // Params: first(s), last(s), email(s), phone(s), pass(s), spec(s), pic(s), bio(s), cert(s), exp(i)
+    // 9 strings, 1 int. "sssssssssi"
     $insertStmt->bind_param(
-        "ssssssssi",
+        "sssssssssi",
         $trainer['first_name'],
         $trainer['last_name'],
         $trainer['email'],

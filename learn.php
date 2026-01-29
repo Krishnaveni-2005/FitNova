@@ -12,15 +12,15 @@
         .hero { padding: 80px 0; background: linear-gradient(135deg, #2b32b2 0%, #1488cc 100%); color: white; text-align: center; }
         .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
         
-        .articles-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
-        .article-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s; }
+        .articles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }
+        .article-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s; display: flex; flex-direction: column; }
         .article-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .a-img { width: 100%; height: 200px; object-fit: cover; }
-        .a-content { padding: 25px; }
-        .a-tag { display: inline-block; padding: 4px 10px; background: rgba(79, 172, 254, 0.1); color: var(--accent-color); border-radius: 4px; font-size: 0.8rem; font-weight: 700; margin-bottom: 10px; }
-        .a-title { font-size: 1.25rem; font-weight: 700; color: #333; margin-bottom: 10px; line-height: 1.4; }
-        .a-desc { font-size: 0.95rem; color: #666; margin-bottom: 20px; }
-        .read-more { color: var(--primary-color); font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 5px; }
+        .a-img { width: 100%; height: 150px; object-fit: cover; }
+        .a-content { padding: 15px; display: flex; flex-direction: column; flex: 1; }
+        .a-tag { display: inline-block; padding: 3px 8px; background: rgba(79, 172, 254, 0.1); color: var(--accent-color); border-radius: 4px; font-size: 0.7rem; font-weight: 700; margin-bottom: 8px; align-self: flex-start; }
+        .a-title { font-size: 1.05rem; font-weight: 700; color: #333; margin-bottom: 6px; line-height: 1.3; }
+        .a-desc { font-size: 0.85rem; color: #666; margin-bottom: 12px; line-height: 1.5; flex-grow: 1; }
+        .read-more { color: var(--primary-color); font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 5px; font-size: 0.8rem; margin-top: auto; }
         
         @media(max-width: 768px) { .articles-grid { grid-template-columns: 1fr; } }
     </style>

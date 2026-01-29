@@ -61,6 +61,18 @@ if ($stmt) {
     $stmt->close();
 }
 
+// Fetch Total Sessions Count
+$sessCountSql = "SELECT COUNT(*) as total_sessions FROM trainer_schedules WHERE trainer_id = ?";
+$stmt = $conn->prepare($sessCountSql);
+$totalSessions = 0;
+if ($stmt) {
+    $stmt->bind_param("i", $trainerId);
+    $stmt->execute();
+    $res = $stmt->get_result()->fetch_assoc();
+    $totalSessions = $res['total_sessions'] ?? 0;
+    $stmt->close();
+}
+
 // Fetch Rating
 $ratingSql = "SELECT AVG(rating) as avg_rating FROM trainer_ratings WHERE trainer_id = ?";
 $stmt = $conn->prepare($ratingSql);
@@ -579,7 +591,7 @@ if ($stmt) {
             </div>
             <div class="stat-card">
                 <div class="stat-icon" style="background: #fffbeb; color: #f59e0b;"><i class="fas fa-calendar-check"></i></div>
-                <div class="stat-value">42</div>
+                <div class="stat-value"><?php echo $totalSessions; ?></div>
                 <div class="stat-label">Total Sessions</div>
             </div>
             <div class="stat-card">

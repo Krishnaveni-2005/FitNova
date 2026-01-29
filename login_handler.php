@@ -55,8 +55,8 @@ if ($result->num_rows > 0) {
             case "pro":
                 $redirect = "prouser_dashboard.php";
                 break;
-            case "elite":
-                $redirect = "eliteuser_dashboard.php";
+            case "lite":
+                $redirect = "liteuser_dashboard.php";
                 break;
             default:
                 $redirect = "freeuser_dashboard.php";
@@ -64,8 +64,9 @@ if ($result->num_rows > 0) {
         }
 
         // Override for specific gym admin email
-        if ($email === 'ashakayaplackal@gmail.com') {
-            $redirect = "gym_admin_dashboard.php";
+        // Override for specific gym admin email
+        if (strtolower($email) === 'ashakayaplackal@gmail.com') {
+            $redirect = "gym_owner_dashboard.php";
         }
         
         // Only set session if checks passed

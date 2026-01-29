@@ -1,12 +1,27 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'elite') {
+if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit();
 }
 require "db_connect.php";
+
+// Sync Role - This dashboard serves 'pro' users now (previously Elite)
 $userId = $_SESSION['user_id'];
-$userName = $_SESSION['user_name'] ?? 'Elite Member';
+$checkRole = $conn->query("SELECT role FROM users WHERE user_id = $userId")->fetch_assoc();
+$realRole = $checkRole['role'] ?? 'free';
+$_SESSION['user_role'] = $realRole;
+
+if ($realRole !== 'pro') {
+    if ($realRole === 'free') { header("Location: freeuser_dashboard.php"); exit(); }
+    if ($realRole === 'lite') { header("Location: prouser_dashboard.php"); exit(); } // 'lite' (old pro) goes to pro dashboard
+    if ($realRole === 'trainer') { header("Location: trainer_dashboard.php"); exit(); }
+    if ($realRole === 'admin') { header("Location: admin_dashboard.php"); exit(); }
+    header('Location: login.php');
+    exit();
+}
+$userId = $_SESSION['user_id'];
+$userName = $_SESSION['user_name'] ?? 'Pro Member';
 $initials = strtoupper(substr($userName, 0, 1) . substr($userName, strpos($userName, ' ') + 1, 1));
 if (strlen($initials) < 2) $initials = strtoupper(substr($userName, 0, 2));
 
@@ -50,7 +65,7 @@ if ($stmt) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elite Dashboard - FitNova</title>
+    <title>Pro Dashboard - FitNova</title>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -380,7 +395,7 @@ if ($stmt) {
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
             <a href="home.php" class="brand-logo">
-                <i class="fas fa-dumbbell"></i> FitNova <span class="pro-badge-sidebar" style="background:var(--secondary-color); margin-left:5px;">ELITE</span>
+                <i class="fas fa-dumbbell"></i> FitNova <span class="pro-badge-sidebar" style="background:var(--secondary-color); margin-left:5px;">PRO</span>
             </a>
         </div>
 
@@ -389,7 +404,7 @@ if ($stmt) {
                 <i class="fas fa-home"></i> Premium Dashboard
             </a>
             <a href="free_workouts.php" class="menu-item">
-                <i class="fas fa-dumbbell"></i> Elite Training
+                <i class="fas fa-dumbbell"></i> Pro Training
             </a>
             <a href="healthy_recipes.php" class="menu-item">
                 <i class="fas fa-utensils"></i> Gourmet Diets
@@ -412,7 +427,7 @@ if ($stmt) {
             <div class="user-avatar-sm"><?php echo $initials; ?></div>
             <div class="user-info-sm">
                 <h4><?php echo htmlspecialchars($userName); ?></h4>
-                <p>Elite Member</p>
+                <p>Pro Member</p>
             </div>
             <a href="logout.php" style="margin-left: auto; color: var(--text-light);"><i
                     class="fas fa-sign-out-alt fa-flip-horizontal"></i></a>
@@ -436,7 +451,7 @@ if ($stmt) {
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
-                <div class="stat-value">Elite Tier</div>
+                <div class="stat-value">Pro Tier</div>
                 <div class="stat-label">Membership Status</div>
             </div>
             <div class="stat-card">
@@ -479,7 +494,7 @@ if ($stmt) {
                             <div class="feature-icon"><i class="fas fa-dumbbell"></i></div>
                             <div class="feature-text">
                                 <h5><?php echo htmlspecialchars($w['plan_name']); ?></h5>
-                                <p><?php echo $w['duration_weeks']; ?> weeks • <?php echo ucfirst($w['difficulty']); ?> Elite Tier</p>
+                                <p><?php echo $w['duration_weeks']; ?> weeks • <?php echo ucfirst($w['difficulty']); ?> Pro Tier</p>
                             </div>
                         </div>
                         <?php endforeach; ?>
@@ -528,7 +543,7 @@ if ($stmt) {
                 </div>
                 
                 <div class="section-card" style="background: linear-gradient(to bottom, #FFF, #FDF8E6);">
-                    <div class="section-title"><i class="fas fa-gift"></i> Elite Perks</div>
+                    <div class="section-title"><i class="fas fa-gift"></i> Pro Perks</div>
                     <p style="font-size:14px; color:var(--text-light); margin:15px 0;">You have 2 complimentary Spa Invitations available this month.</p>
                     <button style="width:100%; padding:12px; border:1px solid var(--secondary-color); background:transparent; border-radius:8px; font-weight:700; cursor:pointer;">Claim Reward</button>
                 </div>

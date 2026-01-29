@@ -2,35 +2,67 @@
 session_start();
 require "db_connect.php";
 
-// Redirect to login if not logged in or not a trainer
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'trainer') {
+// Redirect if not logged in
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_role'])) {
     header("Location: login.php");
     exit();
 }
 
-$trainerId = $_SESSION['user_id'];
+$isTrainer = $_SESSION['user_role'] === 'trainer';
+$isAdmin = $_SESSION['user_role'] === 'admin';
 
-// Check Account Status explicitly
-$statusSql = "SELECT account_status FROM users WHERE user_id = ?";
-$stmt = $conn->prepare($statusSql);
-$stmt->bind_param("i", $trainerId);
-$stmt->execute();
-$resStatus = $stmt->get_result();
-if ($resStatus->num_rows > 0) {
-    $userStatus = $resStatus->fetch_assoc()['account_status'];
-    if ($userStatus === 'pending') {
-        header("Location: trainer_pending.php");
-        exit();
-    }
-    if ($userStatus === 'inactive' || $userStatus === 'rejected') {
-        session_destroy();
-        header("Location: login.php?error=account_inactive");
-        exit();
-    }
+if (!$isTrainer && !$isAdmin) {
+    header("Location: login.php");
+    exit();
 }
-$stmt->close();
-$trainerName = $_SESSION['user_name'];
-$trainerInitials = strtoupper(substr($trainerName, 0, 1) . substr(explode(' ', $trainerName)[1] ?? '', 0, 1));
+
+// Determine Trainer ID
+if ($isAdmin) {
+    if (!isset($_GET['trainer_id'])) {
+        die("Error: Trainer ID is required for admin view.");
+    }
+    $trainerId = intval($_GET['trainer_id']);
+    
+    // Fetch Trainer Name for display
+    $tSql = "SELECT first_name, last_name FROM users WHERE user_id = ?";
+    $tStmt = $conn->prepare($tSql);
+    $tStmt->bind_param("i", $trainerId);
+    $tStmt->execute();
+    $tRes = $tStmt->get_result();
+    if ($tRes->num_rows === 0) {
+        die("Error: Trainer not found.");
+    }
+    $tRow = $tRes->fetch_assoc();
+    $trainerName = $tRow['first_name'] . ' ' . $tRow['last_name'];
+    $trainerInitials = strtoupper(substr($tRow['first_name'], 0, 1) . substr($tRow['last_name'], 0, 1));
+    $tStmt->close();
+    
+} else {
+    $trainerId = $_SESSION['user_id'];
+    
+    // Check Account Status explicitly for trainers
+    $statusSql = "SELECT account_status FROM users WHERE user_id = ?";
+    $stmt = $conn->prepare($statusSql);
+    $stmt->bind_param("i", $trainerId);
+    $stmt->execute();
+    $resStatus = $stmt->get_result();
+    if ($resStatus->num_rows > 0) {
+        $userStatus = $resStatus->fetch_assoc()['account_status'];
+        if ($userStatus === 'pending') {
+            header("Location: trainer_pending.php");
+            exit();
+        }
+        if ($userStatus === 'inactive' || $userStatus === 'rejected') {
+            session_destroy();
+            header("Location: login.php?error=account_inactive");
+            exit();
+        }
+    }
+    $stmt->close();
+    
+    $trainerName = $_SESSION['user_name'];
+    $trainerInitials = strtoupper(substr($trainerName, 0, 1) . substr(explode(' ', $trainerName)[1] ?? '', 0, 1));
+}
 
 // Handle AJAX updates
 // Handle AJAX updates
@@ -466,10 +498,20 @@ $stmt->close();
             .sidebar { transform: translateX(-100%); }
             .main-content { margin-left: 0; }
         }
+        
+        <?php if($isAdmin): ?>
+        .sidebar { display: none !important; }
+        .main-content { margin-left: 0 !important; width: 100% !important; padding: 40px !important; }
+        .btn-toggle-edit, .add-row-btn { display: none !important; }
+        /* Center header for cleaner report view */
+        .header-section { justify-content: center; text-align: center; flex-direction: column; gap: 10px; }
+        .header-title h2 { font-size: 28px; }
+        <?php endif; ?>
     </style>
 </head>
 
 <body>
+    <?php if(!$isAdmin): ?>
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
@@ -521,12 +563,13 @@ $stmt->close();
             </a>
         </div>
     </aside>
+    <?php endif; ?>
 
     <!-- Main Content -->
     <main class="main-content" id="main-content">
         <div class="header-section">
             <div class="header-title">
-                <h2>Today's Schedule</h2>
+                <h2><?php echo $isAdmin ? 'Schedule: ' . htmlspecialchars($trainerName) : "Today's Schedule"; ?></h2>
                 <p><?php echo date('l, F j, Y'); ?></p>
             </div>
             <button class="btn-toggle-edit" id="toggleEditBtn">

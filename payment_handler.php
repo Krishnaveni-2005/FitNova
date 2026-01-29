@@ -22,6 +22,7 @@ if (empty($plan)) {
 
 // Map plans to roles
 $role = "free";
+if ($plan === 'lite') $role = 'lite';
 if ($plan === 'pro') $role = 'pro';
 if ($plan === 'elite') $role = 'elite';
 
@@ -36,7 +37,8 @@ if ($stmt->execute()) {
     
     // Handle Automatic Trainer Hire Request
     $trainerId = isset($data['trainer_id']) ? intval($data['trainer_id']) : 0;
-    if ($trainerId > 0) {
+    // Only process trainer request if role is NOT lite
+    if ($trainerId > 0 && $role !== 'lite') {
         $hireSql = "UPDATE users SET assigned_trainer_id = ?, assignment_status = 'pending' WHERE user_id = ?";
         $hireStmt = $conn->prepare($hireSql);
         $hireStmt->bind_param("ii", $trainerId, $userId);

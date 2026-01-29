@@ -3,8 +3,13 @@ session_start();
 header("Content-Type: application/json");
 require "db_connect.php";
 
-// Check Admin Auth
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
+// Check Admin Auth or Gym Owner Auth
+$allowed_gym_owner = 'ashakayaplackal@gmail.com';
+if (
+    !isset($_SESSION['user_id']) || 
+    !isset($_SESSION['user_role']) || 
+    ($_SESSION['user_role'] !== 'admin' && strtolower($_SESSION['user_email']) !== $allowed_gym_owner)
+) {
     echo json_encode(["status" => "error", "message" => "Unauthorized"]);
     exit();
 }

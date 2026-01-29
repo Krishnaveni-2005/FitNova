@@ -1,411 +1,344 @@
-<?php 
-session_start(); 
-
-// Redirect to custom diet plan if assigned
-if (isset($_SESSION['user_id'])) {
-    require_once 'db_connect.php';
-    $chkStmt = $conn->prepare("SELECT diet_id FROM trainer_diet_plans WHERE user_id = ?");
-    $chkStmt->bind_param("i", $_SESSION['user_id']);
-    $chkStmt->execute();
-    if ($chkStmt->get_result()->num_rows > 0) {
-        header("Location: view_my_diet.php");
-        exit();
-    }
-}
-
-include 'header.php'; 
+<?php
+session_start();
+require "db_connect.php";
 ?>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Healthy Recipes - FitNova</title>
-    <!-- Fonts -->
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;900&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --primary-color: #0F2C59;
-            --accent-color: #3498DB;
-            /* Blue */
-            --bg-color: #F8F9FA;
-            --text-color: #333333;
-            --text-light: #6C757D;
-            --white: #FFFFFF;
-            --border-radius: 16px;
-            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        :root { 
+            --primary-color: #0F2C59; 
+            --accent-color: #E63946; 
+            --bg-color: #F8F9FA; 
+            --text-color: #333; 
+        }
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background: var(--bg-color); 
+            color: var(--text-color); 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 100vh; 
+        }
+        
+        .main-content { 
+            flex: 1; 
+            padding: 20px 20px 100px 20px; 
+            max-width: 95%; 
+            margin: 0 auto; 
+            width: 100%; 
+            box-sizing: border-box; 
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-        }
-
-        /* Hero Section */
-        .hero {
-            background: linear-gradient(135deg, #0F2C59 0%, #3498DB 100%);
-            color: white;
-            padding: 80px 20px 40px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-            border-radius: 0 0 30px 30px;
-            margin-bottom: 40px;
-            box-shadow: 0 4px 20px rgba(52, 152, 219, 0.3);
-        }
-
-        .hero::before {
-            content: ''; position: absolute; width: 300px; height: 300px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); top: -100px; left: -50px;
-        }
-
-        .hero-title {
-            font-family: 'Outfit', sans-serif;
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .hero-subtitle {
-            font-size: 1.1rem;
-            opacity: 0.95;
-            max-width: 600px;
-            margin: 0 auto 30px;
-            position: relative;
-            z-index: 1;
-            font-weight: 500;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px 40px;
-        }
-
-        /* Tabs */
-        .tabs-container {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 40px;
-        }
-
-        .tabs {
-            display: inline-flex;
-            background: white;
-            padding: 5px;
-            border-radius: 50px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-        }
-
-        .tab-btn {
-            padding: 12px 30px;
-            border: none;
-            background: none;
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-light);
-            cursor: pointer;
-            border-radius: 50px;
-            transition: var(--transition);
-        }
-
-        .tab-btn.active {
-            background: var(--accent-color);
-            color: white;
-            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
-        }
-
-        /* Recipe Grid */
-        .recipe-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 30px;
-            display: none;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .recipe-grid.active {
-            display: grid;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .recipe-card {
-            background: white;
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-            cursor: pointer;
-            border: 1px solid rgba(0, 0, 0, 0.05);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .recipe-card:hover { transform: translateY(-8px); box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12); }
-
-        .recipe-thumbnail {
-            width: 100%;
-            height: 220px;
-            background-color: #EEE;
-            position: relative;
-            background-size: cover;
-            background-position: center;
-        }
-
-        .badge-group {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .badge {
-            background: rgba(255, 255, 255, 0.9);
-            color: #0F2C59;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(4px);
-        }
-
-        .recipe-info {
-            padding: 25px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .recipe-title {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.3rem;
-            margin-bottom: 8px;
-            color: var(--primary-color);
-            line-height: 1.3;
-        }
-
-        .recipe-desc {
-            font-size: 0.9rem;
-            color: var(--text-light);
-            margin-bottom: 20px;
-            line-height: 1.5;
-        }
-
-        .recipe-meta {
-            margin-top: auto;
-            padding-top: 15px;
-            border-top: 1px solid #f0f0f0;
+        .page-hero {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #1a3c70 100%);
+            border-radius: 20px;
+            padding: 30px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            color: var(--text-light);
-            font-size: 0.9rem;
+            color: white;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(15, 44, 89, 0.15);
         }
-
-        .meta-item { display: flex; align-items: center; gap: 6px; }
-        .meta-item i { color: var(--accent-color); }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(5px);
+        .page-hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at 10% 20%, rgba(255,255,255,0.1) 0%, transparent 20%),
+                        radial-gradient(circle at 90% 80%, rgba(255,255,255,0.05) 0%, transparent 20%);
+            pointer-events: none;
         }
+        .hero-text h1 { font-size: 1.8rem; margin: 0 0 8px 0; font-weight: 800; letter-spacing: -0.5px; }
+        .hero-text p { font-size: 0.95rem; opacity: 0.9; max-width: 550px; margin: 0; line-height: 1.5; color: #e2e8f0; }
+        .hero-decoration { font-size: 6rem; opacity: 0.08; transform: rotate(-15deg); position: absolute; right: 40px; bottom: -25px; }
 
-        .modal-card {
-            width: 90%;
-            max-width: 600px;
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
             background: white;
             border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
-            max-height: 90vh;
-            overflow-y: auto;
-            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+            max-width: 500px;
+            margin: 30px auto;
         }
-
-        .modal-header-img { width: 100%; height: 250px; background-size: cover; background-position: center; }
-        .modal-body { padding: 30px; }
-        .modal-title { font-family: 'Outfit', sans-serif; font-size: 1.8rem; margin-bottom: 10px; color: var(--primary-color); }
-        .close-modal-btn { position: absolute; top: 20px; right: 20px; background: rgba(0, 0, 0, 0.5); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; }
-
-        .ingredient-list { list-style: none; margin-bottom: 25px; }
-        .ingredient-list li { padding: 8px 0; border-bottom: 1px solid #f0f0f0; display: flex; gap: 10px; align-items: center; }
-        .ingredient-list li i { color: var(--accent-color); font-size: 0.8rem; }
-
-        @media (max-width: 768px) {
-            .recipe-grid { grid-template-columns: 1fr; }
+        
+        .empty-icon-container {
+            width: 80px;
+            height: 80px;
+            background: #f1f5f9;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
         }
     </style>
 </head>
-
 <body>
+    <?php include 'header.php'; ?>
 
-    <div class="hero">
-        <h1 class="hero-title">Healthy Recipes</h1>
-        <p class="hero-subtitle">Fuel your body with delicious, nutritious meals designed for performance.</p>
+    <div class="main-content">
+        <!-- Page Hero -->
+        <div class="page-hero">
+            <div class="hero-text">
+                <h1>My Diet Plans</h1>
+                <p>Access your personalized nutrition plans designed by expert coaches to support your fitness and health goals.</p>
+            </div>
+            <div class="hero-decoration">
+                <i class="fas fa-utensils"></i>
+            </div>
+        </div>
+
+        <?php
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: login.php");
+            exit();
+        }
+        
+        $userId = $_SESSION['user_id'];
+        
+        // Fetch All Diet Plans assigned to this user
+        $sql = "SELECT d.*, t.first_name as t_first, t.last_name as t_last 
+                FROM trainer_diet_plans d 
+                LEFT JOIN users t ON d.trainer_id = t.user_id
+                WHERE d.user_id = ?
+                ORDER BY d.created_at DESC";
+        
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $allPlans = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+        ?>
+
+        <?php if (!empty($allPlans)): ?>
+            <div class="plans-container">
+                <?php foreach ($allPlans as $plan): ?>
+                <div class="plan-accordion-item">
+                    <div class="plan-accordion-header" onclick="togglePlan(this)">
+                        <div class="header-info">
+                            <div class="plan-main-info">
+                                <h2 class="plan-name"><?php echo htmlspecialchars($plan['plan_name']); ?></h2>
+                                <span class="assigned-date"><i class="far fa-calendar-alt"></i> <?php echo date('M d, Y', strtotime($plan['created_at'])); ?></span>
+                            </div>
+                            <div class="trainer-name">
+                                <i class="fas fa-user-circle"></i> Designed by Coach <?php echo htmlspecialchars($plan['t_first'] . ' ' . $plan['t_last']); ?>
+                            </div>
+                        </div>
+                        <div class="header-meta">
+                            <span class="badge diff-badge"><?php echo htmlspecialchars($plan['diet_type'] ?? 'Balanced'); ?></span>
+                            <span class="badge dur-badge"><?php echo htmlspecialchars($plan['duration_weeks'] ?? '4'); ?> Weeks</span>
+                            <i class="fas fa-chevron-down arrow-icon"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="plan-accordion-body">
+                        <div class="meals-grid">
+                            <?php if(!empty($plan['breakfast'])): ?>
+                            <div class="meal-card">
+                                <div class="meal-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                                    <i class="fas fa-coffee"></i> 
+                                    <div>
+                                        <div style="font-size: 14px; opacity: 0.9; font-weight: 500;">Morning</div>
+                                        Breakfast
+                                    </div>
+                                </div>
+                                <div class="meal-content"><?php echo nl2br(htmlspecialchars($plan['breakfast'])); ?></div>
+                            </div>
+                            <?php endif; ?>
+                            
+                            <?php if(!empty($plan['lunch'])): ?>
+                            <div class="meal-card">
+                                <div class="meal-header" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                                    <i class="fas fa-sun"></i> 
+                                    <div>
+                                        <div style="font-size: 14px; opacity: 0.9; font-weight: 500;">Afternoon</div>
+                                        Lunch
+                                    </div>
+                                </div>
+                                <div class="meal-content"><?php echo nl2br(htmlspecialchars($plan['lunch'])); ?></div>
+                            </div>
+                            <?php endif; ?>
+                            
+                            <?php if(!empty($plan['dinner'])): ?>
+                            <div class="meal-card">
+                                <div class="meal-header" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);">
+                                    <i class="fas fa-moon"></i> 
+                                    <div>
+                                        <div style="font-size: 14px; opacity: 0.9; font-weight: 500;">Evening</div>
+                                        Dinner
+                                    </div>
+                                </div>
+                                <div class="meal-content"><?php echo nl2br(htmlspecialchars($plan['dinner'])); ?></div>
+                            </div>
+                            <?php endif; ?>
+                            
+                            <?php if(!empty($plan['snacks'])): ?>
+                            <div class="meal-card">
+                                <div class="meal-header" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);">
+                                    <i class="fas fa-cookie-bite"></i> 
+                                    <div>
+                                        <div style="font-size: 14px; opacity: 0.9; font-weight: 500;">Anytime</div>
+                                        Snacks
+                                    </div>
+                                </div>
+                                <div class="meal-content"><?php echo nl2br(htmlspecialchars($plan['snacks'])); ?></div>
+                            </div>
+                            <?php endif; ?>
+                            
+                            <?php if(empty($plan['breakfast']) && empty($plan['lunch']) && empty($plan['dinner'])): ?>
+                                 <div class="meal-card" style="grid-column: 1 / -1; text-align: center;">
+                                    <div class="meal-header" style="justify-content: center; background: #94a3b8;">
+                                        <i class="fas fa-info-circle"></i> Diet Plan Details
+                                    </div>
+                                    <div class="meal-content">No specific meal details have been added to this plan yet.</div>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+
+        <?php else: ?>
+            <div class="empty-state">
+                <div class="empty-icon-container">
+                    <i class="fas fa-utensils" style="font-size: 40px; color: var(--primary-color);"></i>
+                </div>
+                <h2 style="color: var(--primary-color); margin-bottom: 10px;">No Diet Plan Assigned</h2>
+                <p>It looks like you don't have a nutrition plan yet. <br>Connect with a trainer to get a personalized diet plan tailored to your goals.</p>
+            </div>
+        <?php endif; ?>
     </div>
 
-    <div class="container">
-        <div class="tabs-container">
-            <div class="tabs">
-                <button class="tab-btn active" onclick="openTab('breakfast')">Breakfast</button>
-                <button class="tab-btn" onclick="openTab('lunch')">Lunch/Dinner</button>
-                <button class="tab-btn" onclick="openTab('snacks')">Snacks</button>
-            </div>
-        </div>
+    <style>
+        .plans-container { display: flex; flex-direction: column; gap: 25px; }
+        
+        .plan-accordion-item {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.03);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .plan-accordion-item::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 6px;
+            background: var(--primary-color);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .plan-accordion-item:hover {
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            transform: translateY(-5px);
+        }
+        .plan-accordion-item:hover::before {
+            opacity: 1;
+        }
 
-        <!-- Breakfast -->
-        <div id="breakfast" class="recipe-grid active">
-            <div class="recipe-card" onclick="openModal('Avocado Toast', 'https://images.unsplash.com/photo-1541519227354-08fa5d50c44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')">
-                <div class="recipe-thumbnail" style="background-image: url('https://images.unsplash.com/photo-1541519227354-08fa5d50c44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')">
-                    <div class="badge-group">
-                        <span class="badge">Vegan</span>
-                        <span class="badge">Quick</span>
-                    </div>
-                </div>
-                <div class="recipe-info">
-                    <h3 class="recipe-title">Smashed Avocado Toast</h3>
-                    <p class="recipe-desc">Whole grain toast topped with seasoned avocado, chili flakes, and sesame seeds.</p>
-                    <div class="recipe-meta">
-                        <div class="meta-item"><i class="far fa-clock"></i> 5 min</div>
-                        <div class="meta-item"><i class="fas fa-fire"></i> 320 kcal</div>
-                    </div>
-                </div>
-            </div>
+        .plan-accordion-header {
+            padding: 25px 35px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            user-select: none;
+            transition: background 0.2s;
+        }
+        
+        .header-info { display: flex; flex-direction: column; gap: 8px; }
+        .plan-main-info { display: flex; align-items: baseline; gap: 15px; flex-wrap: wrap; }
+        .plan-name { margin: 0; font-size: 1.35rem; color: var(--text-color); font-weight: 700; letter-spacing: -0.5px; }
+        .assigned-date { font-size: 0.85rem; color: #94a3b8; font-weight: 500; background: #f8fafc; padding: 4px 10px; border-radius: 6px; }
+        .trainer-name { font-size: 0.95rem; color: #64748b; font-weight: 500; display: flex; align-items: center; gap: 8px; }
 
-            <div class="recipe-card" onclick="openModal('Berry Power Oatmeal', 'https://images.unsplash.com/photo-1517673132405-a56a62b18caf?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')">
-                <div class="recipe-thumbnail" style="background-image: url('https://images.unsplash.com/photo-1517673132405-a56a62b18caf?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')">
-                    <div class="badge-group">
-                        <span class="badge">High Fiber</span>
-                    </div>
-                </div>
-                <div class="recipe-info">
-                    <h3 class="recipe-title">Berry Power Oatmeal</h3>
-                    <p class="recipe-desc">Warm rolled oats with almond milk, topped with fresh mixed berries and seeds.</p>
-                    <div class="recipe-meta">
-                        <div class="meta-item"><i class="far fa-clock"></i> 10 min</div>
-                        <div class="meta-item"><i class="fas fa-fire"></i> 350 kcal</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        .header-meta { display: flex; align-items: center; gap: 15px; }
+        .badge { padding: 6px 16px; border-radius: 30px; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; }
+        .diff-badge { background: #e0f2fe; color: #0284c7; }
+        .dur-badge { background: #dcfce7; color: #16a34a; }
+        
+        .arrow-icon { 
+            width: 35px; height: 35px; 
+            display: flex; align-items: center; justify-content: center;
+            background: #f1f5f9; border-radius: 50%;
+            color: #64748b; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            font-size: 1rem;
+        }
+        .plan-accordion-header:hover .arrow-icon { background: var(--primary-color); color: white; }
+        .plan-accordion-header.active .arrow-icon { transform: rotate(180deg); background: var(--primary-color); color: white; }
 
-        <!-- Lunch/Dinner -->
-        <div id="lunch" class="recipe-grid">
-            <div class="recipe-card" onclick="openModal('Kale & Quinoa Salad', 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')">
-                <div class="recipe-thumbnail" style="background-image: url('https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')">
-                    <div class="badge-group">
-                        <span class="badge">Gluten Free</span>
-                        <span class="badge">Protein</span>
-                    </div>
-                </div>
-                <div class="recipe-info">
-                    <h3 class="recipe-title">Kale & Quinoa Salad</h3>
-                    <p class="recipe-desc">Nutrient-dense salad with chickpeas, cherry tomatoes, and lemon tahini dressing.</p>
-                    <div class="recipe-meta">
-                        <div class="meta-item"><i class="far fa-clock"></i> 20 min</div>
-                        <div class="meta-item"><i class="fas fa-fire"></i> 450 kcal</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        .plan-accordion-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0, 1, 0, 1);
+            background: #f8fafc;
+            border-top: 1px solid #f1f5f9;
+        }
 
-        <!-- Snacks -->
-        <div id="snacks" class="recipe-grid">
-            <div class="recipe-card" onclick="openModal('Date & Nut Energy Balls', 'https://images.unsplash.com/photo-1604423043492-c0e0b5f1361c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')">
-                <div class="recipe-thumbnail" style="background-image: url('https://images.unsplash.com/photo-1604423043492-c0e0b5f1361c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')">
-                    <div class="badge-group">
-                        <span class="badge">Raw</span>
-                        <span class="badge">Sweet</span>
-                    </div>
-                </div>
-                <div class="recipe-info">
-                    <h3 class="recipe-title">Date & Nut Energy Balls</h3>
-                    <p class="recipe-desc">No-bake energy bites made with dates, walnuts, cocoa, and coconut.</p>
-                    <div class="recipe-meta">
-                        <div class="meta-item"><i class="far fa-clock"></i> 10 min</div>
-                        <div class="meta-item"><i class="fas fa-fire"></i> 120 kcal</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+        .meals-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; padding: 30px; }
+        .meal-card { 
+            background: white; 
+            border-radius: 15px; 
+            overflow: hidden; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.04); 
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s; 
+            border: 1px solid #f1f5f9;
+        }
+        .meal-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
+        
+        .meal-header { padding: 15px 20px; color: white; font-weight: 700; font-size: 18px; display: flex; align-items: center; gap: 10px; }
+        .meal-content { padding: 20px; color: #334155; line-height: 1.6; white-space: pre-wrap; font-family: 'Inter', sans-serif; font-size: 14px; }
 
-    <!-- Recipe Modal -->
-    <div class="modal" id="recipeModal">
-        <div class="modal-card">
-            <button class="close-modal-btn" onclick="closeModal()"><i class="fas fa-times"></i></button>
-            <div class="modal-header-img" id="modalImg"></div>
-            <div class="modal-body">
-                <h2 class="modal-title" id="modalTitle">Recipe Title</h2>
-                <div class="modal-tags">
-                    <span class="badge" style="background:var(--accent-color); color:white;">Healthy</span>
-                    <span class="badge" style="background:#eee; color:#333;">Simple</span>
-                </div>
-                <h4 style="margin-bottom: 10px; color: #555;">Ingredients</h4>
-                <ul class="ingredient-list">
-                    <li><i class="fas fa-check-circle"></i> High-quality fresh ingredients</li>
-                    <li><i class="fas fa-check-circle"></i> Nutrient-dense supplements</li>
-                    <li><i class="fas fa-check-circle"></i> Natural sweeteners or spices</li>
-                </ul>
-                <p style="color: #666; line-height: 1.6;">Instructions: Mix all components together. Cook or assemble according to your preference. Serve immediate for best taste!</p>
-            </div>
-        </div>
-    </div>
+        .btn-action {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 20px;
+            transition: 0.3s;
+            font-size: 0.9rem;
+        }
+        .btn-action:hover { background: #0a1f40; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+        @media (max-width: 768px) {
+            .plan-accordion-header { flex-direction: column; align-items: flex-start; gap: 20px; padding: 20px; }
+            .header-meta { width: 100%; justify-content: space-between; }
+            .plan-main-info { flex-direction: column; gap: 5px; }
+            .meals-grid { padding: 20px; }
+        }
+    </style>
 
     <script>
-        function openTab(tabName) {
-            document.querySelectorAll('.recipe-grid').forEach(Grid => Grid.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(tabName).classList.add('active');
-            event.currentTarget.classList.add('active');
-        }
-
-        function openModal(title, imgUrl) {
-            document.getElementById('modalTitle').innerText = title;
-            document.getElementById('modalImg').style.backgroundImage = `url('${imgUrl}')`;
-            document.getElementById('recipeModal').style.display = 'flex';
-        }
-
-        function closeModal() {
-            document.getElementById('recipeModal').style.display = 'none';
-        }
-
-        window.onclick = function (event) {
-            const modal = document.getElementById('recipeModal');
-            if (event.target == modal) closeModal();
+        function togglePlan(header) {
+            header.classList.toggle('active');
+            const body = header.nextElementSibling;
+            
+            if (body.style.maxHeight) {
+                body.style.maxHeight = null;
+            } else {
+                body.style.maxHeight = body.scrollHeight + "px";
+            }
         }
     </script>
+
     <?php include 'footer.php'; ?>
 </body>
-
 </html>
