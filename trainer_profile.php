@@ -611,6 +611,12 @@ if (!$trainer) {
                         <form method="POST">
                              <?php if (isset($user_role) && $user_role === 'free'): ?>
                                 <button type="button" onclick="window.location.href='?id=<?php echo $trainer_id; ?>&msg=upgrade_required'" class="btn-book" style="background: #E63946; border: none; cursor: pointer;">Send Hire Request</button>
+                             <?php elseif (isset($user_role) && $user_role === 'lite'): ?>
+                                <div style="color: #b45309; background: #fffbeb; padding: 10px; border-radius: 8px; border: 1px solid #fcd34d; font-size: 0.9em; text-align: left;">
+                                    <i class="fas fa-info-circle"></i> <strong>Lite Member</strong><br>
+                                    You cannot pick a specific trainer directly. Use your Dashboard to request a match based on availability.
+                                </div>
+                                <a href="liteuser_dashboard.php" class="btn-book" style="background: #f59e0b; margin-top: 5px;">Go to Dashboard</a>
                              <?php else: ?>
                                 <button type="submit" name="hire_trainer" class="btn-book" style="border:none; cursor:pointer;">Send Hire Request</button>
                              <?php endif; ?>

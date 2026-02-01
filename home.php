@@ -41,7 +41,7 @@
         .btn-signup:hover { background: #0a1f40; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(15, 44, 89, 0.3); }
 
         /* Hero */
-        .hero { position: relative; padding: 60px 0 140px; text-align: center; background: linear-gradient(135deg, #eef2f3 0%, #dfe9f3 100%); overflow: hidden; }
+        .hero { position: relative; padding: 80px 0 180px; text-align: center; background: linear-gradient(135deg, #c5d3e0 0%, #a8b8cc 100%); overflow: hidden; }
         /* Placeholder background image matching usage context */
         .hero::before {
             content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -53,7 +53,7 @@
         .hero-subtitle { font-size: 1rem; color: var(--text-light); margin-bottom: 0px; font-weight: 400; position: relative; }
 
         /* Hero Cards (Floating) */
-        .hero-cards-section { margin-top: -100px; padding-bottom: 50px; position: relative; z-index: 10; }
+        .hero-cards-section { margin-top: -120px; padding-bottom: 50px; position: relative; z-index: 10; }
         .hero-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
         
         .h-card { 
@@ -439,6 +439,7 @@
     <script>
 
 
+
         function toggleChat() {
             const chatWindow = document.getElementById('chat-window');
             chatWindow.classList.toggle('active');
@@ -446,8 +447,6 @@
                 document.getElementById('chat-input').focus();
             }
         } 
-        
-        // ... rest of script ...
         
         document.getElementById('close-chat').addEventListener('click', toggleChat);
 
@@ -465,10 +464,11 @@
                 input.value = '';
                 
                 // Simulate bot typing and response
+                const delay = Math.max(500, Math.min(1500, message.length * 20)); // varying delay based on complexity
                 setTimeout(() => {
                     const response = getBotResponse(message.toLowerCase());
                     addMessage(response, 'bot');
-                }, 500);
+                }, delay);
             }
         }
 
@@ -487,40 +487,49 @@
                 this.context = {};
                 this.memory = {
                     name: null,
-                    lastTopic: null
                 };
                 
                 // Knowledge Base
                 this.knowledge = [
-                    // specific exact matches
-                    { patterns: [/\b(hi|hello|hey|yo|sup|greetings)\b/i], response: ["Hello! 👋 How can I help you today?", "Hi there! Ready to get fit?", "Hey! What's on your mind?"] },
-                    { patterns: [/\b(bye|goodbye|cya|see you)\b/i], response: ["Goodbye! Stay active! 💪", "See you later! Keep crushing your goals.", "Bye! Hope to see you back soon!"] },
-                    { patterns: [/\b(thanks|thank you|thx)\b/i], response: ["You're welcome!", "Anytime!", "Glad I could help!"] },
-                    { patterns: [/\b(how are you|how are things)\b/i], response: ["I'm just a bot, but I'm feeling 100% optimized! How are you?", "Doing great! Ready to help you crush your fitness goals."] },
+                    // GREETINGS
+                    { patterns: [/\b(hi|hello|hey|yo|sup|greetings|good morning|good evening)\b/i], response: ["Hello! 👋 How can I help you today?", "Hi there! Ready to get fit?", "Hey! What's on your mind?"] },
+                    { patterns: [/\b(bye|goodbye|cya|see you|later)\b/i], response: ["Goodbye! Stay active! 💪", "See you later! Keep crushing your goals.", "Bye! Hope to see you back soon!"] },
+                    { patterns: [/\b(thanks|thank you|thx|appreciate it)\b/i], response: ["You're welcome!", "Anytime!", "Glad I could help!"] },
+                    { patterns: [/\b(how are you|how are things|how's it going)\b/i], response: ["I'm just a bot, but I'm feeling 100% optimized! How are you?", "Doing great! Ready to help you crush your fitness goals."] },
                     
-                    // Identity
-                    { patterns: [/\b(who are you|what are you)\b/i], response: ["I'm the FitNova Assistant. I'm here to help you navigate our gym, plans, and products."] },
-                    { patterns: [/\b(your name)\b/i], response: ["I'm FitNovaBot! But you can call me... well, FitNovaBot works."] },
-
-                    // FitNova Specifics - High Priority
-                    { patterns: [/\b(gym|facility|equipment|machines)\b/i], response: ["Our gym is top-notch! We have premium equipment, cardio zones, and weight sections. Check details at our <a href='gym.php' style='color:#4FACFE'>Gym Page</a>."] },
-                    { patterns: [/\b(trainer|coach|pt|personal training)\b/i], response: ["Our trainers are certified experts. You can find a match for your goals on the <a href='trainers.php' style='color:#4FACFE'>Trainers Page</a>."] },
-                    { patterns: [/\b(price|cost|plan|membership|fee)\b/i], response: ["We have flexible plans starting from very affordable rates. View them all on our <a href='subscription_plans.php' style='color:#4FACFE'>Plans Page</a>."] },
-                    { patterns: [/\b(diet|food|nutrition|recipe|eat)\b/i], response: ["Abs are made in the kitchen! 🥗 We have a whole section for <a href='healthy_recipes.php' style='color:#4FACFE'>Healthy Recipes</a>."] },
-                    { patterns: [/\b(shop|store|buy|supplement|protein|gear)\b/i], response: ["Need gear? Visit the <a href='fitshop.php' style='color:#4FACFE'>FitShop</a> for protein, supplements, and gym wear."] },
-                    { patterns: [/\b(login|sign in|password|account)\b/i], response: ["Having account trouble? You can <a href='login.php' style='color:#4FACFE'>Login here</a> or reset your password if needed."] },
+                    // IDENTITY
+                    { patterns: [/\b(who are you|what are you|bot name)\b/i], response: ["I'm the FitNova Assistant. I'm here to help you navigate our gym, plans, and products."] },
                     
-                    // Fitness General Knowledge
-                    { patterns: [/\b(weight loss|lose weight|fat loss|slimming)\b/i], response: ["Weight loss comes down to a calorie deficit and consistent movement. Our trainers can build a custom plan for you!"] },
-                    { patterns: [/\b(muscle|gaining|bulk|strength|lift)\b/i], response: ["To build muscle, focus on progressive overload and high protein intake. Have you checked our strength trainers?"] },
-                    { patterns: [/\b(cardio|run|treadmill|stamina)\b/i], response: ["Cardio is great for heart health! We have treadmills, ellipticals, and spin classes available."] },
-                    { patterns: [/\b(yoga|stretch|flexibility|pilates)\b/i], response: ["Yoga is amazing for recovery and flexibility. We offer classes for all levels."] },
+                    // KEY TOPICS
+                    // 1. PRODUCTS / SHOP
+                    { patterns: [/\b(product|products|merch|gear|store|shop|buy|supplement|protein|whey|creatine|shirt|pants|wear)\b/i], response: ["We have a great selection of premium fitness gear and supplements! Visit our <a href='fitshop.php' style='color:#4FACFE; font-weight:bold;'>FitShop</a> to browse our catalog."] },
+                    
+                    // 2. DIET / NUTRITION
+                    { patterns: [/\b(diet|food|nutrition|recipe|eat|meal|calories|macro|keto|vegan|vegetarian)\b/i], response: ["Nutrition is key! 🥗 Check out our <a href='healthy_recipes.php' style='color:#4FACFE; font-weight:bold;'>Healthy Recipes</a> or ask a trainer for a custom meal plan."] },
+                    
+                    // 3. TRAINERS
+                    { patterns: [/\b(trainer|coach|pt|personal training|guide|mentor|instructor)\b/i], response: ["Our certified trainers are the best in the business. Find your perfect match on the <a href='trainers.php' style='color:#4FACFE; font-weight:bold;'>Trainers Page</a>."] },
+                    
+                    // 4. MEMBERSHIP / PLANS
+                    { patterns: [/\b(price|cost|plan|membership|fee|subscription|join|sign up|register)\b/i], response: ["We offer flexible plans for every budget. You can start small or go Pro! See our plans <a href='subscription_plans.php' style='color:#4FACFE; font-weight:bold;'>here</a>."] },
+                    
+                    // 5. WORKOUTS
+                    { patterns: [/\b(workout|exercise|routine|training|lift|cardio|strength|muscle|run)\b/i], response: ["Need workout ideas? Our <a href='fitness_nutrition.php' style='color:#4FACFE; font-weight:bold;'>Fitness Section</a> has plenty of free guides, or you can get a custom plan from a trainer."] },
+                    
+                    // 6. GYM INFO
+                    { patterns: [/\b(gym|facility|equipment|machine|hours|location|where|address|open|close)\b/i], response: ["FitNova gyms are open 24/7! We have multiple locations with top-tier equipment. Check the 'Offline Gym' section in your dashboard for access."] },
 
-                    // Conversational Fallbacks
+                    // 7. SUPPORT
+                    { patterns: [/\b(contact|email|phone|support|help|issue|problem|bug|error)\b/i], response: ["If you're facing issues, you can reach our support team at <a href='mailto:support@fitnova.com' style='color:#4FACFE;'>support@fitnova.com</a>."] },
+
+                    // Conversational Interactions
                     { patterns: [/\b(my name is|i am|call me) (.+)/i], action: (m) => this.setName(m) },
-                    { patterns: [/\b(i want|i need|i'd like) (.+)/i], action: (m) => this.reflectRequest(m) },
-                    { patterns: [/\b(why) (.+)/i], response: ["That's a good question. Usually, it depends on your specific fitness goals.", "Why do you think that is?"] },
-                    { patterns: [/\b(what) (.+)/i], response: ["I can look that up for you, or you can ask one of our trainers directly!"] },
+                    { patterns: [/\b(i want|i need|i'd like|can i get) (.+)/i], action: (m) => this.reflectRequest(m) },
+                    { patterns: [/\b(can you|do you) (.+)/i], response: ["I can certainly try to help with that! If it's specific to your account, you might need to log in first.", "Check the menu links—I bet what you're looking for is there!"] },
+                    { patterns: [/\b(why) (.+)/i], response: ["That's a good question. Often it aligns with your personal fitness journey.", "Why? Because we believe in your potential!"] },
+                    
+                    // Specific Questions Catch-all
+                    { patterns: [/\?\s*$/], response: ["That's a great question. You can often find the answer in our 'Learn' section, or by asking a trainer directly.", "I'm not sure about the specifics, but our support team surely knows!"] },
                 ];
                 
                 this.defaults = [
@@ -528,8 +537,9 @@
                     "I see. How does that fit into your fitness goals?",
                     "Could you elaborate on that?",
                     "I'm listening. Go on.",
-                    "That sounds like something our trainers could help with!",
-                    "Can you tell me more about what you're looking for?"
+                    "That sounds like something our trainers could help with! <a href='trainers.php' style='color:#4FACFE'>Find a Trainer</a>",
+                    "Can you tell me more about what you're looking for?",
+                    "We have resources for that! Have you checked the menu?"
                 ];
             }
 
@@ -541,30 +551,35 @@
 
             reflectRequest(match) {
                 const desire = match[2];
-                return `It sounds like you're looking for ${desire}. We can definitely help with that! Have you checked our specialized programs?`;
+                // simple heuristic to detect if the captured group is valid text
+                if (desire.length < 2) return "Could you be more specific?";
+                return `It sounds like you're interested in ${desire}. We can definitely help with that! <br>Check our <a href='home.php' style='color:#4FACFE'>Homepage</a> for quick links.`;
             }
 
             getResponse(input) {
-                const text = input.toLowerCase();
+                    const text = input.toLowerCase();
+                    let bestMatch = null;
 
-                // Check exact patterns
-                for (let k of this.knowledge) {
-                    for (let p of k.patterns) {
-                        const match = text.match(p);
-                        if (match) {
-                            if (k.action) return k.action(match);
-                            // Return random response from array
-                            return k.response[Math.floor(Math.random() * k.response.length)];
+                    // Check patterns
+                    for (let k of this.knowledge) {
+                        for (let p of k.patterns) {
+                            const match = text.match(p);
+                            if (match) {
+                                // If it's an action, execute it immediately
+                                if (k.action) return k.action(match);
+                                
+                                // Otherwise, return a random response from the list
+                                return k.response[Math.floor(Math.random() * k.response.length)];
+                            }
                         }
                     }
-                }
 
-                // If no match, check if we know their name to personalize the fallback
-                if (this.memory.name && Math.random() > 0.5) {
-                    return `${this.memory.name}, I'm not 100% sure about that, but our trainers would know!`;
-                }
+                    // Personalization if name is known
+                    if (this.memory.name && Math.random() > 0.7) {
+                        return `${this.memory.name}, I'm not 100% sure about that, but our trainers would know!`;
+                    }
 
-                return this.defaults[Math.floor(Math.random() * this.defaults.length)];
+                    return this.defaults[Math.floor(Math.random() * this.defaults.length)];
             }
         }
 

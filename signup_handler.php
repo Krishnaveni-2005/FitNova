@@ -2,6 +2,157 @@
 session_start();
 header("Content-Type: application/json");
 require "db_connect.php";
+require "config.php";
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require 'phpmailsever/PHPMailer-master/PHPMailer-master/src/Exception.php';
+require 'phpmailsever/PHPMailer-master/PHPMailer-master/src/PHPMailer.php';
+require 'phpmailsever/PHPMailer-master/PHPMailer-master/src/SMTP.php';
+
+/**
+ * Send welcome email using PHPMailer
+ */
+function sendWelcomeEmail($email, $firstName) {
+    $mail = new PHPMailer(true);
+    
+    try {
+        // Server settings
+        $mail->isSMTP();
+        $mail->Host       = SMTP_HOST;
+        $mail->SMTPAuth   = true;
+        $mail->SMTPOptions = array(
+            'ssl' => array(
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true
+            )
+        );
+        $mail->Username   = SMTP_USER;
+        $mail->Password   = SMTP_PASS;
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+        $mail->Port       = SMTP_PORT;
+
+        // Recipients
+        $mail->setFrom(SMTP_USER, SMTP_FROM_NAME);
+        $mail->addAddress($email, $firstName);
+
+        // Content
+        $mail->isHTML(true);
+        $mail->Subject = 'Welcome to FitNova - Account Created Successfully!';
+        $mail->Body    = "
+            <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;'>
+                <div style='background: linear-gradient(135deg, #0F2C59 0%, #4FACFE 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;'>
+                    <h1 style='margin: 0; font-size: 28px;'>🎉 Welcome to FitNova!</h1>
+                </div>
+                <div style='padding: 30px; background: #f8f9fa;'>
+                    <h2 style='color: #0F2C59;'>Hi $firstName,</h2>
+                    <p style='font-size: 16px; line-height: 1.6;'>Congratulations! You have successfully created an account with <strong>FitNova</strong> - Your Health & Wellness Ecosystem.</p>
+                    
+                    <p style='font-size: 16px; line-height: 1.6;'>We're excited to have you on board! Here's what you can do with your account:</p>
+                    <ul style='font-size: 15px; line-height: 1.8;'>
+                        <li>✅ Access personalized fitness and nutrition plans</li>
+                        <li>✅ Connect with certified trainers</li>
+                        <li>✅ Track your progress and achievements</li>
+                        <li>✅ Shop premium fitness equipment</li>
+                        <li>✅ Learn from expert articles and resources</li>
+                    </ul>
+                    
+                    <div style='text-align: center; margin: 30px 0;'>
+                        <a href='http://localhost/fitnova/login.php' style='display: inline-block; background: #0F2C59; color: white; padding: 15px 40px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 16px;'>Login to Your Account</a>
+                    </div>
+                    
+                    <p style='font-size: 15px; line-height: 1.6;'>If you have any questions or need assistance, feel free to reach out to our support team.</p>
+                    
+                    <p style='font-size: 15px; line-height: 1.6;'>Let's start your fitness journey together!</p>
+                    
+                    <p style='font-size: 15px;'>Best regards,<br><strong>The FitNova Team</strong></p>
+                </div>
+                <div style='text-align: center; padding: 20px; color: #666; font-size: 12px; background: #f0f0f0; border-radius: 0 0 10px 10px;'>
+                    <p style='margin: 5px 0;'>© 2026 FitNova. All rights reserved.</p>
+                    <p style='margin: 5px 0;'>This is an automated message. Please do not reply to this email.</p>
+                </div>
+            </div>
+        ";
+
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        error_log("Failed to send welcome email to $email: " . $mail->ErrorInfo);
+        return false;
+    }
+}
+
+/**
+ * Send trainer pending approval email
+ */
+function sendTrainerPendingEmail($email, $firstName) {
+    $mail = new PHPMailer(true);
+    
+    try {
+        // Server settings
+        $mail->isSMTP();
+        $mail->Host       = SMTP_HOST;
+        $mail->SMTPAuth   = true;
+        $mail->SMTPOptions = array(
+            'ssl' => array(
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true
+            )
+        );
+        $mail->Username   = SMTP_USER;
+        $mail->Password   = SMTP_PASS;
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+        $mail->Port       = SMTP_PORT;
+
+        // Recipients
+        $mail->setFrom(SMTP_USER, SMTP_FROM_NAME);
+        $mail->addAddress($email, $firstName);
+
+        // Content
+        $mail->isHTML(true);
+        $mail->Subject = 'FitNova Trainer Application - Under Review';
+        $mail->Body    = "
+            <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;'>
+                <div style='background: linear-gradient(135deg, #0F2C59 0%, #4FACFE 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;'>
+                    <h1 style='margin: 0; font-size: 28px;'>📋 Application Received</h1>
+                </div>
+                <div style='padding: 30px; background: #f8f9fa;'>
+                    <h2 style='color: #0F2C59;'>Hi $firstName,</h2>
+                    <p style='font-size: 16px; line-height: 1.6;'>Thank you for applying to become a trainer at <strong>FitNova</strong>!</p>
+                    
+                    <div style='background: #e3f2fd; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #0F2C59;'>
+                        <p style='margin: 0; font-size: 15px;'><strong>📌 Application Status:</strong> Under Review</p>
+                    </div>
+                    
+                    <p style='font-size: 15px; line-height: 1.6;'>Your application is currently being reviewed by our admin team. We'll carefully review your credentials and experience.</p>
+                    
+                    <p style='font-size: 15px; line-height: 1.6;'><strong>What happens next?</strong></p>
+                    <ul style='font-size: 15px; line-height: 1.8;'>
+                        <li>Our team will review your application and certification</li>
+                        <li>You'll receive an email notification once reviewed</li>
+                        <li>This typically takes 1-2 business days</li>
+                    </ul>
+                    
+                    <p style='font-size: 15px; line-height: 1.6;'>Thank you for your patience!</p>
+                    
+                    <p style='font-size: 15px;'>Best regards,<br><strong>The FitNova Team</strong></p>
+                </div>
+                <div style='text-align: center; padding: 20px; color: #666; font-size: 12px; background: #f0f0f0; border-radius: 0 0 10px 10px;'>
+                    <p style='margin: 5px 0;'>© 2026 FitNova. All rights reserved.</p>
+                </div>
+            </div>
+        ";
+
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        error_log("Failed to send trainer pending email to $email: " . $mail->ErrorInfo);
+        return false;
+    }
+}
 
 // 0. Parse Input (Handle both JSON and FormData)
 $data = null;
@@ -101,8 +252,11 @@ if (isset($data["action"]) && $data["action"] === "google_auth") {
         $insertStmt->bind_param("ssss", $firstName, $lastName, $email, $googleId);
         
         if ($insertStmt->execute()) {
+            // Send welcome email
+            @sendWelcomeEmail($email, $firstName);
+            
             $response["status"] = "success";
-            $response["message"] = "New account created via Google! Please log in to your account.";
+            $response["message"] = "New account created via Google! Welcome email sent. Please log in.";
             $response["redirect"] = "login.php"; 
         } else {
             $response["status"] = "error";
@@ -191,10 +345,14 @@ else {
     if ($insertStmt->execute()) {
         $response["status"] = "success";
         if ($isTrainer) {
-            $response["message"] = "Application submitted! Your trainer account is pending approval.";
-            $response["redirect"] = "login.php"; // Or a specific 'pending' page if desired
+            // Send pending approval email to trainer
+            @sendTrainerPendingEmail($email, $firstName);
+            $response["message"] = "Application submitted! Your trainer account is pending approval. Check your email for details.";
+            $response["redirect"] = "login.php";
         } else {
-            $response["message"] = "Account created successfully. Please login.";
+            // Send welcome email to new user
+            @sendWelcomeEmail($email, $firstName);
+            $response["message"] = "Account created successfully! Welcome email sent. Please login.";
             $response["redirect"] = "login.php"; 
         }
     } else {

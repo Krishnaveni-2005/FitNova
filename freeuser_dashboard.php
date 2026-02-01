@@ -23,7 +23,7 @@ if ($checkRole && $checkRole['role'] !== 'free') {
 }
 $profileCheck = $conn->query("SELECT weight_kg FROM client_profiles WHERE user_id = $userId");
 $hasProfile = ($profileCheck->num_rows > 0);
-$profileWeight = "72kg"; // default
+$profileWeight = "0kg"; // default
 if ($hasProfile) {
     $pData = $profileCheck->fetch_assoc();
     $profileWeight = $pData['weight_kg'] . "kg";
@@ -47,6 +47,15 @@ $uFnRes = $uFnStmt->get_result()->fetch_assoc();
 $dbFullName = $uFnRes['first_name'] . ' ' . $uFnRes['last_name'];
 $firstNameOnly = explode(' ', trim($uFnRes['first_name']))[0];
 $uFnStmt->close();
+
+// Fetch Gym Membership Status
+$gymSql = "SELECT gym_membership_status FROM users WHERE user_id = ?";
+$gStmt = $conn->prepare($gymSql);
+$gStmt->bind_param("i", $userId);
+$gStmt->execute();
+$gymResult = $gStmt->get_result()->fetch_assoc();
+$gymStatus = $gymResult ? $gymResult['gym_membership_status'] : 'inactive';
+$gStmt->close();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -468,7 +477,7 @@ $uFnStmt->close();
             width: 150px;
             height: 150px;
             border-radius: 50%;
-            background: conic-gradient(var(--accent-color) 70%, #f0f0f0 0);
+            background: conic-gradient(var(--accent-color) 0%, #f0f0f0 0);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -553,10 +562,10 @@ $uFnStmt->close();
             <a href="freeuser_dashboard.php" class="menu-item active">
                 <i class="fas fa-home"></i> Dashboard
             </a>
-            <a href="free_workouts.php" class="menu-item">
+            <a href="fitness_nutrition.php?view=workouts" class="menu-item">
                 <i class="fas fa-dumbbell"></i> Free Workouts
             </a>
-            <a href="healthy_recipes.php" class="menu-item">
+            <a href="fitness_nutrition.php?view=nutrition" class="menu-item">
                 <i class="fas fa-carrot"></i> Healthy Recipes
             </a>
             <a href="my_progress.php" class="menu-item">
@@ -565,9 +574,7 @@ $uFnStmt->close();
             <a href="client_profile_setup.php" class="menu-item">
                 <i class="fas fa-user-circle"></i> Profile
             </a>
-            <a href="#" class="menu-item">
-                <i class="fas fa-user-friends"></i> Community
-            </a>
+
             <a href="fitshop.php" class="menu-item">
                 <i class="fas fa-store"></i> FitShop
             </a>
@@ -596,11 +603,7 @@ $uFnStmt->close();
                 <p>Ready to crush your goals today?</p>
             </div>
             <div class="header-actions">
-                <button class="btn-icon"><i class="fas fa-bell"></i></button>
-                <button class="btn-icon"><i class="fas fa-envelope"></i></button>
-                <a href="#" class="btn-primary">
-                    <i class="fas fa-plus"></i> Log Activity
-                </a>
+
             </div>
         </header>
 
@@ -622,17 +625,17 @@ $uFnStmt->close();
         <div class="stats-grid">
             <div class="stat-card blue">
                 <div class="stat-icon"><i class="fas fa-fire"></i></div>
-                <div class="stat-value" id="dashCalories">1,250</div>
+                <div class="stat-value" id="dashCalories">0</div>
                 <div class="stat-label">Calories Burned</div>
             </div>
             <div class="stat-card gold">
                 <div class="stat-icon"><i class="fas fa-clock"></i></div>
-                <div class="stat-value" id="dashTime">4.5h</div>
+                <div class="stat-value" id="dashTime">0h</div>
                 <div class="stat-label">Workout Time</div>
             </div>
             <div class="stat-card red">
                 <div class="stat-icon"><i class="fas fa-trophy"></i></div>
-                <div class="stat-value" id="dashWorkouts">12</div>
+                <div class="stat-value" id="dashWorkouts">0</div>
                 <div class="stat-label">Completed Workouts</div>
             </div>
             <div class="stat-card green">
@@ -713,57 +716,53 @@ $uFnStmt->close();
                 </div>
                 <?php endif; ?>
 
-                <div class="section-card">
+                <div id="offline-gym-section" class="section-card" style="border-left: 5px solid var(--accent-color);">
                     <div class="section-header">
-                        <h3 class="section-title">Recommended for You</h3>
-                        <a href="free_workouts.php" class="view-all">Free Workouts</a>
-                    </div>
-
-                    <div class="workout-list">
-                        <?php if (empty($commonWorkouts)): ?>
-                            <p style="color: var(--text-light); font-size: 0.9rem; text-align: center; padding: 20px;">Check back later for new workout recommendations!</p>
-                        <?php else: ?>
-                            <?php foreach ($commonWorkouts as $workout): ?>
-                            <div class="workout-item">
-                                <img src="https://images.unsplash.com/photo-1599058945522-28d584b6f0ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
-                                    alt="Workout" class="workout-img">
-                                <div class="workout-info">
-                                    <h4 class="workout-name"><?php echo htmlspecialchars($workout['plan_name']); ?></h4>
-                                    <div class="workout-meta">
-                                        <span><i class="far fa-clock"></i> <?php echo $workout['duration_weeks']; ?> weeks</span>
-                                        <span><i class="fas fa-tag"></i> <?php echo ucfirst($workout['difficulty']); ?></span>
-                                    </div>
-                                </div>
-                                <button class="btn-action">Start</button>
-                            </div>
-                            <?php endforeach; ?>
+                        <h3 class="section-title"><i class="fas fa-building" style="margin-right: 10px;"></i>Offline Gym Access</h3>
+                        <?php if ($gymStatus === 'active'): ?>
+                            <span style="background: rgba(40, 167, 69, 0.1); color: var(--success-color); padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: 700;">Active Member</span>
                         <?php endif; ?>
                     </div>
-                </div>
 
-                <div class="section-card">
-                    <div class="section-header">
-                        <h3 class="section-title">Diet Plan of the Day</h3>
-                        <a href="#" class="view-all">View All</a>
-                    </div>
-                    <?php if (empty($commonDiets)): ?>
-                        <p style="color: var(--text-light); font-size: 0.9rem; text-align: center; padding: 20px;">Healthy recipes are being cooked up!</p>
-                    <?php else: ?>
-                        <?php foreach($commonDiets as $diet): ?>
-                        <div class="workout-item">
-                            <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
-                                alt="Meal" class="workout-img">
-                            <div class="workout-info">
-                                <h4 class="workout-name"><?php echo htmlspecialchars($diet['plan_name']); ?></h4>
-                                <div class="workout-meta">
-                                    <span><i class="fas fa-utensils"></i> <?php echo $diet['target_calories']; ?> kcal/day</span>
-                                    <span><i class="fas fa-leaf"></i> <?php echo ucfirst($diet['diet_type']); ?></span>
+                    <div style="display: flex; gap: 30px; align-items: center; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 250px;">
+                            <?php if ($gymStatus === 'active'): ?>
+                                <h4 style="font-size: 1.1rem; color: var(--primary-color); margin-bottom: 10px;">Your Access Pass</h4>
+                                <p style="color: var(--text-light); margin-bottom: 15px; font-size: 0.9rem;">
+                                    Show this QR code at the reception desk to check in.
+                                </p>
+                                <div style="display: flex; align-items: center; gap: 15px;">
+                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=FitNova-User-<?php echo $userId; ?>-Access" alt="Gym Access QR" style="border-radius: 8px; border: 1px solid #eee;">
+                                    <div>
+                                        <ul style="list-style: none; color: var(--text-light); font-size: 0.85rem; padding:0;">
+                                            <li style="margin-bottom: 5px;"><i class="fas fa-check-circle" style="color: var(--success-color); margin-right: 5px;"></i> Gym Floor</li>
+                                            <li style="margin-bottom: 5px;"><i class="fas fa-check-circle" style="color: var(--success-color); margin-right: 5px;"></i> Showers</li>
+                                            <li style="margin-bottom: 5px;"><i class="fas fa-check-circle" style="color: var(--success-color); margin-right: 5px;"></i> Lockers</li>
+                                        </ul>
+                                    </div>
                                 </div>
-                            </div>
-                            <button class="btn-action">View</button>
+                            <?php else: ?>
+                                <h4 style="font-size: 1.1rem; color: var(--primary-color); margin-bottom: 10px;">Train at Our Gyms</h4>
+                                <p style="color: var(--text-light); margin-bottom: 15px; font-size: 0.9rem;">
+                                    Get full access to all FitNova locations, premium equipment, and on-site trainers.
+                                </p>
+                                <div style="display: flex; gap: 15px; margin-bottom: 20px; font-size: 0.9rem;">
+                                    <div style="display: flex; align-items: center; gap: 5px; color: var(--text-color);">
+                                        <i class="fas fa-map-marker-alt" style="color: var(--accent-color);"></i> All Locations
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 5px; color: var(--text-color);">
+                                        <i class="fas fa-clock" style="color: var(--accent-color);"></i> 24/7
+                                    </div>
+                                </div>
+                                <button onclick="subscribeGym()" class="btn-primary" style="background: var(--accent-color); cursor:pointer; width:100%; justify-content:center;">
+                                    Get Access for ₹10
+                                </button>
+                            <?php endif; ?>
                         </div>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
+                        <div style="flex: 1; min-width: 250px;">
+                            <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Gym Interior" style="width: 100%; border-radius: 8px; height: 180px; object-fit: cover;">
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -776,25 +775,24 @@ $uFnStmt->close();
                     <div class="progress-container">
                         <div class="progress-circle">
                             <div class="progress-value">
-                                70%
+                                0%
                                 <span class="progress-label">Completed</span>
                             </div>
                         </div>
-                        <p style="color: var(--text-light); font-size: 14px; margin-bottom: 20px;">You're doing great!
-                            Keep up the momentum to hit your weekly target.</p>
+                        <p style="color: var(--text-light); font-size: 14px; margin-bottom: 20px;">Start tracking your goals today to see your progress!</p>
 
                         <div class="daily-goals-list">
                             <div class="goal-item">
                                 <span>Calories</span>
-                                <strong>1,250 / 2,000</strong>
+                                <strong>0 / 2,000</strong>
                             </div>
                             <div class="goal-item">
                                 <span>Water Intake</span>
-                                <strong>1.5L / 3L</strong>
+                                <strong>0L / 3L</strong>
                             </div>
                             <div class="goal-item">
                                 <span>Sleep</span>
-                                <strong>6.5h / 8h</strong>
+                                <strong>0h / 8h</strong>
                             </div>
                         </div>
                     </div>
@@ -893,20 +891,7 @@ $uFnStmt->close();
         }
 
         // Simple script to handle mobile sidebar toggle if we add a hamburger later
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('Dashboard Loaded');
-            
-            // Sync Stats from LocalStorage
-            const calories = localStorage.getItem('fitnova_calories');
-            const workouts = localStorage.getItem('fitnova_workouts');
-            const time = localStorage.getItem('fitnova_time');
-            const weight = localStorage.getItem('fitnova_weight');
 
-            if (calories) document.getElementById('dashCalories').innerText = parseInt(calories).toLocaleString();
-            if (workouts) document.getElementById('dashWorkouts').innerText = workouts;
-            if (time) document.getElementById('dashTime').innerText = parseFloat(time).toFixed(1) + 'h';
-            if (weight) document.getElementById('dashWeight').innerText = weight + 'kg';
-        });
     </script>
     <!-- Upgrade / Subscription Modal -->
     <div id="subscriptionModal" class="modal-overlay">
@@ -1080,6 +1065,56 @@ $uFnStmt->close();
                 modal.style.display = 'none';
                 modal.style.opacity = '1';
             }, 300);
+        }
+    </script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+        function subscribeGym() {
+            var options = {
+                "key": "rzp_test_S9XwIrDZ3gAbfv",
+                "amount": 1000,
+                "currency": "INR",
+                "name": "FitNova Gym Access",
+                "description": "Offline Gym Access Subscription",
+                "image": "https://via.placeholder.com/100x100.png?text=FitNova",
+                "handler": function (response) {
+                    fetch('subscribe_offline_gym.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            action: 'subscribe',
+                            payment_id: response.razorpay_payment_id 
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Payment Successful! Your gym access is now active.');
+                            location.reload();
+                        } else {
+                            alert('Error activating subscription: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Payment received but error activating subscription.');
+                    });
+                },
+                "prefill": {
+                    "name": "<?php echo htmlspecialchars($userName); ?>",
+                    "email": "",
+                    "contact": ""
+                },
+                "theme": {
+                    "color": "#0F2C59"
+                }
+            };
+            
+            var rzp1 = new Razorpay(options);
+            rzp1.on('payment.failed', function (response){
+                alert('Payment Failed: ' + response.error.description);
+            });
+            rzp1.open();
         }
     </script>
 </body>

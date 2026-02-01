@@ -18,13 +18,37 @@ $currentDiet = null;
 $mealData = ['breakfast'=>'', 'lunch'=>'', 'dinner'=>'', 'snacks'=>''];
 
 if ($assignTo) {
-    // Verify Client
-    $stmt = $conn->prepare("SELECT user_id, first_name, last_name, email FROM users WHERE user_id = ? AND assigned_trainer_id = ?");
+    // Verify Client and get full profile for analysis
+    $stmt = $conn->prepare("SELECT u.user_id, u.first_name, u.last_name, u.email, 
+                            'lite' as subscription_tier,
+                            TIMESTAMPDIFF(YEAR, cp.dob, CURDATE()) as age, 
+                            cp.weight_kg as weight, 
+                            cp.height_cm as height, 
+                            cp.gender,
+                            COALESCE(ctr.goal, cp.primary_goal, 'General') as fitness_goal, 
+                            cp.activity_level, 
+                            cp.diet_preference as dietary_preference, 
+                            cp.medical_conditions as health_conditions
+                            FROM users u
+                            LEFT JOIN client_profiles cp ON u.user_id = cp.user_id
+                            LEFT JOIN client_trainer_requests ctr ON u.user_id = ctr.client_id
+                            WHERE u.user_id = ? AND u.assigned_trainer_id = ?");
     $stmt->bind_param("ii", $assignTo, $trainerId);
     $stmt->execute();
     $res = $stmt->get_result();
     if ($res->num_rows > 0) {
         $client = $res->fetch_assoc();
+        
+        // Calculate BMI if height and weight available
+        $bmi = null;
+        if ($client['height'] && $client['weight']) {
+            $heightM = $client['height'] / 100; // convert cm to meters
+            $bmi = round($client['weight'] / ($heightM * $heightM), 1);
+        }
+        $client['bmi'] = $bmi;
+        
+        // Analysis removed
+
         
         // Fetch Existing Plan
         $dStmt = $conn->prepare("SELECT * FROM trainer_diet_plans WHERE user_id = ? AND trainer_id = ? LIMIT 1");
@@ -49,6 +73,9 @@ if ($assignTo) {
     }
     $stmt->close();
 }
+
+// Function to analyze client profile and recommend diet
+
 
 // Handle Delete
 if (isset($_GET['delete_id'])) {
@@ -275,6 +302,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 </div>
             </div>
 
+            <!-- Client Key Stats -->
+            <div class="card" style="margin-bottom: 20px; border-left: 5px solid var(--primary-color);">
+                <div style="display: flex; gap: 30px; flex-wrap: wrap; justify-content: space-around;">
+                    <div style="text-align: center;">
+                        <small style="color: #64748b; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">BMI</small>
+                        <div style="font-size: 22px; font-weight: 700; color: var(--primary-color); margin-top:5px;"><?php echo $client['bmi'] ? $client['bmi'] : '--'; ?></div>
+                    </div>
+                    <div style="text-align: center;">
+                        <small style="color: #64748b; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">Fitness Goal</small>
+                        <div style="font-size: 18px; font-weight: 600; color: #333; margin-top:5px;"><?php echo htmlspecialchars($client['fitness_goal']); ?></div>
+                    </div>
+                     <div style="text-align: center;">
+                        <small style="color: #64748b; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">Activity Level</small>
+                        <div style="font-size: 18px; font-weight: 600; color: #333; margin-top:5px;"><?php echo htmlspecialchars($client['activity_level'] ?? 'N/A'); ?></div>
+                    </div>
+                     <div style="text-align: center;">
+                        <small style="color: #64748b; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">Age</small>
+                        <div style="font-size: 22px; font-weight: 700; color: var(--primary-color); margin-top:5px;"><?php echo $client['age'] ? $client['age'] : '--'; ?></div>
+                    </div>
+                </div>
+            </div>
+
             <div class="card">
                 <form id="dietForm" onsubmit="saveDiet(event, 'save_diet')">
                     <input type="hidden" name="client_id" value="<?php echo $client['user_id']; ?>">
@@ -290,11 +339,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         <div class="form-group">
                             <label class="form-label">Diet Type / Philosophy</label>
                             <select name="diet_type" class="form-control">
-                                <option value="Standard" <?php if($currentDiet && $currentDiet['diet_type'] == 'Standard') echo 'selected'; ?>>Standard Balanced</option>
-                                <option value="Keto" <?php if($currentDiet && $currentDiet['diet_type'] == 'Keto') echo 'selected'; ?>>Keto / Low Carb</option>
-                                <option value="Vegan" <?php if($currentDiet && $currentDiet['diet_type'] == 'Vegan') echo 'selected'; ?>>Vegan</option>
-                                <option value="High Protein" <?php if($currentDiet && $currentDiet['diet_type'] == 'High Protein') echo 'selected'; ?>>High Protein</option>
-                                <option value="Intermittent Fasting" <?php if($currentDiet && $currentDiet['diet_type'] == 'Intermittent Fasting') echo 'selected'; ?>>Intermittent Fasting</option>
+                                <?php
+                                $dietTypes = ['Standard', 'Keto', 'Vegan', 'High Protein', 'Intermittent Fasting'];
+                                
+                                foreach ($dietTypes as $type) {
+                                    $selected = ($currentDiet && $currentDiet['diet_type'] == $type) ? 'selected' : '';
+                                    if(empty($selected) && $type == 'Standard') $selected = 'selected';
+
+                                    $label = ($type == 'Standard') ? 'Standard Balanced' : $type;
+                                    echo "<option value='$type' $selected>$label</option>";
+                                }
+                                ?>
                             </select>
                         </div>
                         <div class="form-group">

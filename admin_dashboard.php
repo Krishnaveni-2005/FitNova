@@ -1,5 +1,6 @@
 <?php
 session_start();
+require "db_connect.php";
 
 // Check if user is logged in and is an admin
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
@@ -19,8 +20,28 @@ $adminName = $_SESSION['user_name'] ?? 'Admin';
 $adminEmail = $_SESSION['user_email'];
 $adminInitials = strtoupper(substr($adminName, 0, 1) . substr(strrchr($adminName, ' '), 1, 1));
 
+// Fetch Clients Waiting for Trainer with Preferences
+$waitingSql = "SELECT u.user_id, u.first_name, u.last_name, u.email, 
+                      r.goal, r.training_style, r.notes
+               FROM users u
+               LEFT JOIN (
+                   SELECT client_id, goal, training_style, notes 
+                   FROM client_trainer_requests 
+                   WHERE request_id IN (SELECT MAX(request_id) FROM client_trainer_requests GROUP BY client_id)
+               ) r ON u.user_id = r.client_id
+               WHERE u.assignment_status = 'looking_for_trainer'";
+$waitingClients = [];
+$res = $conn->query($waitingSql);
+if($res) while($r = $res->fetch_assoc()) $waitingClients[] = $r;
+
+// Fetch Active Trainers for Dropdown
+$trainerSql = "SELECT user_id, first_name, last_name, specialization FROM users WHERE role='trainer' AND account_status='active'";
+$availTrainers = [];
+$res = $conn->query($trainerSql);
+if($res) while($r = $res->fetch_assoc()) $availTrainers[] = $r;
+
 // Fetch Pending Trainers
-require "db_connect.php";
+
 $pendingTrainers = [];
 $sql = "SELECT * FROM users WHERE role = 'trainer' AND account_status = 'pending' AND trainer_type = 'online' ORDER BY created_at DESC";
 $result = $conn->query($sql);
@@ -67,6 +88,17 @@ if ($resultClients->num_rows > 0) {
     }
 }
 
+// Fetch Gym Owners (Admins) - Excluding the main system administrator
+$gymOwners = [];
+// Exclude the main admin email
+$sqlAdmins = "SELECT * FROM users WHERE role = 'admin' AND email != 'krishnavenirnair2005@gmail.com' ORDER BY created_at ASC";
+$resAdmins = $conn->query($sqlAdmins);
+if($resAdmins && $resAdmins->num_rows > 0) {
+    while($r = $resAdmins->fetch_assoc()) {
+        $gymOwners[] = $r;
+    }
+}
+
 // Fetch All Products
 $products = [];
 $sqlProducts = "SELECT * FROM products ORDER BY name ASC";
@@ -107,6 +139,19 @@ $sqlTotalUsers = "SELECT COUNT(*) as count FROM users";
 $totalUsersCount = $conn->query($sqlTotalUsers)->fetch_assoc()['count'];
 
 $activeTrainersCount = count($activeTrainers); // Already fetched above
+
+// Calculate Monthly Revenue from Subscriptions
+$planPrices = [
+    'lite' => 499,
+    'pro' => 999,
+    'elite' => 1999
+];
+
+$revenueResult = $conn->query("SELECT role, COUNT(*) as count FROM users WHERE role IN ('lite', 'pro', 'elite') GROUP BY role");
+$monthlyRevenue = 0;
+while ($row = $revenueResult->fetch_assoc()) {
+    $monthlyRevenue += $planPrices[$row['role']] * $row['count'];
+}
 
 // Fetch Recent Activity (New Users)
 $recentActivities = [];
@@ -940,6 +985,17 @@ $conn->close();
                     <div class="hub-desc">Manage all registered members, handle subscriptions and profiles.</div>
                 </div>
 
+                <div class="hub-card" onclick="showSection('clients')">
+                    <div class="hub-icon" style="background: #fef3c7; color: #b45309;">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <div class="hub-title">Trainer Matching</div>
+                    <div class="hub-desc">
+                        <strong style="font-size: 1.2em;"><?php echo count($waitingClients); ?></strong> Pending Requests.<br>
+                        Assign trainers to waiting clients.
+                    </div>
+                </div>
+
                 <div class="hub-card" onclick="showSection('trainers')">
                     <div class="hub-icon" style="background: #ecfdf5; color: #10b981;">
                         <i class="fas fa-user-tie"></i>
@@ -1120,13 +1176,13 @@ $conn->close();
                 <div class="stat-box">
                     <div class="stat-header">
                         <div>
-                            <div class="stat-value">₹0.00</div>
+                            <div class="stat-value">₹<?php echo number_format($monthlyRevenue, 2); ?></div>
                             <div class="stat-label">Monthly Revenue</div>
                         </div>
                         <div class="stat-icon"><i class="fas fa-rupee-sign"></i></div>
                     </div>
                     <div class="stat-trend trend-up">
-                        <span>No payment gateway active</span>
+                        <i class="fas fa-check-circle"></i><span>Razorpay Active</span>
                     </div>
                 </div>
 
@@ -1197,6 +1253,75 @@ $conn->close();
             <div class="top-bar">
                 <h2>Client Management</h2>
                 <button class="admin-btn btn-primary"><i class="fas fa-user-plus"></i> Add New Client</button>
+            </div>
+
+            <!-- Manual Matching Section -->
+            <div class="management-section" style="border: 2px solid #fcd34d; background: #fffbeb; margin-bottom: 20px;">
+                <div class="section-title" style="color: #b45309;"><i class="fas fa-handshake"></i> Clients Awaiting Trainer</div>
+                
+                <?php if (empty($waitingClients)): ?>
+                    <p style="padding: 20px; text-align: center; color: #b45309; font-style: italic;">No Lite users are currently requesting a trainer.</p>
+                <?php else: ?>
+                    <div class="admin-grid">
+                        <?php foreach ($waitingClients as $client): ?>
+                        <div class="admin-card" style="border-color: #fcd34d;">
+                            <div class="card-title"><?php echo htmlspecialchars($client['first_name'] . ' ' . $client['last_name']); ?></div>
+                            <div class="card-subtitle">Looking for Match</div>
+                            
+                            <?php if(!empty($client['goal'])): ?>
+                            <div style="background: #fffbeb; padding: 8px; border-radius: 6px; margin: 8px 0; font-size: 11px; border: 1px dashed #fcd34d;">
+                                <strong>Goal:</strong> <?php echo htmlspecialchars($client['goal']); ?><br>
+                                <strong>Style:</strong> <?php echo htmlspecialchars($client['training_style']); ?><br>
+                                <?php if(!empty($client['notes'])): ?>
+                                <em>"<?php echo htmlspecialchars($client['notes']); ?>"</em>
+                                <?php endif; ?>
+                            </div>
+                            <?php endif; ?>
+
+                            <div style="margin-top:10px;">
+                                <label style="font-size:12px; font-weight:600; color:#b45309;">Suggest Trainer:</label>
+                                <select id="trainer-select-<?php echo $client['user_id']; ?>" style="width:100%; padding:5px; border-radius:4px; border:1px solid #fcd34d; margin-top:2px;">
+                                    <option value="">Select Trainer...</option>
+                                    <?php 
+                                    $matches = [];
+                                    $others = [];
+                                    foreach ($availTrainers as $t) {
+                                        $spec = $t['specialization'] ?? '';
+                                        // Match logic: Check if goal or style applies to trainer's specialization
+                                        if ((!empty($client['goal']) && stripos($spec, $client['goal']) !== false) || 
+                                            (!empty($client['training_style']) && stripos($spec, $client['training_style']) !== false)) {
+                                            $matches[] = $t;
+                                        } else {
+                                            $others[] = $t;
+                                        }
+                                    }
+                                    
+                                    // If matches exist, show ONLY matches (as per request)
+                                    // But adding "Show Others" might be useful. For now, strict as requested + fallback.
+                                    if (!empty($matches)) {
+                                        foreach ($matches as $t): ?>
+                                            <option value="<?php echo $t['user_id']; ?>" style="font-weight:bold; color:#166534; background:#dcfce7;">
+                                                <?php echo htmlspecialchars($t['first_name'] . ' ' . $t['last_name']); ?> • <?php echo htmlspecialchars($t['specialization']); ?>
+                                            </option>
+                                        <?php endforeach;
+                                    } else {
+                                        // Fallback if no matches
+                                        $target = htmlspecialchars($client['goal'] ?? 'Preferences');
+                                        echo '<option disabled style="color:#b45309; font-weight:600; background:#fff7ed;">No exact match for "' . $target . '". Showing available trainers:</option>';
+                                        foreach ($others as $t): ?>
+                                            <option value="<?php echo $t['user_id']; ?>">
+                                                <?php echo htmlspecialchars($t['first_name'] . ' ' . $t['last_name']); ?> • <?php echo htmlspecialchars($t['specialization']); ?>
+                                            </option>
+                                        <?php endforeach;
+                                    }
+                                    ?>
+                                </select>
+                                <button onclick="notifyTrainer(<?php echo $client['user_id']; ?>)" style="width:100%; margin-top:5px; background:#b45309; color:white; border:none; padding:6px; border-radius:4px; cursor:pointer; font-weight:600;">Notify Trainer</button>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
             </div>
 
             <div class="management-section">
@@ -1563,8 +1688,51 @@ $conn->close();
             <div class="top-bar">
                 <h2>Offline Gym Management</h2>
                 <div class="top-bar-actions">
-                    <button class="admin-btn btn-primary"><i class="fas fa-plus"></i> Add Equipment</button>
+                    <!-- Button Removed -->
                 </div>
+            </div>
+
+
+            <!-- Gym Owners Details -->
+            <div class="management-section">
+                <div class="section-title">Offline Gym Owners</div>
+                <?php if (count($gymOwners) > 0): ?>
+                <div class="admin-grid">
+                    <?php foreach ($gymOwners as $owner): ?>
+                        <div class="admin-card" style="border-left: 4px solid #4f46e5;">
+                            <div class="card-header">
+                                <div>
+                                    <div class="card-icon" style="background: #eef2ff; color: #4f46e5;">
+                                        <i class="fas fa-user-shield"></i>
+                                    </div>
+                                </div>
+                                <span class="badge badge-active">Owner</span>
+                            </div>
+                            <div class="card-title"><?php echo htmlspecialchars($owner['first_name'] . ' ' . $owner['last_name']); ?></div>
+                            <div class="card-subtitle"><?php echo htmlspecialchars($owner['email']); ?></div>
+                            <div class="card-info">
+                                <div class="info-row">
+                                    <span class="info-label">Role</span>
+                                    <span class="info-value">System Administrator</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Contact</span>
+                                    <span class="info-value"><?php echo !empty($owner['phone']) ? htmlspecialchars($owner['phone']) : 'N/A'; ?></span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Joined</span>
+                                    <span class="info-value"><?php echo date('M d, Y', strtotime($owner['created_at'])); ?></span>
+                                </div>
+                            </div>
+                            <div class="card-actions">
+                                <button class="action-btn" onclick="alert('Contact details: <?php echo htmlspecialchars($owner['email']); ?>')">Contact Owner</button>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                <?php else: ?>
+                    <p style="padding: 20px; color: #64748b; font-style: italic;">No gym owners found.</p>
+                <?php endif; ?>
             </div>
 
             <!-- Equipment Details -->
@@ -2344,6 +2512,30 @@ $conn->close();
                 alert('Request failed');
             });
         }
+    function notifyTrainer(clientId) {
+        const trainerId = document.getElementById('trainer-select-' + clientId).value;
+        if (!trainerId) {
+            alert('Please select a trainer first.');
+            return;
+        }
+        if(!confirm('Inform this trainer about the opportunity?')) return;
+        
+        fetch('admin_notify_trainer.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ client_id: clientId, trainer_id: trainerId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Trainer notified!');
+                location.reload(); // To see updated status if we track it? Or just keep it.
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(err => console.error(err));
+    }
     </script>
 </body>
 

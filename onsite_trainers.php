@@ -5,11 +5,11 @@ require 'db_connect.php';
 // Fetch On-Site Trainers (Currently Checked In Today)
 // Fetch All Active Offline Trainers
 $sql = "SELECT u.*, 
-        (SELECT status FROM trainer_attendance ta 
-         WHERE ta.trainer_id = u.user_id AND DATE(ta.check_in_time) = CURDATE() 
-         ORDER BY ta.check_in_time DESC LIMIT 1) as attendance_status,
+        (SELECT 'checked_in' FROM trainer_attendance ta 
+         WHERE ta.trainer_id = u.user_id AND status = 'checked_in' 
+         LIMIT 1) as attendance_status,
         (SELECT check_in_time FROM trainer_attendance ta 
-         WHERE ta.trainer_id = u.user_id AND DATE(ta.check_in_time) = CURDATE() 
+         WHERE ta.trainer_id = u.user_id AND status = 'checked_in'
          ORDER BY ta.check_in_time DESC LIMIT 1) as check_in_time
         FROM users u 
         WHERE u.role = 'trainer' 
@@ -103,7 +103,14 @@ if ($result && $result->num_rows > 0) {
                     }
                     
                     $isCheckedIn = ($trainer['attendance_status'] === 'checked_in');
-                    $checkInTime = $isCheckedIn ? date('h:i A', strtotime($trainer['check_in_time'])) : '--:--';
+                    $checkInTimestamp = strtotime($trainer['check_in_time']);
+                    $isToday = date('Y-m-d') === date('Y-m-d', $checkInTimestamp);
+                    
+                    if ($isCheckedIn) {
+                        $checkInTime = $isToday ? date('h:i A', $checkInTimestamp) : date('M d, h:i A', $checkInTimestamp);
+                    } else {
+                        $checkInTime = '--:--';
+                    }
                 ?>
                     <div class="trainer-card">
                         <div class="t-header">
@@ -115,7 +122,7 @@ if ($result && $result->num_rows > 0) {
                             
                             <?php if ($isCheckedIn): ?>
                                 <div class="t-status">
-                                    <span class="dot"></span> Checked In
+                                    <span class="dot"></span> On Duty
                                 </div>
                             <?php else: ?>
                                 <div class="t-status" style="background: #f1f5f9; color: #64748b;">
@@ -137,8 +144,11 @@ if ($result && $result->num_rows > 0) {
                             <a href="trainer_profile.php?id=<?php echo $trainer['user_id']; ?>" style="display: block; background: var(--primary-color); color: white; padding: 8px 0; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 0.9rem; transition: 0.2s;" onmouseover="this.style.background='#1e4b8f'" onmouseout="this.style.background='var(--primary-color)'">View Profile</a>
 
                             <?php 
-                            // Gym Owner Controls
-                            $isOwner = (isset($_SESSION['user_email']) && $_SESSION['user_email'] === 'ashakayaplackal@gmail.com');
+                            // Gym Owner Controls - Allow any Admin or the specific Gym Owner
+                            $isOwner = (
+                                (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') || 
+                                (isset($_SESSION['user_email']) && $_SESSION['user_email'] === 'ashakayaplackal@gmail.com')
+                            );
                             if ($isOwner): 
                             ?>
                                 <div style="display: flex; gap: 10px; margin-top: 5px;">

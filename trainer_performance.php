@@ -20,7 +20,7 @@ $stats = [
 ];
 
 // Get real client count
-$res = $conn->query("SELECT COUNT(*) as count FROM users WHERE assigned_trainer_id = $trainerId");
+$res = $conn->query("SELECT COUNT(*) as count FROM users WHERE assigned_trainer_id = $trainerId AND assignment_status = 'approved'");
 if($row = $res->fetch_assoc()) $stats['total_clients'] = $row['count'];
 
 // Get real session count
@@ -389,14 +389,18 @@ if ($stmt) {
                         <option>Last 30 Days</option>
                     </select>
                 </div>
-                <canvas id="engagementChart" height="200"></canvas>
+                <div style="position: relative; height: 300px; width: 100%;">
+                    <canvas id="engagementChart"></canvas>
+                </div>
             </div>
             
             <div class="chart-card">
                 <div class="chart-header">
                     <h3>Client Breakdown</h3>
                 </div>
-                <canvas id="clientBreakdown" height="250"></canvas>
+                <div style="position: relative; height: 300px; width: 100%;">
+                    <canvas id="clientBreakdown"></canvas>
+                </div>
             </div>
         </div>
 
@@ -445,8 +449,18 @@ if ($stmt) {
     </main>
 
     <script>
-        // Engagement Line Chart
+        // Engagement Line Chart with Gradient
         const ctx = document.getElementById('engagementChart').getContext('2d');
+        
+        // Function to create gradient specifically for the chart area
+        function getGradient(ctx, chartArea) {
+            const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+            gradient.addColorStop(0, 'rgba(79, 70, 229, 0.0)');
+            gradient.addColorStop(0.5, 'rgba(79, 70, 229, 0.2)');
+            gradient.addColorStop(1, 'rgba(79, 70, 229, 0.4)');
+            return gradient;
+        }
+
         new Chart(ctx, {
             type: 'line',
             data: {
@@ -455,20 +469,73 @@ if ($stmt) {
                     label: 'Sessions',
                     data: <?php echo json_encode($engagementData); ?>,
                     borderColor: '#4f46e5',
-                    backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                    // Use a simple color first, usually chart.js handles gradients in scriptable options better
+                    // but for simplicity in this context we use a solid fill color fallback or simple logic
+                    backgroundColor: function(context) {
+                        const chart = context.chart;
+                        const {ctx, chartArea} = chart;
+                        if (!chartArea) {
+                            return null;
+                        }
+                        return getGradient(ctx, chartArea);
+                    },
                     fill: true,
-                    tension: 0.4
+                    tension: 0.4,
+                    borderWidth: 3,
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#4f46e5',
+                    pointBorderWidth: 3,
+                    pointHoverBackgroundColor: '#4f46e5',
+                    pointHoverBorderColor: '#fff',
+                    pointHoverBorderWidth: 3
                 }]
             },
             options: {
-                plugins: { legend: { display: false } },
+                responsive: true,
+                maintainAspectRatio: false, // Now safe because of parent container
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: { size: 14, weight: 'bold' },
+                        bodyFont: { size: 13 },
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                return 'Sessions: ' + context.parsed.y;
+                            }
+                        }
+                    }
+                },
                 scales: { 
                     y: { 
                         beginAtZero: true,
                         ticks: {
-                            stepSize: 1
+                            stepSize: 1,
+                            font: { size: 12 },
+                            color: '#64748b'
+                        },
+                        grid: {
+                            color: '#f1f5f9',
+                            drawBorder: false
                         }
-                    } 
+                    },
+                    x: {
+                        ticks: {
+                            font: { size: 12 },
+                            color: '#64748b'
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
                 }
             }
         });

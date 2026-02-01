@@ -463,7 +463,6 @@ if (isset($_SESSION['user_id'])) {
                             <option value="Muscle Building">Muscle Building</option>
                             <option value="Yoga & Flexibility">Yoga & Flexibility</option>
                             <option value="Cardio & Endurance">Cardio & Endurance</option>
-                            <option value="Rehabilitation">Rehabilitation</option>
                             <option value="Other">Other</option>
                         </select>
                         <div class="error-message">Please select a specialization</div>

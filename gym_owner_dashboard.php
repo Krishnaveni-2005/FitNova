@@ -38,6 +38,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = "Error updating equipment.";
         }
     }
+
+    // Add New Equipment
+    if (isset($_POST['add_equipment'])) {
+        $name = $_POST['equip_name'];
+        $total = $_POST['total_units'];
+        // Default available = total, default status available
+        $avail = $total;
+        $status = 'available';
+        
+        // Initial simple mapping based on name
+        $icon = 'fas fa-dumbbell'; // Default
+        $n = strtolower($name);
+        
+        if (strpos($n, 'run') !== false || strpos($n, 'tread') !== false || strpos($n, 'cardio') !== false) $icon = 'fas fa-running';
+        if (strpos($n, 'cycle') !== false || strpos($n, 'bike') !== false || strpos($n, 'spin') !== false) $icon = 'fas fa-bicycle';
+        if (strpos($n, 'ball') !== false || strpos($n, 'sphere') !== false) $icon = 'fas fa-volleyball-ball';
+        if (strpos($n, 'mat') !== false || strpos($n, 'yoga') !== false) $icon = 'fas fa-scroll';
+        if (strpos($n, 'bar') !== false || strpos($n, 'rod') !== false) $icon = 'fas fa-grip-lines';
+        if (strpos($n, 'bench') !== false || strpos($n, 'press') !== false) $icon = 'fas fa-chair';
+        if (strpos($n, 'weight') !== false || strpos($n, 'plate') !== false) $icon = 'fas fa-weight-hanging';
+        if (strpos($n, 'box') !== false || strpos($n, 'step') !== false) $icon = 'fas fa-cube';
+        
+        // Check if exists
+        $check = $conn->query("SELECT id FROM gym_equipment WHERE name='$name'");
+        if ($check->num_rows > 0) {
+             $message = "Equipment already exists!";
+        } else {
+             $color_class = 'success'; // Default to green/success for new available equipment
+             $stmt = $conn->prepare("INSERT INTO gym_equipment (name, total_units, available_units, status, icon, color_class) VALUES (?, ?, ?, ?, ?, ?)");
+             $stmt->bind_param("siisss", $name, $total, $avail, $status, $icon, $color_class);
+             if ($stmt->execute()) {
+                 $message = "New equipment added!";
+             } else {
+                 $message = "Error adding equipment: " . $conn->error;
+             }
+        }
+    }
+
+    // Delete Equipment
+    if (isset($_POST['delete_equipment'])) {
+        $id = $_POST['equip_id'];
+        $stmt = $conn->prepare("DELETE FROM gym_equipment WHERE id=?");
+        $stmt->bind_param("i", $id);
+        if ($stmt->execute()) {
+            $message = "Equipment removed!";
+        } else {
+            $message = "Error removing equipment.";
+        }
+    }
 }
 
 // Fetch Data
@@ -50,6 +99,9 @@ $trainers = $conn->query("SELECT u.first_name, u.last_name, u.trainer_specializa
                           FROM trainer_attendance ta 
                           JOIN users u ON ta.trainer_id = u.user_id 
                           WHERE DATE(ta.check_in_time) = CURDATE() ORDER BY ta.check_in_time DESC");
+
+// Active Trainers Count
+$activeTrainersCount = $conn->query("SELECT COUNT(DISTINCT trainer_id) as count FROM trainer_attendance WHERE status = 'checked_in'")->fetch_assoc()['count'];
 
 ?>
 <!DOCTYPE html>
@@ -168,7 +220,7 @@ $trainers = $conn->query("SELECT u.first_name, u.last_name, u.trainer_specializa
 
 
         /* Main */
-        .main-content { margin-left: 250px; padding: 40px; width: 100%; }
+        .main-content { margin-left: 260px; padding: 40px; width: 100%; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
         h1 { font-size: 2rem; color: var(--primary); }
         
@@ -196,6 +248,13 @@ $trainers = $conn->query("SELECT u.first_name, u.last_name, u.trainer_specializa
         
         .edit-form { display: flex; gap: 10px; align-items: center; }
         .edit-form input { width: 80px; }
+
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; padding: 30px; border-radius: 12px; width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-header h3 { margin: 0; color: var(--primary); }
+        .close-modal { cursor: pointer; font-size: 1.5rem; color: #888; }
     </style>
 </head>
 <body>
@@ -204,10 +263,12 @@ $trainers = $conn->query("SELECT u.first_name, u.last_name, u.trainer_specializa
         <a href="#" class="logo"><i class="fas fa-dumbbell"></i> FitNova Gym</a>
         
         <div class="menu-title">Main Menu</div>
+        <a href="gym_owner_dashboard.php" class="menu-item"><i class="fas fa-chart-pie"></i> Overview</a>
+        <a href="gym_owner_clients.php" class="menu-item"><i class="fas fa-users"></i> Clients</a>
         <a href="home.php" class="menu-item"><i class="fas fa-home"></i> Home</a>
         <a href="gym.php" class="menu-item"><i class="fas fa-building"></i> Offline Gym Page</a>
         <a href="fitshop.php" class="menu-item"><i class="fas fa-shopping-bag"></i> Fitshop</a>
-        <a href="onsite_trainers.php" class="menu-item"><i class="fas fa-users"></i> Trainers</a>
+        <a href="gym_owner_trainers.php" class="menu-item"><i class="fas fa-users"></i> Trainers</a>
 
         
         <div class="user-profile">
@@ -235,6 +296,36 @@ $trainers = $conn->query("SELECT u.first_name, u.last_name, u.trainer_specializa
         <?php if ($message): ?>
             <div class="alert"><?php echo $message; ?></div>
         <?php endif; ?>
+
+        <!-- 0. Gym Overview Stats -->
+        <div class="card" style="margin-bottom: 30px; background: transparent; box-shadow: none; padding: 0; border: none;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                <!-- Status Card -->
+                <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 5px solid <?php echo ($settings['gym_status'] == 'open') ? '#22c55e' : '#ef4444'; ?>;">
+                    <div style="font-size: 0.85rem; font-weight: 600; color: #888; text-transform: uppercase;">Gym Status</div>
+                    <div style="font-size: 1.5rem; font-weight: 800; color: #333; margin-top: 5px;">
+                        <?php echo ucfirst($settings['gym_status']); ?>
+                    </div>
+                </div>
+
+                <!-- Equipment Card -->
+                <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 5px solid var(--accent);">
+                    <div style="font-size: 0.85rem; font-weight: 600; color: #888; text-transform: uppercase;">Total Equipment</div>
+                    <div style="font-size: 1.5rem; font-weight: 800; color: #333; margin-top: 5px;">
+                        <?php echo $equipment->num_rows; ?> <span style="font-size: 0.9rem; font-weight: 500; color: #888;">Items</span>
+                    </div>
+                    <?php $equipment->data_seek(0); // Reset pointer for inventory table ?>
+                </div>
+
+                <!-- Trainers Card -->
+                <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 5px solid #0F2C59;">
+                    <div style="font-size: 0.85rem; font-weight: 600; color: #888; text-transform: uppercase;">Trainers On-Duty</div>
+                    <div style="font-size: 1.5rem; font-weight: 800; color: #333; margin-top: 5px;">
+                        <?php echo $activeTrainersCount; ?> <span style="font-size: 0.9rem; font-weight: 500; color: #888;">Active</span>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- 1. Gym Operating Status -->
         <div class="card">
@@ -265,7 +356,10 @@ $trainers = $conn->query("SELECT u.first_name, u.last_name, u.trainer_specializa
 
         <!-- 2. Manage Equipment -->
         <div class="card">
-            <h2><i class="fas fa-dumbbell"></i> Manage Equipment Inventory</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                <h2 style="margin: 0; border: none; padding: 0;"><i class="fas fa-dumbbell"></i> Manage Equipment Inventory</h2>
+                <button onclick="document.getElementById('add-equip-modal').style.display='flex'" style="background: var(--primary); font-size: 0.9rem;"><i class="fas fa-plus"></i> Add Equipment</button>
+            </div>
             <table>
                 <thead>
                     <tr>
@@ -282,7 +376,7 @@ $trainers = $conn->query("SELECT u.first_name, u.last_name, u.trainer_specializa
                             $formId = "form-" . $row['id'];
                         ?>
                         <tr>
-                            <td><i class="<?php echo $row['icon_class']; ?>" style="color: var(--accent); margin-right:8px;"></i> <?php echo $row['name']; ?></td>
+                            <td><i class="<?php echo $row['icon']; ?>" style="color: var(--accent); margin-right:8px;"></i> <?php echo $row['name']; ?></td>
                             <td><?php echo $row['total_units']; ?></td>
                             <td>
                                 <input type="number" form="<?php echo $formId; ?>" name="available_units" value="<?php echo $row['available_units']; ?>" min="0" max="<?php echo $row['total_units']; ?>" disabled style="background: #f9f9f9; border: 1px solid transparent; width: 80px; padding: 8px; border-radius: 6px;">
@@ -298,6 +392,11 @@ $trainers = $conn->query("SELECT u.first_name, u.last_name, u.trainer_specializa
                                 <!-- Actions -->
                                 <button type="button" class="btn-edit" onclick="enableEdit(this)" style="padding: 6px 12px; font-size: 0.8rem; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer;">Edit</button>
                                 <button type="button" class="btn-save" onclick="saveEquipment(this, <?php echo $row['id']; ?>)" style="padding: 6px 12px; font-size: 0.8rem; background: #22c55e; color: white; border: none; border-radius: 4px; cursor: pointer; display: none;">Save</button>
+                                
+                                <form method="POST" style="display:inline; margin-left: 5px;" onsubmit="return confirm('Remove this equipment?');">
+                                    <input type="hidden" name="equip_id" value="<?php echo $row['id']; ?>">
+                                    <button type="submit" name="delete_equipment" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 1rem;" title="Remove"><i class="fas fa-trash-alt"></i></button>
+                                </form>
                             </td>
                         </tr>
                         <?php endwhile; ?>
@@ -473,6 +572,29 @@ $trainers = $conn->query("SELECT u.first_name, u.last_name, u.trainer_specializa
             .catch(err => console.error(err));
         }
     </script>
+    <!-- Add Equipment Modal -->
+    <div id="add-equip-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Equipment</h3>
+                <span class="close-modal" onclick="document.getElementById('add-equip-modal').style.display='none'">&times;</span>
+            </div>
+            <form method="POST">
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Equipment Name</label>
+                    <input type="text" name="equip_name" required placeholder="e.g. Treadmill" style="width: 100%;">
+                </div>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label>Total Units</label>
+                    <input type="number" name="total_units" required min="1" value="1" style="width: 100%;">
+                </div>
+                <div style="text-align: right;">
+                    <button type="button" onclick="document.getElementById('add-equip-modal').style.display='none'" style="background: #ccc; margin-right: 10px; color: #333;">Cancel</button>
+                    <button type="submit" name="add_equipment">Add Equipment</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 </html>
 <?php $conn->close(); ?>

@@ -1,0 +1,120 @@
+2026-02-01 08:18:58 Raw: {"action":"clock_in","trainer_id":37} | Parsed: Array
+(
+    [action] => clock_in
+    [trainer_id] => 37
+)
+
+2026-02-01 08:19:19 Raw: {"action":"clock_in","trainer_id":36} | Parsed: Array
+(
+    [action] => clock_in
+    [trainer_id] => 36
+)
+
+2026-02-01 08:19:29 Raw: {"action":"clock_in","trainer_id":39} | Parsed: Array
+(
+    [action] => clock_in
+    [trainer_id] => 39
+)
+
+2026-02-01 08:19:42 Raw: {"action":"clock_in","trainer_id":39} | Parsed: Array
+(
+    [action] => clock_in
+    [trainer_id] => 39
+)
+
+2026-02-01 08:20:53 Raw: {"action":"clock_out","trainer_id":36} | Parsed: Array
+(
+    [action] => clock_out
+    [trainer_id] => 36
+)
+
+2026-02-01 08:20:57 Raw: {"action":"clock_out","trainer_id":39} | Parsed: Array
+(
+    [action] => clock_out
+    [trainer_id] => 39
+)
+
+2026-02-01 08:21:00 Raw: {"action":"clock_out","trainer_id":37} | Parsed: Array
+(
+    [action] => clock_out
+    [trainer_id] => 37
+)
+
+2026-02-01 08:21:15 Raw: {"action":"clock_in","trainer_id":37} | Parsed: Array
+(
+    [action] => clock_in
+    [trainer_id] => 37
+)
+
+2026-02-01 08:21:20 Raw: {"action":"clock_in","trainer_id":37} | Parsed: Array
+(
+    [action] => clock_in
+    [trainer_id] => 37
+)
+
+2026-02-01 08:21:41 Raw: {"action":"clock_in","trainer_id":39} | Parsed: Array
+(
+    [action] => clock_in
+    [trainer_id] => 39
+)
+
+2026-02-01 08:21:46 Raw: {"action":"clock_in","trainer_id":39} | Parsed: Array
+(
+    [action] => clock_in
+    [trainer_id] => 39
+)
+
+2026-02-01 08:21:54 Raw: {"action":"clock_in","trainer_id":39} | Parsed: Array
+(
+    [action] => clock_in
+    [trainer_id] => 39
+)
+
+2026-02-01 08:21:58 Raw: {"action":"clock_in","trainer_id":39} | Parsed: Array
+(
+    [action] => clock_in
+    [trainer_id] => 39
+)
+
+2026-02-01 08:24:20 Raw: {"action":"clock_out","trainer_id":39} | Parsed: Array
+(
+    [action] => clock_out
+    [trainer_id] => 39
+)
+
+2026-02-01 08:24:36 Raw: {"action":"clock_out","trainer_id":39} | Parsed: Array
+(
+    [action] => clock_out
+    [trainer_id] => 39
+)
+
+2026-02-01 08:24:41 Raw: {"action":"clock_in","trainer_id":39} | Parsed: Array
+(
+    [action] => clock_in
+    [trainer_id] => 39
+)
+
+2026-02-01 08:25:47 Raw: {"action":"clock_out","trainer_id":37} | Parsed: Array
+(
+    [action] => clock_out
+    [trainer_id] => 37
+)
+
+2026-02-01 08:25:58 Raw: {"action":"clock_in","trainer_id":37} | Parsed: Array
+(
+    [action] => clock_in
+    [trainer_id] => 37
+)
+
+2026-02-01 08:26:09 Raw: {"action":"clock_in","trainer_id":36} | Parsed: Array
+(
+    [action] => clock_in
+    [trainer_id] => 36
+)
+
+2026-02-01 08:26:25 Raw: {"action":"clock_out","trainer_id":36} | Parsed: Array
+(
+    [action] => clock_out
+    [trainer_id] => 36
+)
+

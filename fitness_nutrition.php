@@ -258,6 +258,17 @@
             if(sectionId === 'nutrition') document.getElementsByClassName('hub-tab')[0].classList.add('active');
             else document.getElementsByClassName('hub-tab')[1].classList.add('active');
         }
+
+        // Check for view parameter on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const view = params.get('view');
+            if (view === 'workouts') {
+                switchSection('workouts');
+            } else if (view === 'nutrition') {
+                switchSection('nutrition');
+            }
+        });
     </script>
     
     <?php include 'footer.php'; ?>

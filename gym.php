@@ -88,16 +88,17 @@ require 'db_connect.php';
         }
         .equip-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
         .equip-icon {
-            width: 45px;
-            height: 45px;
-            background: rgba(79, 172, 254, 0.1);
-            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, rgba(79, 172, 254, 0.2), rgba(79, 172, 254, 0.1));
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 15px;
             color: var(--accent-color);
-            font-size: 1.2rem;
+            font-size: 1.8rem;
+            box-shadow: 0 4px 12px rgba(79, 172, 254, 0.15);
         }
         .equip-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
         .equip-info { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 0.8rem; color: var(--text-light); }
@@ -242,9 +243,23 @@ require 'db_connect.php';
                             $badgeText = 'Maintenance / Unavailable';
                             $barColor = '#ccc';
                         }
+                        
+                        // Fallback icon mapping if icon is empty
+                        $iconClass = $row['icon'];
+                        if (empty($iconClass)) {
+                            $iconMap = [
+                                'Treadmills' => 'fas fa-running',
+                                'Free Weights' => 'fas fa-dumbbell',
+                                'Bench Press' => 'fas fa-weight-hanging',
+                                'Squat Racks' => 'fas fa-child',
+                                'Rowing Machines' => 'fas fa-water',
+                                'Lat Pulldown' => 'fas fa-level-down-alt'
+                            ];
+                            $iconClass = isset($iconMap[$row['name']]) ? $iconMap[$row['name']] : 'fas fa-dumbbell';
+                        }
                 ?>
                 <div class="equip-card" data-id="<?php echo $row['id']; ?>">
-                    <div class="equip-icon"><i class="<?php echo $row['icon_class']; ?>"></i></div>
+                    <div class="equip-icon"><i class="<?php echo $iconClass; ?>"></i></div>
                     <h3><?php echo htmlspecialchars($row['name']); ?></h3>
                     <div class="equip-info">
                         <span>Total: <?php echo $row['total_units']; ?></span>

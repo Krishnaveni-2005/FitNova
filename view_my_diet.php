@@ -78,113 +78,179 @@ if ($activePlan && !empty($activePlan['meal_details'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Diet Plan - FitNova</title>
+    <title>My Diet Plans - FitNova</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary-color: #0F2C59; --secondary-color: #DAC0A3; --bg-color: #F8F9FA; --text-color: #333; --success-color: #10b981; }
+        :root { --primary-color: #0F2C59; --accent-color: #E63946; --bg-color: #F8F9FA; --text-color: #333; }
         body { font-family: 'Outfit', sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
         
-        .main-content { flex: 1; padding: 40px 20px; max-width: 1000px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+        .main-content { flex: 1; padding: 20px 20px 220px 20px; max-width: 95%; margin: 0 auto; width: 100%; box-sizing: border-box; }
 
-        .back-btn { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: #64748b; font-weight: 500; margin-bottom: 20px; transition: 0.3s; }
-        .back-btn:hover { color: var(--primary-color); transform: translateX(-5px); }
-        
-        .plan-selector { 
-            background: white; 
-            padding: 15px 25px; 
-            border-radius: 50px; 
-            display: inline-flex; 
-            align-items: center; 
-            gap: 15px; 
-            border: 1px solid #e2e8f0; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        .page-hero {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #1a3c70 100%);
+            border-radius: 20px;
+            padding: 30px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
             margin-bottom: 30px;
-            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(15, 44, 89, 0.15);
         }
-        .plan-select-input { border: none; outline: none; background: transparent; font-family: inherit; font-weight: 600; color: var(--primary-color); cursor: pointer; min-width: 200px; }
+        .page-hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at 10% 20%, rgba(255,255,255,0.1) 0%, transparent 20%),
+                        radial-gradient(circle at 90% 80%, rgba(255,255,255,0.05) 0%, transparent 20%);
+            pointer-events: none;
+        }
+        .hero-text h1 { font-size: 1.8rem; margin: 0 0 8px 0; font-weight: 800; letter-spacing: -0.5px; }
+        .hero-text p { font-size: 0.95rem; opacity: 0.9; max-width: 550px; margin: 0; line-height: 1.5; color: #e2e8f0; }
+        .hero-decoration { font-size: 6rem; opacity: 0.08; transform: rotate(-15deg); position: absolute; right: 40px; bottom: -25px; }
+
+        .plans-container { display: flex; flex-direction: column; gap: 25px; }
         
-        .plan-header { 
-            background: white; 
-            border-radius: 20px; 
-            padding: 40px; 
-            margin-bottom: 40px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
-            text-align: center; 
-            position: relative; 
-            overflow: hidden; 
+        .plan-accordion-item {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.03);
+            transition: all 0.3s ease;
+            position: relative;
         }
-        .plan-header::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: linear-gradient(90deg, var(--success-color), var(--primary-color));
+        .plan-accordion-item::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 6px;
+            background: var(--primary-color);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .plan-accordion-item:hover {
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            transform: translateY(-5px);
+        }
+        .plan-accordion-item:hover::before {
+            opacity: 1;
         }
 
-        .plan-title { font-size: 36px; color: var(--primary-color); margin: 0 0 10px 0; letter-spacing: -1px; }
-        .trainer-info { color: #64748b; font-size: 15px; margin-top: 5px; font-weight: 500; }
+        .plan-accordion-header {
+            padding: 25px 35px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            user-select: none;
+            transition: background 0.2s;
+        }
+        
+        .header-info { display: flex; flex-direction: column; gap: 8px; }
+        .plan-main-info { display: flex; align-items: baseline; gap: 15px; flex-wrap: wrap; }
+        .plan-name { margin: 0; font-size: 1.35rem; color: var(--text-color); font-weight: 700; letter-spacing: -0.5px; }
+        .assigned-date { font-size: 0.85rem; color: #94a3b8; font-weight: 500; background: #f8fafc; padding: 4px 10px; border-radius: 6px; }
+        .trainer-name { font-size: 0.95rem; color: #64748b; font-weight: 500; display: flex; align-items: center; gap: 8px; }
 
-        .plan-meta { display: flex; justify-content: center; gap: 15px; margin-top: 25px; flex-wrap: wrap; }
-        .meta-badge { background: #ecfdf5; color: var(--success-color); padding: 8px 20px; border-radius: 30px; font-weight: 600; font-size: 14px; border: 1px solid #d1fae5; display: flex; align-items: center; gap: 8px; }
+        .header-meta { display: flex; align-items: center; gap: 15px; }
+        .badge { padding: 6px 16px; border-radius: 30px; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; }
+        .type-badge { background: #e0f2fe; color: #0284c7; }
+        .cal-badge { background: #fee2e2; color: #dc2626; }
+        
+        .arrow-icon { 
+            width: 35px; height: 35px; 
+            display: flex; align-items: center; justify-content: center;
+            background: #f1f5f9; border-radius: 50%;
+            color: #64748b; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            font-size: 1rem;
+        }
+        .plan-accordion-header:hover .arrow-icon { background: var(--primary-color); color: white; }
+        .plan-accordion-header.active .arrow-icon { transform: rotate(180deg); background: var(--primary-color); color: white; }
 
-        .meal-grid { display: grid; gap: 30px; }
+        .plan-accordion-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0, 1, 0, 1);
+            background: #f8fafc;
+            border-top: 1px solid #f1f5f9;
+        }
+        .plan-accordion-body .meal-grid {
+            padding: 30px 35px;
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 20px;
+        }
+
         .meal-card { 
             background: white; 
-            border-radius: 20px; 
+            border-radius: 15px; 
             overflow: hidden; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
-            border: 1px solid #f1f5f9;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.04); 
             transition: transform 0.3s;
+            border: 1px solid #f1f5f9;
         }
-        .meal-card:hover { transform: translateY(-5px); }
-
+        .meal-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
+        
         .meal-header { 
-            background: var(--primary-color); 
+            padding: 15px 20px; 
             color: white; 
-            padding: 20px 30px; 
+            font-weight: 700; 
+            font-size: 16px; 
             display: flex; 
             align-items: center; 
-            gap: 15px; 
-            font-weight: 700; 
-            font-size: 18px; 
+            gap: 10px; 
         }
-        .meal-header.lunch { background: #3b82f6; }
-        .meal-header.dinner { background: #6366f1; }
-        .meal-header.snacks { background: #DAC0A3; color: #0F2C59; }
-        
         .meal-content { 
-            padding: 30px; 
-            line-height: 1.8; 
+            padding: 20px; 
             color: #334155; 
+            line-height: 1.6; 
             white-space: pre-wrap; 
-            font-family: 'Inter', sans-serif;
-            font-size: 15px;
+            font-family: 'Inter', sans-serif; 
+            font-size: 14px; 
         }
-        
+
         /* Empty State */
         .empty-state { 
             text-align: center; 
-            padding: 80px 20px; 
+            padding: 60px 20px; 
             color: #64748b; 
             background: white; 
             border-radius: 20px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.03);
-            max-width: 600px;
-            margin: 40px auto;
+            max-width: 500px;
+            margin: 30px auto;
         }
         .empty-icon-container {
-            width: 100px; height: 100px; background: #fdf2f8; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; margin: 0 auto 30px;
+            width: 80px; height: 80px; background: #f1f5f9; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;
         }
         .btn-action {
             display: inline-block;
             background: var(--primary-color);
             color: white;
-            padding: 12px 30px;
+            padding: 10px 25px;
             border-radius: 50px;
             text-decoration: none;
             font-weight: 600;
-            margin-top: 25px;
+            margin-top: 20px;
             transition: 0.3s;
+            font-size: 0.9rem;
         }
         .btn-action:hover { background: #0a1f40; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+        @media (max-width: 768px) {
+            .plan-accordion-header { flex-direction: column; align-items: flex-start; gap: 20px; padding: 20px; }
+            .header-meta { width: 100%; justify-content: space-between; }
+            .plan-main-info { flex-direction: column; gap: 5px; }
+            .page-hero { padding: 30px; flex-direction: column; text-align: center; gap: 20px; }
+            .hero-decoration { display: none; }
+            .hero-text p { margin: 0 auto; }
+        }
     </style>
 </head>
 <body>
@@ -192,98 +258,125 @@ if ($activePlan && !empty($activePlan['meal_details'])) {
 
     <div class="main-content">
         
-        <!-- Multiple Plans Selector -->
-        <?php if (count($allPlans) > 1): ?>
-        <div style="text-align: right;">
-            <div class="plan-selector">
-                <i class="fas fa-history" style="color: var(--primary-color);"></i>
-                <span style="font-weight: 600; font-size: 14px; color: #64748b;">Select Plan:</span>
-                <select class="plan-select-input" onchange="window.location.href='view_my_diet.php?plan_id='+this.value">
-                    <?php foreach($allPlans as $p): ?>
-                        <option value="<?php echo $p['diet_id']; ?>" <?php echo ($activePlan && $activePlan['diet_id'] == $p['diet_id']) ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($p['plan_name']); ?> 
-                            (<?php echo date('M d, Y', strtotime($p['created_at'])); ?>)
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+        <!-- Page Hero -->
+        <div class="page-hero">
+            <div class="hero-text">
+                <h1>My Diet Plans</h1>
+                <p>Track your nutrition with personalized meal plans designed by your coach to fuel your fitness journey.</p>
+            </div>
+            <div class="hero-decoration">
+                <i class="fas fa-apple-alt"></i>
             </div>
         </div>
-        <?php endif; ?>
 
-        <?php if ($activePlan): ?>
-            <div class="plan-header">
-                <div style="margin-bottom: 20px;">
-                    <i class="fas fa-apple-alt" style="font-size: 48px; color: var(--success-color); background: #f0fdf4; padding: 20px; border-radius: 50%;"></i>
-                </div>
-
-                <h1 class="plan-title"><?php echo htmlspecialchars($activePlan['plan_name']); ?></h1>
-                
-                <div class="trainer-info">
-                    <i class="fas fa-user-circle"></i> Assigned by Coach <?php echo htmlspecialchars($activePlan['t_first'] . ' ' . $activePlan['t_last']); ?> 
-                    on <?php echo date('F d, Y', strtotime($activePlan['created_at'])); ?>
-                </div>
-
-                <div class="plan-meta" style="margin-top: 20px;">
-                    <div class="meta-badge"><i class="fas fa-bullseye"></i> <?php echo htmlspecialchars($activePlan['diet_type']); ?></div>
-                    <div class="meta-badge" style="color: var(--primary-color); background: #eff6ff; border-color: #dbeafe;">
-                        <i class="fas fa-fire-alt"></i> <?php echo $activePlan['target_calories']; ?> kcal/day
-                    </div>
-                </div>
-            </div>
-            
-            <div class="meal-grid">
-                <?php if(!empty($mealData['breakfast'])): ?>
-                <div class="meal-card">
-                    <div class="meal-header"><i class="fas fa-coffee"></i> Breakfast</div>
-                    <div class="meal-content"><?php echo htmlspecialchars($mealData['breakfast']); ?></div>
-                </div>
-                <?php endif; ?>
-                
-                <?php if(!empty($mealData['lunch'])): ?>
-                <div class="meal-card">
-                    <div class="meal-header lunch"><i class="fas fa-utensils"></i> Lunch</div>
-                    <div class="meal-content"><?php echo htmlspecialchars($mealData['lunch']); ?></div>
-                </div>
-                <?php endif; ?>
-                
-                <?php if(!empty($mealData['dinner'])): ?>
-                <div class="meal-card">
-                    <div class="meal-header dinner"><i class="fas fa-moon"></i> Dinner</div>
-                    <div class="meal-content"><?php echo htmlspecialchars($mealData['dinner']); ?></div>
-                </div>
-                <?php endif; ?>
-                
-                <?php if(!empty($mealData['snacks'])): ?>
-                <div class="meal-card">
-                    <div class="meal-header snacks"><i class="fas fa-cookie-bite"></i> Snacks & Supplements</div>
-                    <div class="meal-content"><?php echo htmlspecialchars($mealData['snacks']); ?></div>
-                </div>
-                <?php endif; ?>
-
-                <?php if(empty($mealData['breakfast']) && empty($mealData['lunch']) && empty($mealData['dinner'])): ?>
-                     <div class="meal-card">
-                        <div class="meal-content" style="text-align: center; color: #94a3b8;">
-                            <i class="fas fa-info-circle"></i> No specific meal details added yet.
+        <?php if (!empty($allPlans)): ?>
+            <div class="plans-container">
+                <?php foreach ($allPlans as $plan): 
+                    // Parse Meal Details
+                    $pMeals = ['breakfast'=>'', 'lunch'=>'', 'dinner'=>'', 'snacks'=>''];
+                    if (!empty($plan['meal_details'])) {
+                        $decoded = json_decode($plan['meal_details'], true);
+                        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                            $pMeals = array_merge($pMeals, $decoded);
+                        } else {
+                            $pMeals['breakfast'] = $plan['meal_details'];
+                        }
+                    }
+                ?>
+                <div class="plan-accordion-item">
+                    <div class="plan-accordion-header" onclick="togglePlan(this)">
+                        <div class="header-info">
+                            <div class="plan-main-info">
+                                <h2 class="plan-name"><?php echo htmlspecialchars($plan['plan_name']); ?></h2>
+                                <span class="assigned-date"><i class="far fa-calendar-alt"></i> <?php echo date('M d, Y', strtotime($plan['created_at'])); ?></span>
+                            </div>
+                            <div class="trainer-name">
+                                <i class="fas fa-user-circle"></i> Designed by Coach <?php echo htmlspecialchars($plan['t_first'] . ' ' . $plan['t_last']); ?>
+                            </div>
+                        </div>
+                        <div class="header-meta">
+                            <span class="badge type-badge"><?php echo htmlspecialchars($plan['diet_type'] ?? 'Standard'); ?></span>
+                            <span class="badge cal-badge"><i class="fas fa-fire-alt"></i> <?php echo $plan['target_calories']; ?> kcal</span>
+                            <i class="fas fa-chevron-down arrow-icon"></i>
                         </div>
                     </div>
-                <?php endif; ?>
+                    
+                    <div class="plan-accordion-body">
+                        <div class="meal-grid">
+                            <?php if(!empty($pMeals['breakfast'])): ?>
+                            <div class="meal-card">
+                                <div class="meal-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                                    <i class="fas fa-coffee"></i> Breakfast
+                                </div>
+                                <div class="meal-content"><?php echo htmlspecialchars($pMeals['breakfast']); ?></div>
+                            </div>
+                            <?php endif; ?>
+                            
+                            <?php if(!empty($pMeals['lunch'])): ?>
+                            <div class="meal-card">
+                                <div class="meal-header" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                                    <i class="fas fa-utensils"></i> Lunch
+                                </div>
+                                <div class="meal-content"><?php echo htmlspecialchars($pMeals['lunch']); ?></div>
+                            </div>
+                            <?php endif; ?>
+                            
+                            <?php if(!empty($pMeals['dinner'])): ?>
+                            <div class="meal-card">
+                                <div class="meal-header" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">
+                                    <i class="fas fa-moon"></i> Dinner
+                                </div>
+                                <div class="meal-content"><?php echo htmlspecialchars($pMeals['dinner']); ?></div>
+                            </div>
+                            <?php endif; ?>
+                            
+                            <?php if(!empty($pMeals['snacks'])): ?>
+                            <div class="meal-card">
+                                <div class="meal-header" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                                    <i class="fas fa-cookie-bite"></i> Snacks
+                                </div>
+                                <div class="meal-content"><?php echo htmlspecialchars($pMeals['snacks']); ?></div>
+                            </div>
+                            <?php endif; ?>
+
+                            <?php if(empty($pMeals['breakfast']) && empty($pMeals['lunch']) && empty($pMeals['dinner']) && empty($pMeals['snacks'])): ?>
+                                 <div class="meal-card" style="grid-column: 1 / -1; text-align: center;">
+                                    <div class="meal-header" style="justify-content: center; background: #94a3b8;">
+                                        <i class="fas fa-info-circle"></i> Plan Details
+                                    </div>
+                                    <div class="meal-content">No specific meal details have been added to this plan yet.</div>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
             </div>
-            
+
         <?php else: ?>
             <div class="empty-state">
                 <div class="empty-icon-container">
-                    <i class="fas fa-utensils" style="font-size: 40px; color: var(--accent-color);"></i>
+                    <i class="fas fa-utensils" style="font-size: 40px; color: var(--primary-color);"></i>
                 </div>
                 <h2 style="color: var(--primary-color); margin-bottom: 10px;">No Diet Plan Assigned</h2>
-                <p>Your trainer hasn't assigned a diet plan yet. <br>Nutrition is key! Reach out to your trainer.</p>
-                <a href="my_trainers.php" class="btn-action">View My Trainers</a>
-                 <div style="margin-top: 15px;">
-                    <a href="home.php" style="color: #64748b; font-size: 14px; text-decoration: none;">Back to Home</a>
-                </div>
+                <p>It looks like you don't have a nutrition plan yet. <br>Connect with a trainer to get a personalized diet plan.</p>
             </div>
         <?php endif; ?>
     </div>
 
+    <script>
+        function togglePlan(header) {
+            header.classList.toggle('active');
+            const body = header.nextElementSibling;
+            
+            if (body.style.maxHeight) {
+                body.style.maxHeight = null;
+            } else {
+                body.style.maxHeight = body.scrollHeight + "px";
+            }
+        }
+    </script>
+    
     <?php include 'footer.php'; ?>
 </body>
 </html>

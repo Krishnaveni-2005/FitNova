@@ -3,8 +3,8 @@ session_start();
 
 require 'db_connect.php';
 
-// Fetch all real trainers from database
-$sql = "SELECT * FROM users WHERE role = 'trainer' AND account_status = 'active' ORDER BY first_name";
+// Fetch all real trainers from database with their specializations and bios
+$sql = "SELECT user_id, first_name, last_name, trainer_specialization, bio FROM users WHERE role = 'trainer' AND account_status = 'active' ORDER BY first_name";
 $result = $conn->query($sql);
 
 $trainers = [];
@@ -46,6 +46,13 @@ if ($result && $result->num_rows > 0) {
         .t-bio { font-size: 0.85rem; color: #666; margin-bottom: 15px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
         .btn-book { display: inline-block; padding: 6px 20px; background: var(--primary-color); color: white; border-radius: 50px; text-decoration: none; font-size: 0.8rem; transition: 0.3s; margin-top: auto; align-self: center; }
         .btn-book:hover { background: var(--accent-color); }
+        
+        /* Search Box Styles */
+        .search-box { position: relative; max-width: 600px; margin: 0 auto; }
+        .search-input { width: 100%; padding: 15px 50px 15px 20px; border: 2px solid #ddd; border-radius: 50px; font-size: 1rem; outline: none; transition: all 0.3s ease; font-family: 'Outfit', sans-serif; }
+        .search-input:focus { border-color: var(--accent-color); box-shadow: 0 0 0 4px rgba(79, 172, 254, 0.1); }
+        .search-icon { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: #aaa; font-size: 1.2rem; pointer-events: none; }
+    
     </style>
 </head>
 <body>
@@ -61,6 +68,20 @@ if ($result && $result->num_rows > 0) {
         <?php if(!empty($trainers)): ?>
             <div class="category-section">
                 <h2 class="cat-title">Our Expert Trainers</h2>
+                
+                <!-- Search Bar -->
+                <div class="search-container" style="margin-bottom: 30px;">
+                    <div class="search-box">
+                        <input type="text" id="trainerSearch" class="search-input" placeholder="Search by specialization (e.g., Muscle Building, Yoga, Weight Loss...)">
+                        <i class="fas fa-search search-icon"></i>
+                    </div>
+                    <div id="noResults" style="display: none; text-align: center; padding: 40px; color: #999;">
+                        <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.3;"></i>
+                        <p style="font-size: 1.2rem; font-weight: 600;">No trainers found</p>
+                        <p style="font-size: 0.95rem;">Try searching with different keywords</p>
+                    </div>
+                </div>
+                
                 <div class="trainer-grid">
                     <?php foreach($trainers as $trainer): 
                         // Determine image source
@@ -81,8 +102,10 @@ if ($result && $result->num_rows > 0) {
                         // Build profile URL - only real trainers now
                         $profileUrl = 'trainer_profile.php?id=' . $trainer['user_id'];
                         
-                        // Get specialization or default
-                        $specialization = $trainer['specialization'] ?? 'Personal Trainer';
+                        // Get specialization from the correct column
+                        $specialization = $trainer['trainer_specialization'] ?? 'Personal Trainer';
+                        
+                        // Use bio from database (now contains specialization-specific descriptions)
                         $bio = $trainer['bio'] ?? 'Expert in guiding clients to achieve their personal fitness goals through customized plans.';
                     ?>
                         <div class="trainer-card">
@@ -104,6 +127,44 @@ if ($result && $result->num_rows > 0) {
             </div>
         <?php endif; ?>
     </div>
+
+    <script>
+        // Search Functionality for Trainers
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('trainerSearch');
+            const trainerCards = document.querySelectorAll('.trainer-card');
+            const noResults = document.getElementById('noResults');
+            const trainerGrid = document.querySelector('.trainer-grid');
+
+            searchInput.addEventListener('input', function(e) {
+                const query = e.target.value.toLowerCase().trim();
+                let hasVisibleTrainer = false;
+
+                trainerCards.forEach(card => {
+                    // Get the specialization text from the card
+                    const specElement = card.querySelector('.t-spec');
+                    const specialization = specElement ? specElement.textContent.toLowerCase() : '';
+                    
+                    // Show card ONLY if query matches specialization (not name or bio)
+                    if (query === '' || specialization.includes(query)) {
+                        card.style.display = 'flex';
+                        hasVisibleTrainer = true;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                // Show/hide no results message
+                if (hasVisibleTrainer || query === '') {
+                    noResults.style.display = 'none';
+                    trainerGrid.style.display = 'grid';
+                } else {
+                    noResults.style.display = 'block';
+                    trainerGrid.style.display = 'none';
+                }
+            });
+        });
+    </script>
 
     <?php include 'footer.php'; ?>
 </body>

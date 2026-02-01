@@ -160,6 +160,11 @@ if (!$article) {
 <head>
     <meta charset="UTF-8">
     <title><?php echo htmlspecialchars($article['title']); ?> - FitNova</title>
+    <!-- Open Graph / WhatsApp Sharing Meta Tags -->
+    <meta property="og:title" content="<?php echo htmlspecialchars($article['title']); ?>" />
+    <meta property="og:description" content="Check out this helpful article on FitNova! Learn more about <?php echo htmlspecialchars($article['category']); ?>." />
+    <meta property="og:image" content="<?php echo htmlspecialchars($article['image']); ?>" />
+    <meta property="og:type" content="article" />
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -319,11 +324,8 @@ if (!$article) {
         }
 
         function shareWhatsApp() {
-            var articleTitle = "<?php echo addslashes($article['title']); ?>";
             var articleUrl = window.location.href;
-            var fullMessage = "Check out this article on FitNova: " + articleTitle + " " + articleUrl;
-            var encodedMessage = encodeURIComponent(fullMessage);
-            window.open('https://api.whatsapp.com/send?text=' + encodedMessage, '_blank');
+            window.open('https://wa.me/?text=' + encodeURIComponent(articleUrl), '_blank');
         }
 
 

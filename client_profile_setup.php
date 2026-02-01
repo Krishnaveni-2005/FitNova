@@ -428,7 +428,76 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+        // Validation Logic
+        function validateCurrentStep() {
+            const currentStepDiv = document.getElementById(`step-${currentStep}`);
+            // Select all inputs, selects, and textareas in the current step
+            const inputs = currentStepDiv.querySelectorAll('input, select, textarea');
+            let isValid = true;
+            let firstInvalid = null;
+
+            // Helper to check radio groups
+            const radioGroupsChecked = {};
+
+            inputs.forEach(input => {
+                // Skip if disabled (editing mode check handled by UI logic, but good safety)
+                if (input.disabled) return;
+
+                let isInputValid = true;
+
+                if (input.type === 'radio') {
+                    if (radioGroupsChecked[input.name] === undefined) {
+                        const group = currentStepDiv.querySelectorAll(`input[name="${input.name}"]`);
+                        const isChecked = Array.from(group).some(r => r.checked);
+                        radioGroupsChecked[input.name] = isChecked;
+                        if (!isChecked) isInputValid = false;
+                    } else {
+                        // Already checked this group in this loop iteration (via the first radio button)
+                        if (!radioGroupsChecked[input.name]) isInputValid = false; 
+                         // But we don't need to re-flag invalid, just skip processing
+                         return;
+                    }
+                    // Visual feedback for radio
+                    const groupContainer = input.closest('.radio-group');
+                    if (groupContainer) {
+                        groupContainer.style.border = isInputValid ? 'none' : '1px solid var(--accent)';
+                        if(!isInputValid) groupContainer.style.borderRadius = '10px';
+                    }
+
+                } else {
+                    // Text, Number, Date, Select, Textarea
+                    // User requested "nothing went not filled", so we check strict emptiness
+                    if (!input.value.trim()) {
+                        isInputValid = false;
+                        input.style.borderColor = 'var(--accent)';
+                    } else {
+                        input.style.borderColor = 'var(--border)';
+                    }
+                }
+
+                if (!isInputValid) {
+                    isValid = false;
+                    if (!firstInvalid) firstInvalid = input;
+                }
+            });
+
+            if (!isValid) {
+                if(firstInvalid) firstInvalid.focus();
+                return false;
+            }
+            return true;
+        }
+
         nextBtn.addEventListener('click', () => {
+             // Validate before proceeding
+            if (!validateCurrentStep()) {
+                // Optional: usage of SweetAlert if available, otherwise native alert
+                // using native alert as fallback or a simple UI indication
+                // The red borders are the primary indicator
+                alert("Please fill in all fields to proceed."); 
+                return;
+            }
+
             if (currentStep < totalSteps) {
                 currentStep++;
                 updateForm();

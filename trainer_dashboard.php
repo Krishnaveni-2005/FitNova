@@ -37,7 +37,7 @@ $trainerEmail = $_SESSION['user_email'];
 $trainerInitials = strtoupper(substr($trainerName, 0, 1) . substr(explode(' ', $trainerName)[1] ?? '', 0, 1));
 
 // Fetch assigned clients count
-$countSql = "SELECT COUNT(*) as client_count FROM users WHERE assigned_trainer_id = ?";
+$countSql = "SELECT COUNT(*) as client_count FROM users WHERE assigned_trainer_id = ? AND assignment_status = 'approved'";
 $stmt = $conn->prepare($countSql);
 if ($stmt) {
     $stmt->bind_param("i", $trainerId);
@@ -115,6 +115,26 @@ if ($stmt) {
     $res = $stmt->get_result();
     while ($row = $res->fetch_assoc()) {
         $sessionRequests[] = $row;
+    }
+    $stmt->close();
+}
+
+
+
+// Fetch Admin-Referenced Opportunities
+$opportunities = [];
+$oppSql = "SELECT u.user_id, u.first_name, u.last_name, cp.fitness_goals 
+           FROM users u 
+           JOIN trainer_applications ta ON u.user_id = ta.client_id
+           LEFT JOIN client_profiles cp ON u.user_id = cp.user_id 
+           WHERE ta.trainer_id = ? AND ta.status = 'admin_suggested'";
+$stmt = $conn->prepare($oppSql);
+if ($stmt) {
+    $stmt->bind_param("i", $trainerId);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    while ($row = $res->fetch_assoc()) {
+        $opportunities[] = $row;
     }
     $stmt->close();
 }
@@ -649,6 +669,27 @@ if ($stmt) {
 
             <!-- Side Column -->
             <div class="side-column">
+                <div class="section-box" style="border: 2px solid var(--warning-color); background: #fffbeb;">
+                    <div class="section-header" style="border-bottom-color: #fcd34d;">
+                        <h3 class="section-title" style="color: #b45309;"><i class="fas fa-bullhorn"></i> Client Opportunities</h3>
+                    </div>
+                    <?php if (empty($opportunities)): ?>
+                        <p style="text-align:center; color: #b45309; font-size:13px;">No new opportunities available.</p>
+                    <?php else: ?>
+                        <?php foreach ($opportunities as $opp): 
+                             $oppInitials = strtoupper(substr($opp['first_name'], 0, 1) . substr($opp['last_name'], 0, 1));
+                        ?>
+                        <div class="client-item" id="opp-<?php echo $opp['user_id']; ?>" style="background: white; border: 1px solid #fcd34d;">
+                            <div class="user-avatar" style="background: #fbbf24; color: white;"><?php echo $oppInitials; ?></div>
+                            <div class="client-info">
+                                <h5><?php echo htmlspecialchars($opp['first_name'] . ' ' . $opp['last_name']); ?></h5>
+                                <p>Goal: <?php echo htmlspecialchars($opp['fitness_goals'] ?? 'Fitness'); ?></p>
+                                <button onclick="sendInvite(<?php echo $opp['user_id']; ?>)" class="btn-action" style="background:#b45309; color:white; width:100%; margin-top:5px;">Send Invite</button>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
                 <div class="section-box">
                     <div class="section-header">
                         <h3 class="section-title">New Requests</h3>
@@ -734,6 +775,28 @@ if ($stmt) {
         .catch(err => console.error(err));
     }
 
+    function sendInvite(clientId) {
+        if(!confirm('Send a training invite to this client?')) return;
+
+        fetch('trainer_apply_client.php', {
+             method: 'POST',
+             headers: { 'Content-Type': 'application/json' },
+             body: JSON.stringify({ client_id: clientId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const el = document.getElementById('opp-' + clientId);
+                if(el) el.remove();
+                alert('Invite sent to client!');
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(err => console.error(err));
+    }
+    </script>
+    <script>
     function handleSessionRequest(requestId, action) {
         if(!confirm('Are you sure you want to ' + action + ' this session?')) return;
         

@@ -14,8 +14,33 @@ if (
     exit();
 }
 
-$data = json_decode(file_get_contents("php://input"), true);
+// Parse Request
+$data = null;
+$rawInput = file_get_contents("php://input");
+if (!empty($rawInput)) {
+    $data = json_decode($rawInput, true);
+}
+
+// Fallback to $_POST if JSON failed or was empty
+if (!$data && !empty($_POST)) {
+    $data = $_POST;
+}
+
+// Log for debugging
+file_put_contents('debug_attendance.log', date('Y-m-d H:i:s') . " Raw: " . $rawInput . " | Parsed: " . print_r($data, true) . "\n", FILE_APPEND);
+
+if (!$data) {
+    echo json_encode(['status' => 'error', 'message' => 'No data received']);
+    exit();
+}
+
 $action = $data['action'] ?? '';
+$trainerId = isset($data['trainer_id']) ? intval($data['trainer_id']) : 0;
+
+if ($trainerId <= 0) {
+    echo json_encode(['status' => 'error', 'message' => 'Invalid trainer ID']);
+    exit();
+}
 
 if ($action === 'clock_out') {
     $trainerId = intval($data['trainer_id']);
@@ -58,7 +83,7 @@ if ($action === 'clock_out') {
         echo json_encode(['status' => 'error', 'message' => 'Trainer is already clocked in']);
     } else {
         // Create new check-in record
-        $insertStmt = $conn->prepare("INSERT INTO trainer_attendance (trainer_id, check_in_time) VALUES (?, NOW())");
+        $insertStmt = $conn->prepare("INSERT INTO trainer_attendance (trainer_id, check_in_time, status) VALUES (?, NOW(), 'checked_in')");
         $insertStmt->bind_param("i", $trainerId);
         
         if ($insertStmt->execute()) {

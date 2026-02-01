@@ -34,7 +34,7 @@ $trainerEmail = $_SESSION['user_email'];
 $trainerInitials = strtoupper(substr($trainerName, 0, 1) . substr(explode(' ', $trainerName)[1] ?? '', 0, 1));
 
 // Fetch assigned clients
-$sql = "SELECT * FROM users WHERE assigned_trainer_id = ? AND role != 'trainer' AND role != 'admin'";
+$sql = "SELECT * FROM users WHERE assigned_trainer_id = ? AND assignment_status = 'approved'";
 $stmt = $conn->prepare($sql);
 if ($stmt) {
     $stmt->bind_param("i", $trainerId);

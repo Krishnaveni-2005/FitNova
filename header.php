@@ -263,6 +263,85 @@ if ($isLoggedIn) {
     </div>
 </div>
 
+<!-- Talk with Experts Modal -->
+<div id="expertModal" class="g-modal">
+    <div class="g-modal-content" style="max-width: 550px;">
+        <span onclick="closeExpertModal()" style="position: absolute; right: 20px; top: 20px; cursor: pointer; font-size: 1.8rem; color: #999;">&times;</span>
+        
+        <div id="expertFormView">
+            <h3 style="margin-bottom: 10px; color: var(--primary-color); font-size: 1.5rem;">
+                <i class="fas fa-headset"></i> Talk with Experts
+            </h3>
+            <p style="color: #666; margin-bottom: 25px; font-size: 0.95rem;">Fill out the form below and we'll provide you with our expert's contact details.</p>
+            
+            <div id="expertFormError" style="display: none; padding: 12px 15px; background: #fee; color: #e74c3c; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem;">
+                <i class="fas fa-exclamation-circle"></i> <span id="expertErrorText"></span>
+            </div>
+            
+            <form id="expertEnquiryForm" onsubmit="submitExpertForm(event)">
+                <div style="margin-bottom: 18px;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem;">Full Name <span style="color: #e74c3c;">*</span></label>
+                    <input type="text" id="expertName" required class="g-input" placeholder="Enter your full name" style="margin-bottom: 5px;" oninput="validateName(this)">
+                    <small id="nameError" style="color: #e74c3c; font-size: 0.8rem; display: none; margin-top: 3px;"><i class="fas fa-exclamation-circle"></i> <span></span></small>
+                </div>
+                
+                <div style="margin-bottom: 18px;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem;">Phone Number <span style="color: #e74c3c;">*</span></label>
+                    <input type="tel" id="expertPhone" required maxlength="10" class="g-input" placeholder="10-digit mobile number" style="margin-bottom: 5px;" oninput="validatePhone(this)">
+                    <small id="phoneError" style="color: #e74c3c; font-size: 0.8rem; display: none; margin-top: 3px;"><i class="fas fa-exclamation-circle"></i> <span></span></small>
+                </div>
+                
+                <div style="margin-bottom: 18px;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem;">Email Address <span style="color: #e74c3c;">*</span></label>
+                    <input type="email" id="expertEmail" required class="g-input" placeholder="your.email@example.com" style="margin-bottom: 5px;" oninput="validateEmail(this)">
+                    <small id="emailError" style="color: #e74c3c; font-size: 0.8rem; display: none; margin-top: 3px;"><i class="fas fa-exclamation-circle"></i> <span></span></small>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem;">Reason to Call <span style="color: #e74c3c;">*</span></label>
+                    <textarea id="expertReason" required class="g-input" placeholder="Please describe what you'd like to discuss with our expert..." style="min-height: 100px; resize: vertical; margin-bottom: 0;"></textarea>
+                </div>
+                
+                <button type="submit" id="expertSubmitBtn" class="btn-checkout" style="background: var(--primary-color);">
+                    <i class="fas fa-paper-plane"></i> Submit Enquiry
+                </button>
+            </form>
+        </div>
+        
+        <div id="expertPhoneView" style="display: none;">
+            <div style="padding: 15px; background: #d1e7fd; color: #0d47a1; border-radius: 8px; margin-bottom: 25px; font-weight: 600;">
+                <i class="fas fa-check-circle"></i> Thank you! Your enquiry has been submitted successfully.
+            </div>
+            
+            <div style="background: linear-gradient(135deg, #1976d2 0%, #0d47a1 100%); color: white; padding: 35px 25px; border-radius: 15px; text-align: center; box-shadow: 0 10px 30px rgba(13, 71, 161, 0.4);">
+                <i class="fas fa-phone-alt" style="font-size: 3rem; margin-bottom: 15px; animation: ring 2s ease-in-out infinite;"></i>
+                <h3 style="font-size: 1.4rem; margin-bottom: 15px; font-weight: 700; color: white;">Call Our Expert Now!</h3>
+                <div style="font-size: 2rem; font-weight: 800; letter-spacing: 2px; margin: 15px 0; display: flex; align-items: center; justify-content: center; gap: 10px; color: white;">
+                    <i class="fas fa-phone"></i> 9495868854
+                </div>
+                <p style="font-size: 0.9rem; opacity: 0.9; margin-top: 15px; color: white;">Copy this number and call our expert for assistance with your fitness journey!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes ring {
+        0%, 100% { transform: rotate(0deg); }
+        10%, 30% { transform: rotate(-10deg); }
+        20%, 40% { transform: rotate(10deg); }
+    }
+    
+    .g-input.error {
+        border-color: #e74c3c !important;
+        background-color: #fff5f5 !important;
+    }
+    
+    .g-input.success {
+        border-color: #1976d2 !important;
+    }
+</style>
+
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         // Elements
@@ -541,8 +620,235 @@ if ($isLoggedIn) {
 
     function handleTalkToExperts(event) {
         if(event) event.preventDefault(); 
-        if (confirm("Are you sure you want to talk to an expert? This will initiate a call.")) {
-            window.location.href = 'tel:<?php echo $gymOwnerPhone; ?>';
-        }
+        document.getElementById('expertModal').style.display = 'block';
     }
+    
+    function closeExpertModal() {
+        document.getElementById('expertModal').style.display = 'none';
+        resetExpertForm();
+    }
+    
+    function resetExpertForm() {
+        document.getElementById('expertFormView').style.display = 'block';
+        document.getElementById('expertPhoneView').style.display = 'none';
+        document.getElementById('expertEnquiryForm').reset();
+        document.getElementById('expertFormError').style.display = 'none';
+        
+        // Reset all field validations
+        ['expertName', 'expertPhone', 'expertEmail'].forEach(id => {
+            const field = document.getElementById(id);
+            if (field) {
+                field.classList.remove('error', 'success');
+            }
+        });
+        ['nameError', 'phoneError', 'emailError'].forEach(id => {
+            const error = document.getElementById(id);
+            if (error) error.style.display = 'none';
+        });
+    }
+    
+    function showExpertError(message) {
+        const errorDiv = document.getElementById('expertFormError');
+        const errorText = document.getElementById('expertErrorText');
+        errorText.textContent = message;
+        errorDiv.style.display = 'block';
+        setTimeout(() => {
+            errorDiv.style.display = 'none';
+        }, 5000);
+    }
+    
+    // Real-time validation for Name field (only alphabets and spaces)
+    function validateName(input) {
+        const nameError = document.getElementById('nameError');
+        const value = input.value;
+        
+        // Remove any non-alphabetic characters except spaces
+        const cleanValue = value.replace(/[^a-zA-Z\s]/g, '');
+        if (value !== cleanValue) {
+            input.value = cleanValue;
+        }
+        
+        if (cleanValue.length === 0) {
+            input.classList.remove('success', 'error');
+            nameError.style.display = 'none';
+            return false;
+        }
+        
+        if (cleanValue.length < 2) {
+            input.classList.add('error');
+            input.classList.remove('success');
+            nameError.querySelector('span').textContent = 'Name must be at least 2 characters';
+            nameError.style.display = 'block';
+            return false;
+        }
+        
+        if (!/^[a-zA-Z\s]+$/.test(cleanValue)) {
+            input.classList.add('error');
+            input.classList.remove('success');
+            nameError.querySelector('span').textContent = 'Only alphabets and spaces allowed';
+            nameError.style.display = 'block';
+            return false;
+        }
+        
+        input.classList.remove('error');
+        input.classList.add('success');
+        nameError.style.display = 'none';
+        return true;
+    }
+    
+    // Real-time validation for Phone field (only 10 digits)
+    function validatePhone(input) {
+        const phoneError = document.getElementById('phoneError');
+        const value = input.value;
+        
+        // Remove any non-numeric characters
+        const cleanValue = value.replace(/[^0-9]/g, '');
+        if (value !== cleanValue) {
+            input.value = cleanValue;
+        }
+        
+        if (cleanValue.length === 0) {
+            input.classList.remove('success', 'error');
+            phoneError.style.display = 'none';
+            return false;
+        }
+        
+        if (cleanValue.length < 10) {
+            input.classList.add('error');
+            input.classList.remove('success');
+            phoneError.querySelector('span').textContent = `Enter ${10 - cleanValue.length} more digit${10 - cleanValue.length > 1 ? 's' : ''}`;
+            phoneError.style.display = 'block';
+            return false;
+        }
+        
+        if (cleanValue.length === 10) {
+            input.classList.remove('error');
+            input.classList.add('success');
+            phoneError.style.display = 'none';
+            return true;
+        }
+        
+        return false;
+    }
+    
+    // Real-time validation for Email field
+    function validateEmail(input) {
+        const emailError = document.getElementById('emailError');
+        const value = input.value.trim();
+        
+        if (value.length === 0) {
+            input.classList.remove('success', 'error');
+            emailError.style.display = 'none';
+            return false;
+        }
+        
+        // Basic email regex
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        
+        if (!emailRegex.test(value)) {
+            input.classList.add('error');
+            input.classList.remove('success');
+            
+            if (!value.includes('@')) {
+                emailError.querySelector('span').textContent = 'Email must contain @';
+            } else if (!value.split('@')[1] || !value.split('@')[1].includes('.')) {
+                emailError.querySelector('span').textContent = 'Invalid email format (e.g., user@example.com)';
+            } else {
+                emailError.querySelector('span').textContent = 'Please enter a valid email address';
+            }
+            
+            emailError.style.display = 'block';
+            return false;
+        }
+        
+        input.classList.remove('error');
+        input.classList.add('success');
+        emailError.style.display = 'none';
+        return true;
+    }
+    
+    function submitExpertForm(event) {
+        event.preventDefault();
+        
+        const nameInput = document.getElementById('expertName');
+        const phoneInput = document.getElementById('expertPhone');
+        const emailInput = document.getElementById('expertEmail');
+        const reasonInput = document.getElementById('expertReason');
+        
+        // Trigger validation for all fields
+        const isNameValid = validateName(nameInput);
+        const isPhoneValid = validatePhone(phoneInput);
+        const isEmailValid = validateEmail(emailInput);
+        
+        const name = nameInput.value.trim();
+        const phone = phoneInput.value.trim();
+        const email = emailInput.value.trim();
+        const reason = reasonInput.value.trim();
+        
+        // Check if all fields are filled
+        if (!name || !phone || !email || !reason) {
+            showExpertError('All fields are required!');
+            return;
+        }
+        
+        // Check if all validations passed
+        if (!isNameValid) {
+            showExpertError('Please enter a valid name (alphabets only)');
+            return;
+        }
+        
+        if (!isPhoneValid) {
+            showExpertError('Please enter a valid 10-digit phone number');
+            return;
+        }
+        
+        if (!isEmailValid) {
+            showExpertError('Please enter a valid email address');
+            return;
+        }
+        
+        // Disable submit button to prevent double submission
+        const submitBtn = document.getElementById('expertSubmitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+        
+        // Submit via AJAX
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('phone', phone);
+        formData.append('email', email);
+        formData.append('reason', reason);
+        
+        fetch('submit_expert_enquiry.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show phone number view
+                document.getElementById('expertFormView').style.display = 'none';
+                document.getElementById('expertPhoneView').style.display = 'block';
+            } else {
+                showExpertError(data.message || 'Error submitting enquiry. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Enquiry';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showExpertError('Network error. Please check your connection and try again.');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Enquiry';
+        });
+    }
+    
+    // Close modal when clicking outside
+    window.addEventListener('click', (event) => {
+        const expertModal = document.getElementById('expertModal');
+        if (event.target === expertModal) {
+            closeExpertModal();
+        }
+    });
+
 </script>
