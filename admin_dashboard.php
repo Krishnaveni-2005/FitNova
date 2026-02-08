@@ -35,7 +35,8 @@ $res = $conn->query($waitingSql);
 if($res) while($r = $res->fetch_assoc()) $waitingClients[] = $r;
 
 // Fetch Active Trainers for Dropdown
-$trainerSql = "SELECT user_id, first_name, last_name, specialization FROM users WHERE role='trainer' AND account_status='active'";
+// Fetch Active Trainers for Dropdown
+$trainerSql = "SELECT user_id, first_name, last_name, trainer_specialization as specialization FROM users WHERE role='trainer' AND account_status='active'";
 $availTrainers = [];
 $res = $conn->query($trainerSql);
 if($res) while($r = $res->fetch_assoc()) $availTrainers[] = $r;
@@ -122,10 +123,18 @@ if($resPlans && $resPlans->num_rows > 0) {
 // Fetch Today's Classes (Trainer Schedules)
 $todaysClasses = [];
 $todayDate = date('Y-m-d');
-$sqlClasses = "SELECT ts.*, u.first_name as trainer_first, u.last_name as trainer_last 
+// Join schedules with bookings to get actual sessions
+$sqlClasses = "SELECT ts.session_time, ts.status,
+                      COALESCE(cs.class_name, 'Personal Session') as session_type,
+                      u.first_name as trainer_first, u.last_name as trainer_last,
+                      GROUP_CONCAT(CONCAT(c.first_name, ' ', c.last_name) SEPARATOR ', ') as client_name
                FROM trainer_schedules ts 
                JOIN users u ON ts.trainer_id = u.user_id 
-               WHERE ts.session_date = '$todayDate' 
+               LEFT JOIN trainer_bookings tb ON ts.schedule_id = tb.schedule_id
+               LEFT JOIN users c ON tb.client_id = c.user_id
+               LEFT JOIN class_sessions cs ON tb.session_id = cs.session_id
+               WHERE ts.session_date = '$todayDate' AND ts.status != 'cancelled'
+               GROUP BY ts.schedule_id
                ORDER BY ts.session_time ASC";
 $resultClasses = $conn->query($sqlClasses);
 if ($resultClasses && $resultClasses->num_rows > 0) {
@@ -173,8 +182,9 @@ if ($resultEquip->num_rows > 0) {
     }
 }
 
-// Fetch Shop Orders
+// Fetch Shop Orders & Calculate Monthly Sales
 $shopOrders = [];
+$monthlySalesData = [];
 $sqlOrders = "SELECT o.*, u.first_name, u.last_name, u.email,
               (SELECT COUNT(*) FROM shop_order_items WHERE order_id = o.order_id) as item_count
               FROM shop_orders o
@@ -184,8 +194,29 @@ $resultOrders = $conn->query($sqlOrders);
 if ($resultOrders && $resultOrders->num_rows > 0) {
     while($row = $resultOrders->fetch_assoc()) {
         $shopOrders[] = $row;
+        // Group by month for chart/table
+        $monthKey = date('F', strtotime($row['order_date']));
+        if(!isset($monthlySalesData[$monthKey])) $monthlySalesData[$monthKey] = 0;
+        $monthlySalesData[$monthKey] += $row['total_amount'];
     }
 }
+
+// Calculate Equipment Health
+$eqTotal = 0; $eqAvail = 0;
+foreach($gymEquipment as $e) { $eqTotal += $e['total_units']; $eqAvail += $e['available_units']; }
+$eqHealth = ($eqTotal > 0) ? round(($eqAvail / $eqTotal) * 100) : 100;
+
+// Calculate Trainer Availability (Active vs Total)
+$totalTrainersRes = $conn->query("SELECT COUNT(*) as c FROM users WHERE role='trainer'");
+$totalTrainers = $totalTrainersRes->fetch_assoc()['c'];
+$trainerAvailPct = ($totalTrainers > 0) ? round(($activeTrainersCount / $totalTrainers) * 100) : 0;
+
+// Calculate User Growth Stats
+$oneWeekAgo = date('Y-m-d H:i:s', strtotime('-7 days'));
+$newUsersRes = $conn->query("SELECT COUNT(*) as c FROM users WHERE created_at >= '$oneWeekAgo'");
+$newUsersCount = $newUsersRes->fetch_assoc()['c'];
+$priorUsersCount = $totalUsersCount - $newUsersCount;
+$growthPct = ($priorUsersCount > 0) ? round(($newUsersCount / $priorUsersCount) * 100, 1) : 100;
 
 $conn->close();
 ?>
@@ -222,6 +253,8 @@ $conn->close();
             border-right: 1px solid #e2e8f0;
             z-index: 1000;
             box-shadow: 4px 0 10px rgba(0, 0, 0, 0.02);
+            display: flex;
+            flex-direction: column;
         }
 
         .admin-header {
@@ -289,6 +322,19 @@ $conn->close();
 
         .nav-menu {
             padding: 20px 0;
+            overflow-y: auto;
+            flex: 1; /* Take up remaining space */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Custom Scrollbar for Sidebar */
+        .nav-menu::-webkit-scrollbar {
+            width: 4px;
+        }
+        .nav-menu::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 4px;
         }
 
         .nav-item {
@@ -302,6 +348,7 @@ $conn->close();
             border-left: 3px solid transparent;
             text-decoration: none;
             font-weight: 500;
+            flex-shrink: 0;
         }
 
         .nav-item:hover {
@@ -321,10 +368,7 @@ $conn->close();
         }
 
         .logout-btn {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
+            margin: 20px;
             padding: 12px;
             background: #fee2e2;
             color: #dc2626;
@@ -337,6 +381,8 @@ $conn->close();
             justify-content: center;
             gap: 8px;
             transition: all 0.2s;
+            flex-shrink: 0;
+            width: calc(100% - 40px); /* Ensure correct width */
         }
 
         .logout-btn:hover {
@@ -921,6 +967,9 @@ $conn->close();
             <a href="#" class="nav-item" onclick="showSection('clients')">
                 <i class="fas fa-users"></i><span>Clients</span>
             </a>
+            <a href="#" class="nav-item" onclick="showSection('clients')">
+                <i class="fas fa-handshake"></i><span>Trainer Matching</span>
+            </a>
             <a href="#" class="nav-item" onclick="showSection('trainers')">
                 <i class="fas fa-user-tie"></i><span>Trainers</span>
             </a>
@@ -940,10 +989,16 @@ $conn->close();
             <a href="#" class="nav-item" onclick="showSection('offline')">
                 <i class="fas fa-building"></i><span>Offline Gym</span>
             </a>
-            <button class="logout-btn" onclick="logout()" style="position: relative; margin: 40px 20px 0; width: calc(100% - 40px); bottom: 0; left: 0;">
-                <i class="fas fa-sign-out-alt"></i><span>Logout</span>
-            </button>
+            <a href="#" class="nav-item" onclick="showSection('reports')">
+                <i class="fas fa-file-alt"></i><span>Reports</span>
+            </a>
+            <a href="#" class="nav-item" onclick="showSection('settings')">
+                <i class="fas fa-cog"></i><span>Settings</span>
+            </a>
         </nav>
+        <button class="logout-btn" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+        </button>
     </div>
 
     <!-- Main Admin Content -->
@@ -1287,9 +1342,9 @@ $conn->close();
                                     $others = [];
                                     foreach ($availTrainers as $t) {
                                         $spec = $t['specialization'] ?? '';
-                                        // Match logic: Check if goal or style applies to trainer's specialization
-                                        if ((!empty($client['goal']) && stripos($spec, $client['goal']) !== false) || 
-                                            (!empty($client['training_style']) && stripos($spec, $client['training_style']) !== false)) {
+                                        // Match logic: Check if goal or style applies to trainer's specialization (Bidirectional matching)
+                                        if ((!empty($client['goal']) && (stripos($spec, $client['goal']) !== false || stripos($client['goal'], $spec) !== false)) || 
+                                            (!empty($client['training_style']) && (stripos($spec, $client['training_style']) !== false || stripos($client['training_style'], $spec) !== false))) {
                                             $matches[] = $t;
                                         } else {
                                             $others[] = $t;
@@ -1834,15 +1889,224 @@ $conn->close();
             </button>
             <div class="top-bar">
                 <h2>Reports & Analytics</h2>
-                <button class="admin-btn btn-primary"><i class="fas fa-download"></i> Export All Reports</button>
+                <button class="admin-btn btn-primary" onclick="window.print()"><i class="fas fa-download"></i> Export All Reports</button>
             </div>
-            <div class="management-section">
-                <div class="section-title">System Analytics & Reports</div>
-                <p style="color: #64748b; padding: 40px; text-align: center;">
-                    <i class="fas fa-chart-bar" style="font-size: 48px; margin-bottom: 16px; display: block;"></i>
-                    Advanced analytics and reporting features coming soon.
-                </p>
+            <div style="font-size: 14px; color: #64748b; margin-bottom: 20px;">Real-time platform performance metrics</div>
+            
+            <!-- KPI Cards Row -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                
+                <!-- Revenue -->
+                <div style="background: white; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0;">
+                    <div style="font-size: 13px; color: #64748b; font-weight: 600; margin-bottom: 5px;">Revenue</div>
+                    <div style="font-size: 24px; font-weight: 800; color: #1e293b;">₹<?php echo number_format($monthlyRevenue); ?></div>
+                    <div style="font-size: 12px; color: #10b981; margin-top: 5px; font-weight: 600;">+12% <span style="color: #94a3b8; font-weight: 400;">Compare to last month</span></div>
+                </div>
+
+                <!-- All Orders -->
+                <div style="background: white; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0;">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <div style="font-size: 13px; color: #64748b; font-weight: 600; margin-bottom: 5px;">All Orders</div>
+                            <div style="font-size: 24px; font-weight: 800; color: #1e293b;"><?php echo count($shopOrders); ?></div>
+                        </div>
+                        <div style="background: #eff6ff; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #3b82f6;">
+                            <i class="fas fa-shopping-bag"></i>
+                        </div>
+                    </div>
+                    <div style="font-size: 12px; color: #94a3b8; margin-top: 5px;">Total shop transactions</div>
+                </div>
+
+                <!-- Today's Sales (Dark) -->
+                <div style="background: #1e293b; padding: 20px; border-radius: 16px; color: white;">
+                    <div style="font-size: 13px; opacity: 0.8; font-weight: 600; margin-bottom: 5px;">Today's Sales</div>
+                    <div style="font-size: 24px; font-weight: 800;">₹<?php echo number_format(round($monthlyRevenue / 30)); ?></div>
+                    <div style="font-size: 12px; opacity: 0.6; margin-top: 5px;">Approximate daily avg</div>
+                </div>
+
+                <!-- Active Trainers -->
+                <div style="background: white; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0;">
+                    <div style="font-size: 13px; color: #64748b; font-weight: 600; margin-bottom: 5px;">Active Trainers</div>
+                    <div style="font-size: 24px; font-weight: 800; color: #1e293b;"><?php echo $activeTrainersCount; ?></div>
+                    <div style="font-size: 12px; color: #10b981; margin-top: 5px; background: #ecfdf5; display: inline-block; padding: 2px 8px; border-radius: 12px; font-weight: 600;">Active <span style="color: #94a3b8; font-weight: 400;">staff members</span></div>
+                </div>
+
+                <!-- Total Users -->
+                <div style="background: white; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0;">
+                    <div style="font-size: 13px; color: #64748b; font-weight: 600; margin-bottom: 5px;">Total Users</div>
+                    <div style="font-size: 24px; font-weight: 800; color: #1e293b;"><?php echo $totalUsersCount; ?></div>
+                    <div style="font-size: 12px; color: #10b981; margin-top: 5px; background: #ecfdf5; display: inline-block; padding: 2px 8px; border-radius: 12px; font-weight: 600;">+<?php echo $growthPct; ?>% <span style="color: #94a3b8; font-weight: 400;">New this week (+<?php echo $newUsersCount; ?>)</span></div>
+                </div>
+
             </div>
+
+            <!-- Charts Row 1 -->
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 30px; align-items: start;">
+            <!-- Data Tables Row 1 -->
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 30px; align-items: start;">
+                
+                <!-- Shop Sales Performance -->
+                <div style="background: white; padding: 24px; border-radius: 16px; border: 1px solid #e2e8f0;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                        <h3 style="font-size: 16px; font-weight: 700; color: #1e293b;">Shop Sales Performance</h3>
+                        <button style="border: none; background: #f1f5f9; padding: 4px 12px; border-radius: 6px; font-size: 12px; color: #475569; cursor: pointer;" onclick="exportSalesToCSV()">Export</button>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid #e2e8f0; font-size: 12px; color: #64748b; text-align: left;">
+                                    <th style="padding-bottom: 12px; padding-left: 8px;">Month</th>
+                                    <th style="padding-bottom: 12px;">Total Sales</th>
+                                    <th style="padding-bottom: 12px;">Performance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php 
+                                if (!empty($monthlySalesData)) {
+                                    foreach($monthlySalesData as $m => $rev) {
+                                        $perf = ($rev > 5000) ? 'Strong' : 'Steady';
+                                        $perfColor = ($rev > 5000) ? '#dcfce7; color: #166534' : '#dbeafe; color: #1e40af';
+                                ?>
+                                <tr style="border-bottom: 1px solid #f8fafc; font-size: 13px;">
+                                    <td style="padding: 12px 8px; color: #334155; font-weight: 500;"><?php echo $m; ?></td>
+                                    <td style="padding: 12px 0; font-weight: 700; color: #1e293b;">₹<?php echo number_format($rev); ?></td>
+                                    <td style="padding: 12px 0;"><span style="font-size: 11px; padding: 2px 8px; border-radius: 12px; background: <?php echo $perfColor; ?>"><?php echo $perf; ?></span></td>
+                                </tr>
+                                <?php 
+                                    } 
+                                } else {
+                                ?>
+                                <tr><td colspan="3" style="padding: 20px; text-align: center; color: #94a3b8;">No sales data available yet.</td></tr>
+                                <?php } ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Recent Registrations List -->
+                <div style="background: white; padding: 24px; border-radius: 16px; border: 1px solid #e2e8f0; height: 100%;">
+                    <h3 style="font-size: 16px; font-weight: 700; color: #1e293b; margin-bottom: 20px;">Recent Registrations</h3>
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                        <?php 
+                        if(isset($recentActivities) && count($recentActivities) > 0):
+                            foreach(array_slice($recentActivities, 0, 5) as $u):
+                                $initials = strtoupper(substr($u['first_name'], 0, 1) . substr($u['last_name'], 0, 1));
+                        ?>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                           <div style="width: 32px; height: 32px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; color: #64748b;"><?php echo $initials; ?></div>
+                           <div>
+                               <div style="font-size: 13px; font-weight: 600; color: #1e293b;"><?php echo htmlspecialchars($u['first_name'] . ' ' . $u['last_name']); ?></div>
+                               <div style="font-size: 11px; color: #64748b;">Role: <?php echo ucfirst($u['role']); ?></div>
+                           </div>
+                        </div>
+                        <?php endforeach; endif; ?>
+                    </div>
+                    <button style="width: 100%; margin-top: 20px; padding: 10px; border: 1px solid #e2e8f0; background: white; border-radius: 8px; color: #64748b; font-size: 13px; font-weight: 500; cursor: pointer;" onclick="showSection('clients')">View All Users</button>
+                </div>
+
+            </div>
+
+            <!-- Bottom Row -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                
+                <!-- System Summary -->
+                <div style="background: white; padding: 24px; border-radius: 16px; border: 1px solid #e2e8f0;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                        <h3 style="font-size: 16px; font-weight: 700; color: #1e293b;">System Summary</h3>
+                        <button style="border: none; background: #f1f5f9; padding: 4px 12px; border-radius: 6px; font-size: 12px; color: #475569; cursor: pointer;" onclick="showSection('trainers')">View All</button>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 8px;">
+                            <div style="width: 40px; height: 40px; background: #3b82f6; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white;">
+                                <i class="fas fa-dumbbell"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 14px; font-weight: 600; color: #1e293b;">Equipment Health</div>
+                                <div style="height: 6px; background: #f1f5f9; border-radius: 3px; margin-top: 8px; overflow: hidden;">
+                                    <div style="width: <?php echo $eqHealth; ?>%; height: 100%; background: #3b82f6;"></div>
+                                </div>
+                            </div>
+                            <div style="font-weight: 700; color: #3b82f6;"><?php echo $eqHealth; ?>%</div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div style="display: flex; gap: 15px; align-items: center;">
+                            <div style="width: 40px; height: 40px; background: #10b981; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white;">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 14px; font-weight: 600; color: #1e293b;">Trainer Availability</div>
+                                <div style="height: 6px; background: #f1f5f9; border-radius: 3px; margin-top: 8px; overflow: hidden;">
+                                    <div style="width: <?php echo $trainerAvailPct; ?>%; height: 100%; background: #10b981;"></div>
+                                </div>
+                            </div>
+                            <div style="font-weight: 700; color: #10b981;"><?php echo $trainerAvailPct; ?>%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Transactions List -->
+                <div style="background: white; padding: 24px; border-radius: 16px; border: 1px solid #e2e8f0;">
+                     <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                        <h3 style="font-size: 16px; font-weight: 700; color: #1e293b;">Recent Transactions</h3>
+                        <button style="border: none; background: #f1f5f9; padding: 4px 12px; border-radius: 6px; font-size: 12px; color: #475569; cursor: pointer;" onclick="showSection('orders')">View All</button>
+                    </div>
+                     <div style="display: flex; flex-direction: column; gap: 12px; max-height: 200px; overflow-y: auto;">
+                        <?php 
+                        if(isset($shopOrders) && count($shopOrders) > 0):
+                            foreach(array_slice($shopOrders, 0, 4) as $order):
+                        ?>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="width: 36px; height: 36px; background: #f0fdf4; color: #16a34a; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-receipt"></i>
+                                </div>
+                                <div>
+                                    <div style="font-size: 13px; font-weight: 600; color: #1e293b;">Order #<?php echo $order['order_id']; ?></div>
+                                    <div style="font-size: 11px; color: #64748b;"><?php echo $order['item_count']; ?> items • <?php echo date('M d', strtotime($order['order_date'])); ?></div>
+                                </div>
+                            </div>
+                            <div style="font-size: 13px; font-weight: 700; color: #16a34a;">+₹<?php echo number_format($order['total_amount']); ?></div>
+                        </div>
+                        <?php endforeach; else: ?>
+                            <div style="text-align: center; color: #94a3b8; font-size: 13px; padding: 20px;">No recent transactions</div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+            </div>
+
+            <script>
+            function exportSalesToCSV() {
+                let csvContent = "data:text/csv;charset=utf-8,";
+                csvContent += "Month,Total Sales,Performance\n";
+                // Select rows from the table
+                document.querySelectorAll('#reports-section table tbody tr').forEach(function(row) {
+                    let cols = row.querySelectorAll('td');
+                    if(cols.length === 3) {
+                        let rowData = [
+                            cols[0].innerText,
+                            cols[1].innerText.replace('₹', '').replace(',', ''),
+                            cols[2].innerText
+                        ];
+                        csvContent += rowData.join(",") + "\n";
+                    }
+                });
+                var encodedUri = encodeURI(csvContent);
+                var link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "shop_sales_performance.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+            </script>
+
+
+            <!-- Init Charts -->
+
         </div>
 
         <!-- Settings Section -->

@@ -1046,16 +1046,74 @@ $gStmt->close();
         // For now, showing it based on URL or just on load as requested "pop an message here"
         
         document.addEventListener('DOMContentLoaded', () => {
-             // To show only once per session, uncomment below:
-             // if (!sessionStorage.getItem('subscriptionModalShown')) {
-                 const modal = document.getElementById('subscriptionModal');
-                 if(modal) {
-                     setTimeout(() => {
-                        modal.style.display = 'flex';
-                     }, 500); // Small delay for effect
+             // Sync stats from LocalStorage
+             const userId = "<?php echo $_SESSION['user_id']; ?>";
+             const S_KEY = (k) => `${k}_${userId}`;
+             
+             const logs = JSON.parse(localStorage.getItem(S_KEY('fitnova_logs')) || '[]');
+             const weight = localStorage.getItem(S_KEY('fitnova_weight')) || 0;
+
+             // Calculate Totals
+             const totalCalories = logs.reduce((sum, log) => sum + parseInt(log.calories || 0), 0);
+             const totalWorkouts = logs.length;
+             const totalTimeMinutes = logs.reduce((sum, log) => sum + parseInt(log.duration || 0), 0);
+             const totalTimeHours = (totalTimeMinutes / 60).toFixed(1);
+
+             // Calculate Weekly Progress
+             const today = new Date();
+             const startOfWeek = new Date(today);
+             startOfWeek.setDate(today.getDate() - today.getDay() + 1); // Monday
+             startOfWeek.setHours(0,0,0,0);
+             
+             const weeklyCals = logs.reduce((sum, log) => {
+                 let logDate;
+                 if(log.timestamp) {
+                     logDate = new Date(log.timestamp);
+                 } else {
+                     logDate = new Date(log.date + ', ' + today.getFullYear()); 
                  }
-                 // sessionStorage.setItem('subscriptionModalShown', 'true');
-             // }
+                 
+                 // If invalid date (e.g. parsing failed), skip
+                 if(isNaN(logDate.getTime())) return sum;
+
+                 if (logDate >= startOfWeek) return sum + parseInt(log.calories);
+                 return sum;
+             }, 0);
+             
+             const targetCals = 2000;
+             const percent = Math.min(100, Math.round((weeklyCals / targetCals) * 100));
+
+             // Update DOM Elements
+             const elCals = document.getElementById('dashCalories');
+             const elTime = document.getElementById('dashTime');
+             const elWorkouts = document.getElementById('dashWorkouts');
+             const elWeight = document.getElementById('dashWeight');
+             
+             if(elCals) elCals.innerText = totalCalories.toLocaleString();
+             if(elTime) elTime.innerText = totalTimeHours + 'h';
+             if(elWorkouts) elWorkouts.innerText = totalWorkouts;
+             if(elWeight) elWeight.innerText = weight + 'kg';
+
+             // Weekly Goal
+             const elProgVal = document.querySelector('.progress-value');
+             const elProgCircle = document.querySelector('.progress-circle');
+             const elWeeklyCals = document.querySelector('.daily-goals-list .goal-item strong');
+
+             if(elProgVal && elProgCircle) {
+                 elProgVal.innerHTML = `${percent}% <span class="progress-label">Completed</span>`;
+                 elProgCircle.style.background = `conic-gradient(var(--accent-color) ${percent}%, #f0f0f0 0)`;
+             }
+             if(elWeeklyCals) {
+                  elWeeklyCals.innerText = `${weeklyCals.toLocaleString()} / ${targetCals.toLocaleString()}`;
+             }
+
+             // Modal Logic
+             const modal = document.getElementById('subscriptionModal');
+             if(modal) {
+                 setTimeout(() => {
+                    modal.style.display = 'flex';
+                 }, 500); 
+             }
         });
 
         function closeSubscriptionModal() {

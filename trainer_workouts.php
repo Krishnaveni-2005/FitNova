@@ -123,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             // Update
             $sql = "UPDATE trainer_workouts SET plan_name=?, difficulty=?, days_per_week=?, exercises=? WHERE workout_id=? AND trainer_id=?";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("ssisi", $planName, $difficulty, $freq, $details, $workoutId, $trainerId);
+            $stmt->bind_param("ssisii", $planName, $difficulty, $freq, $details, $workoutId, $trainerId);
         } else {
             // New
             $sql = "INSERT INTO trainer_workouts (trainer_id, user_id, client_name, plan_name, difficulty, duration_weeks, days_per_week, exercises) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";

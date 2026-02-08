@@ -441,10 +441,16 @@ $gStmt->close();
                 <i class="fas fa-home"></i> Lite Dashboard
             </a>
             <a href="view_my_workout.php" class="menu-item">
-                <i class="fas fa-dumbbell"></i> Workout Plans
+                <i class="fas fa-clipboard-list"></i> Workout Plans
             </a>
-            <a href="healthy_recipes.php" class="menu-item">
-                <i class="fas fa-utensils"></i> Recipes
+            <a href="view_my_diet.php" class="menu-item">
+                <i class="fas fa-utensils"></i> Diet Plans
+            </a>
+            <a href="view_my_workout.php?view_personal=1&trainer_id=<?php echo $assignedTrainerId; ?>" class="menu-item">
+                <i class="fas fa-dumbbell"></i> Trainer's Workout
+            </a>
+            <a href="view_my_diet.php?view_personal=1&trainer_id=<?php echo $assignedTrainerId; ?>" class="menu-item">
+                <i class="fas fa-apple-alt"></i> Trainer's Diet
             </a>
             <a href="my_progress.php" class="menu-item">
                 <i class="fas fa-chart-line"></i> Basic Progress
@@ -502,6 +508,19 @@ $gStmt->close();
                              </form>
                          </div>
                     </div>
+                <?php elseif ($currentAssignmentStatus === 'approved'): ?>
+                    <div style="background: white; padding: 10px 20px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); display: flex; align-items: center; gap: 15px; border: 1px solid var(--success-color);">
+                         <div style="width: 40px; height: 40px; background: var(--success-color); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-user-check"></i>
+                         </div>
+                         <div>
+                             <div style="font-weight: 700; color: var(--primary-color); font-size: 14px;">Coach <?php echo htmlspecialchars($currentTrainerName); ?></div>
+                             <div style="font-size: 12px; color: var(--text-light);">Your Personal Trainer</div>
+                         </div>
+                         <a href="messages.php?trainer=<?php echo $assignedTrainerId; ?>" style="background: var(--primary-color); color:white; padding:8px 20px; border-radius:20px; text-decoration:none; font-size:12px; margin-left:10px;">
+                            <i class="fas fa-comment-dots"></i> Chat
+                         </a>
+                    </div>
                 <?php endif; ?>
             </div>
         </header>
@@ -510,8 +529,25 @@ $gStmt->close();
         <div class="stats-grid">
             <div class="stat-card blue">
                 <div><i class="fas fa-fire" style="color: var(--primary-color);"></i> Calories Burned</div>
-                <div class="stat-value">0</div>
+                <div class="stat-value" id="dashboardCalories">0</div>
             </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    const userId = "<?php echo $_SESSION['user_id']; ?>";
+                    const calKey = `fitnova_calories_${userId}`;
+                    const workKey = `fitnova_workouts_${userId}`;
+                    
+                    const savedCalories = localStorage.getItem(calKey);
+                    if (savedCalories) {
+                        document.getElementById('dashboardCalories').innerText = parseInt(savedCalories).toLocaleString();
+                    }
+                    
+                    const savedWorkouts = localStorage.getItem(workKey);
+                    if (savedWorkouts) {
+                        document.getElementById('dashboardWorkouts').innerText = parseInt(savedWorkouts);
+                    }
+                });
+            </script>
             <div class="stat-card gold">
                 <div><i class="fas fa-dumbbell" style="color: #8D99AE;"></i> Current Weight</div>
                 <div class="stat-value"><?php echo $profile['weight_kg'] ?? '0'; ?>kg</div>
@@ -525,8 +561,12 @@ $gStmt->close();
                 $wCount = $wStmt->get_result()->fetch_assoc()['count'];
                 $wStmt->close();
                 ?>
-                <div><i class="fas fa-clipboard-list" style="color: var(--success-color);"></i> Workout Plans</div>
+                <div><i class="fas fa-clipboard-list" style="color: var(--success-color);"></i> Assigned Plans</div>
                 <div class="stat-value"><?php echo $wCount; ?></div>
+            </div>
+            <div class="stat-card blue">
+                <div><i class="fas fa-running" style="color: var(--secondary-color);"></i> Workouts Logged</div>
+                <div class="stat-value" id="dashboardWorkouts">0</div>
             </div>
         </div>
 
