@@ -197,6 +197,14 @@ require 'db_connect.php';
                 <i id="gym-status-icon" class="fas <?php echo $iconClass; ?>" style="color: <?php echo $iconColor; ?>; margin-right: 12px; font-size: 1.2rem;"></i>
                 <span id="gym-status-text" style="font-weight: 600; font-size: 1.1rem; letter-spacing: 0.5px;"><?php echo htmlspecialchars($timeText); ?></span>
             </div>
+
+            <div style="margin-top: 25px; font-size: 1.1rem; color: rgba(255, 255, 255, 1); text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
+                <p>
+                    <i class="fas fa-user-tie" style="margin-right: 8px; color: #4FACFE;"></i>Owner: <strong>Asha</strong> 
+                    &nbsp;&nbsp;<span style="opacity: 0.5;">|</span>&nbsp;&nbsp; 
+                    <i class="fas fa-phone" style="margin-right: 8px; color: #00DBDE;"></i>Contact: <strong>9495868854</strong>
+                </p>
+            </div>
         </div>
     </header>
 

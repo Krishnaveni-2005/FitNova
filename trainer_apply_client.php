@@ -39,6 +39,19 @@ if ($clientId > 0) {
         $msg = "Coach $trainerName has sent you a training invite based on Admin recommendation.";
         $conn->query("INSERT INTO user_notifications (user_id, notification_type, message) VALUES ($clientId, 'trainer_invite', '$msg')");
         
+        // 4. Send WhatsApp to Admin (Confirmation that Trainer accepted match)
+        // Need client name
+        $cRes = $conn->query("SELECT first_name, last_name FROM users WHERE user_id = $clientId");
+        $cName = ($r = $cRes->fetch_assoc()) ? $r['first_name'] . ' ' . $r['last_name'] : "Client #$clientId";
+        
+        $adminMsg = "Update: Trainer $trainerName has accepted the match for Client $cName and sent an invite.";
+        
+        require_once 'twilio_helper.php';
+        if (function_exists('sendWhatsAppNotification')) {
+             // Send to Admin (Default number in config)
+             sendWhatsAppNotification($adminMsg);
+        }
+        
         echo json_encode(['success' => true]);
     } else {
         echo json_encode(['success' => false, 'message' => 'Opportunity is no longer available or valid.']);

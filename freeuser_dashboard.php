@@ -779,20 +779,26 @@ $gStmt->close();
                                 <span class="progress-label">Completed</span>
                             </div>
                         </div>
-                        <p style="color: var(--text-light); font-size: 14px; margin-bottom: 20px;">Start tracking your goals today to see your progress!</p>
+                        <p style="color: var(--text-light); font-size: 14px; margin-bottom: 20px;">Track your weekly calorie burn & daily habits!</p>
 
                         <div class="daily-goals-list">
                             <div class="goal-item">
-                                <span>Calories</span>
-                                <strong>0 / 2,000</strong>
+                                <span><i class="fas fa-fire" style="color: var(--accent-color); margin-right: 8px;"></i>Weekly Burn</span>
+                                <strong id="goalCalories">0 / 2,000</strong>
                             </div>
                             <div class="goal-item">
-                                <span>Water Intake</span>
-                                <strong>0L / 3L</strong>
+                                <span><i class="fas fa-tint" style="color: #3498DB; margin-right: 8px;"></i>Water (Today)</span>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <strong id="dashWater">0L / 3L</strong>
+                                    <button onclick="addWater()" style="background: #3498DB; color: white; border: none; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px;"><i class="fas fa-plus"></i></button>
+                                </div>
                             </div>
                             <div class="goal-item">
-                                <span>Sleep</span>
-                                <strong>0h / 8h</strong>
+                                <span><i class="fas fa-bed" style="color: #9B59B6; margin-right: 8px;"></i>Sleep (Last Night)</span>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <strong id="dashSleep">0h / 8h</strong>
+                                    <button onclick="addSleep()" style="background: #9B59B6; color: white; border: none; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px;"><i class="fas fa-plus"></i></button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1094,18 +1100,51 @@ $gStmt->close();
              if(elWorkouts) elWorkouts.innerText = totalWorkouts;
              if(elWeight) elWeight.innerText = weight + 'kg';
 
-             // Weekly Goal
+             // Weekly Goal (Calories)
              const elProgVal = document.querySelector('.progress-value');
              const elProgCircle = document.querySelector('.progress-circle');
-             const elWeeklyCals = document.querySelector('.daily-goals-list .goal-item strong');
+             const elGoalCalories = document.getElementById('goalCalories');
 
              if(elProgVal && elProgCircle) {
                  elProgVal.innerHTML = `${percent}% <span class="progress-label">Completed</span>`;
                  elProgCircle.style.background = `conic-gradient(var(--accent-color) ${percent}%, #f0f0f0 0)`;
              }
-             if(elWeeklyCals) {
-                  elWeeklyCals.innerText = `${weeklyCals.toLocaleString()} / ${targetCals.toLocaleString()}`;
+             if(elGoalCalories) {
+                  elGoalCalories.innerText = `${weeklyCals.toLocaleString()} / ${targetCals.toLocaleString()}`;
              }
+
+             // Water & Sleep Logic (Daily Habits)
+             const todayStr = new Date().toLocaleDateString();
+             const lastDate = localStorage.getItem(S_KEY('fitnova_last_date'));
+             
+             if(lastDate !== todayStr) {
+                 localStorage.setItem(S_KEY('fitnova_last_date'), todayStr);
+                 localStorage.setItem(S_KEY('fitnova_water'), 0);
+                 localStorage.setItem(S_KEY('fitnova_sleep'), 0);
+             }
+
+             let water = parseFloat(localStorage.getItem(S_KEY('fitnova_water')) || 0);
+             let sleep = parseFloat(localStorage.getItem(S_KEY('fitnova_sleep')) || 0);
+             
+             const updateHabits = () => {
+                 const elWater = document.getElementById('dashWater');
+                 const elSleep = document.getElementById('dashSleep');
+                 if(elWater) elWater.innerText = `${water.toFixed(1).replace('.0','')}L / 3L`;
+                 if(elSleep) elSleep.innerText = `${sleep.toFixed(1).replace('.0','')}h / 8h`;
+             };
+             updateHabits();
+
+             window.addWater = () => {
+                 water = Math.min(5, water + 0.25); // +250ml
+                 localStorage.setItem(S_KEY('fitnova_water'), water);
+                 updateHabits();
+             };
+             
+             window.addSleep = () => {
+                 sleep = Math.min(12, sleep + 0.5); // +30min
+                 localStorage.setItem(S_KEY('fitnova_sleep'), sleep);
+                 updateHabits();
+             };
 
              // Modal Logic
              const modal = document.getElementById('subscriptionModal');

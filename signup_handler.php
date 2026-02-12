@@ -347,6 +347,14 @@ else {
         if ($isTrainer) {
             // Send pending approval email to trainer
             @sendTrainerPendingEmail($email, $firstName);
+
+            // Send Admin Notification (Dash + WhatsApp)
+            require_once 'admin_notifications.php';
+            $adminMsg = "Trainer $firstName $lastName has requested approval to join FitNova.";
+            if (function_exists('sendAdminNotification')) {
+                sendAdminNotification($conn, $adminMsg);
+            }
+
             $response["message"] = "Application submitted! Your trainer account is pending approval. Check your email for details.";
             $response["redirect"] = "login.php";
         } else {

@@ -1544,3 +1544,32 @@ Stack trace:
 Stack trace:
 #0 {main}
   thrown in C:\xamppp\htdocs\fitnova\admin_product_action.php on line 103
+[11-Feb-2026 05:23:18 Europe/Berlin] WhatsApp payment notification sent successfully to +918078998813
+[11-Feb-2026 05:36:08 Europe/Berlin] WhatsApp welcome message sent successfully to +919074585775
+[11-Feb-2026 05:39:16 Europe/Berlin] WhatsApp payment notification sent successfully to +919074585775
+[11-Feb-2026 07:25:15 Europe/Berlin] WhatsApp sent to trainer Agnus Sabu for client match
+[11-Feb-2026 07:25:16 Europe/Berlin] WhatsApp sent to client Krishnananda R Nair for trainer match
+[11-Feb-2026 07:59:35 Europe/Berlin] WhatsApp sent to trainer Agnus Sabu for client match
+[11-Feb-2026 07:59:36 Europe/Berlin] WhatsApp sent to client Krishnananda R Nair for trainer match
+[12-Feb-2026 05:32:45 Europe/Berlin] WhatsApp sent to trainer Agnus Sabu for client match
+[12-Feb-2026 05:32:45 Europe/Berlin] WhatsApp sent to client Krishnananda R Nair for trainer match
+[12-Feb-2026 05:42:42 Europe/Berlin] WhatsApp sent to trainer Agnus Sabu for client match
+[12-Feb-2026 05:42:43 Europe/Berlin] WhatsApp sent to client Krishnananda R Nair for trainer match
+[12-Feb-2026 05:42:43 Europe/Berlin] DEBUG: Starting admin notification for match: Krishnananda R Nair -> Agnus Sabu
+[12-Feb-2026 05:42:43 Europe/Berlin] DEBUG: Admin phone retrieved: NULL
+[12-Feb-2026 05:42:43 Europe/Berlin] ERROR: Admin phone is empty/null
+[12-Feb-2026 06:33:16 Europe/Berlin] PHP Parse error:  Unmatched '}' in C:\xamppp\htdocs\fitnova\notification_helper.php on line 24
+[12-Feb-2026 06:33:16 Europe/Berlin] PHP Parse error:  Unmatched '}' in C:\xamppp\htdocs\fitnova\notification_helper.php on line 24
+[12-Feb-2026 06:50:24 Europe/Berlin] Sent admin notification to krishnavenirnair2005@gmail.com (ID: 1)
+[12-Feb-2026 06:59:07 Europe/Berlin] Sent admin notification to krishnavenirnair2005@gmail.com (ID: 1)
+[12-Feb-2026 06:59:41 Europe/Berlin] Sent admin notification to krishnavenirnair2005@gmail.com (ID: 1)
+[12-Feb-2026 06:59:46 Europe/Berlin] Sent admin notification to krishnavenirnair2005@gmail.com (ID: 1)
+[12-Feb-2026 07:06:01 Europe/Berlin] Sent admin notification to krishnavenirnair2005@gmail.com (ID: 1)
+[12-Feb-2026 07:30:09 Europe/Berlin] Sent admin notification to krishnavenirnair2005@gmail.com (ID: 1)
+[12-Feb-2026 08:00:11 Europe/Berlin] Sent admin notification to krishnavenirnair2005@gmail.com (ID: 1)
+[12-Feb-2026 08:05:25 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function fetch_assoc() on bool in C:\xamppp\htdocs\fitnova\admin_notify_trainer.php:38
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\admin_notify_trainer.php on line 38
+[12-Feb-2026 08:06:28 Europe/Berlin] PHP Warning:  Undefined variable $trainerInitials in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 196
+[12-Feb-2026 08:06:28 Europe/Berlin] PHP Warning:  Undefined variable $trainerName in C:\xamppp\htdocs\fitnova\trainer_workouts.php on line 199

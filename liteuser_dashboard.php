@@ -48,6 +48,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Step 2: Set Client Status to 'looking_for_trainer'
         $conn->query("UPDATE users SET assignment_status = 'looking_for_trainer' WHERE user_id = $userId");
+
+        // Step 3: Notify Admin (WhatsApp + Dashboard)
+        require_once 'admin_notifications.php';
+        $adminMsg = "Lite User $userName has requested a trainer match.\nGoal: $goal\nStyle: $style";
+        if (function_exists('sendAdminNotification')) {
+            sendAdminNotification($conn, $adminMsg);
+        }
         header("Location: liteuser_dashboard.php"); exit();
     }
 
@@ -501,6 +508,7 @@ $gStmt->close();
                              <div style="font-size: 12px; color: var(--text-light);">Sent you a request</div>
                          </div>
                          <div style="display:flex; gap:5px;">
+                             <a href="trainer_profile.php?id=<?php echo $assignedTrainerId; ?>" target="_blank" style="background: #8b5cf6; color:white; padding:6px 15px; border-radius:20px; text-decoration:none; font-size:12px;">Profile</a>
                              <a href="messages.php?trainer=<?php echo $assignedTrainerId; ?>" style="background: var(--primary-color); color:white; padding:6px 15px; border-radius:20px; text-decoration:none; font-size:12px;">Chat</a>
                              <form method="POST" style="display:flex; gap:5px;">
                                  <button type="submit" name="accept_invite" style="background: var(--success-color); color:white; border:none; padding:6px 15px; border-radius:20px; font-weight:600; cursor:pointer; font-size:12px;">Accept</button>

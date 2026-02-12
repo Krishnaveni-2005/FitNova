@@ -14,11 +14,24 @@ $data = json_decode($json, true);
 
 $plan = $conn->real_escape_string($data['plan'] ?? '');
 $billing = $conn->real_escape_string($data['billing'] ?? '');
+$razorpayPaymentId = $conn->real_escape_string($data['razorpay_payment_id'] ?? '');
+$razorpayOrderId = $conn->real_escape_string($data['razorpay_order_id'] ?? '');
 
 if (empty($plan)) {
     echo json_encode(["status" => "error", "message" => "Invalid plan selected"]);
     exit();
 }
+
+// Calculate payment amounts
+$plans = [
+    'lite' => ['name' => 'Lite Member', 'monthly' => 2499, 'yearly' => 7999],
+    'pro' => ['name' => 'Pro Member', 'monthly' => 4999, 'yearly' => 8999]
+];
+
+$selectedPlan = $plans[$plan];
+$baseAmount = ($billing === 'yearly') ? $selectedPlan['yearly'] : $selectedPlan['monthly'];
+$taxAmount = $baseAmount * 0.18;
+$totalAmount = $baseAmount + $taxAmount;
 
 // Map plans to roles
 $role = "free";
@@ -34,6 +47,20 @@ $stmt->bind_param("si", $role, $userId);
 if ($stmt->execute()) {
     $_SESSION['user_role'] = $role; // Update session
     $message = "Plan updated successfully";
+    
+    // Generate unique receipt number
+    $receiptNumber = 'FN' . date('Ymd') . str_pad($userId, 4, '0', STR_PAD_LEFT) . rand(1000, 9999);
+    
+    // Save payment receipt to database
+    $receiptSql = "INSERT INTO payment_receipts (user_id, plan_name, billing_cycle, base_amount, tax_amount, total_amount, razorpay_payment_id, razorpay_order_id, receipt_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    $receiptStmt = $conn->prepare($receiptSql);
+    $receiptStmt->bind_param("issdddsss", $userId, $selectedPlan['name'], $billing, $baseAmount, $taxAmount, $totalAmount, $razorpayPaymentId, $razorpayOrderId, $receiptNumber);
+    
+    $receiptId = null;
+    if ($receiptStmt->execute()) {
+        $receiptId = $conn->insert_id;
+    }
+    $receiptStmt->close();
     
     // Handle Automatic Trainer Hire Request
     $trainerId = isset($data['trainer_id']) ? intval($data['trainer_id']) : 0;
@@ -62,7 +89,12 @@ if ($stmt->execute()) {
         $hireStmt->close();
     }
 
-    echo json_encode(["status" => "success", "message" => $message, "redirect" => $role . "user_dashboard.php"]);
+    // Return success with receipt ID - redirect directly to receipt
+    echo json_encode([
+        "status" => "success", 
+        "message" => $message, 
+        "redirect" => "payment_receipt.php?id=" . $receiptId
+    ]);
 } else {
     echo json_encode(["status" => "error", "message" => "Database error: " . $conn->error]);
 }

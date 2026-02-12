@@ -18,14 +18,18 @@ checkColumn($conn, 'trainer_workouts', 'user_id');
 checkColumn($conn, 'users', 'assigned_trainer_id');
 checkColumn($conn, 'users', 'trainer_specialization');
 
-echo "<h3>Adding Missing Columns if needed...</h3>";
-
-// Add gym_membership_status
-$conn->query("ALTER TABLE users ADD COLUMN gym_membership_status ENUM('active', 'inactive') DEFAULT 'inactive'");
-
-// Add user_id to diet/workout if missing (re-run safe)
-$conn->query("ALTER TABLE trainer_diet_plans ADD COLUMN user_id INT AFTER trainer_id");
-$conn->query("ALTER TABLE trainer_workouts ADD COLUMN user_id INT AFTER trainer_id");
+// Check full columns of client_profiles
+echo "<h3>Full Schema of client_profiles:</h3>";
+$res = $conn->query("SHOW COLUMNS FROM client_profiles");
+if ($res) {
+    echo "<table border='1'><tr><th>Field</th><th>Type</th></tr>";
+    while($row = $res->fetch_assoc()) {
+        echo "<tr><td>" . $row['Field'] . "</td><td>" . $row['Type'] . "</td></tr>";
+    }
+    echo "</table>";
+} else {
+    echo "Table client_profiles probably doesn't exist.";
+}
 
 // Verify again
 echo "<h3>Re-verification:</h3>";

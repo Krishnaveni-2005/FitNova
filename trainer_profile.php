@@ -107,7 +107,7 @@ $msg = isset($_GET['msg']) ? $_GET['msg'] : '';
 
 if ($user_id) {
     // Check current status
-    $statusSql = "SELECT assigned_trainer_id, assignment_status FROM users WHERE user_id = ?";
+    $statusSql = "SELECT first_name, last_name, assigned_trainer_id, assignment_status FROM users WHERE user_id = ?";
     $stmt = $conn->prepare($statusSql);
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
@@ -115,6 +115,7 @@ if ($user_id) {
     if ($statusRes) {
         $current_status = $statusRes['assignment_status'];
         $assigned_id = $statusRes['assigned_trainer_id'];
+        $clientName = $statusRes['first_name'] . ' ' . $statusRes['last_name'];
     }
     $stmt->close();
     
@@ -140,7 +141,18 @@ if ($user_id) {
                 $nStmt->bind_param("is", $user_id, $notifMsg);
                 $nStmt->execute();
                 $nStmt->close();
+
+                // Send Admin Notification (Dash + WhatsApp)
+                require_once 'admin_notifications.php';
+                $adminMsg = "Client $clientName has requested a trainer.";
+                // Note: sendAdminNotification is globally available now
+                if (function_exists('sendAdminNotification')) {
+                    sendAdminNotification($conn, $adminMsg);
+                } else {
+                    error_log("sendAdminNotification function missing in trainer_profile.php");
+                }
             }
+
             $stmt->close();
         }
     }

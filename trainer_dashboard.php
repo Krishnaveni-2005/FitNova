@@ -121,14 +121,32 @@ if ($stmt) {
 
 
 
-// Fetch Admin-Referenced Opportunities
+// Fetch Admin-Referenced Opportunities & Pending Invites
 $opportunities = [];
-$oppSql = "SELECT u.user_id, u.first_name, u.last_name, cp.fitness_goals 
+
+// 1. Admin Suggested (Potential Matches)
+$oppSql = "SELECT u.user_id, u.first_name, u.last_name, cp.primary_goal as fitness_goals, 'suggestion' as type 
            FROM users u 
            JOIN trainer_applications ta ON u.user_id = ta.client_id
            LEFT JOIN client_profiles cp ON u.user_id = cp.user_id 
            WHERE ta.trainer_id = ? AND ta.status = 'admin_suggested'";
 $stmt = $conn->prepare($oppSql);
+if ($stmt) {
+    $stmt->bind_param("i", $trainerId);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    while ($row = $res->fetch_assoc()) {
+        $opportunities[] = $row;
+    }
+    $stmt->close();
+}
+
+// 2. Pending Invites(Sent by Admin or Trainer, waiting for Client)
+$invSql = "SELECT u.user_id, u.first_name, u.last_name, cp.primary_goal as fitness_goals, 'invite_sent' as type
+           FROM users u 
+           LEFT JOIN client_profiles cp ON u.user_id = cp.user_id 
+           WHERE u.assigned_trainer_id = ? AND u.assignment_status = 'trainer_invite'";
+$stmt = $conn->prepare($invSql);
 if ($stmt) {
     $stmt->bind_param("i", $trainerId);
     $stmt->execute();
@@ -680,11 +698,15 @@ if ($stmt) {
                              $oppInitials = strtoupper(substr($opp['first_name'], 0, 1) . substr($opp['last_name'], 0, 1));
                         ?>
                         <div class="client-item" id="opp-<?php echo $opp['user_id']; ?>" style="background: white; border: 1px solid #fcd34d;">
-                            <div class="user-avatar" style="background: #fbbf24; color: white;"><?php echo $oppInitials; ?></div>
+                            <div class="user-avatar" style="min-width: 40px; width: 40px; height: 40px; background: #fbbf24; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px;"><?php echo $oppInitials; ?></div>
                             <div class="client-info">
                                 <h5><?php echo htmlspecialchars($opp['first_name'] . ' ' . $opp['last_name']); ?></h5>
                                 <p>Goal: <?php echo htmlspecialchars($opp['fitness_goals'] ?? 'Fitness'); ?></p>
-                                <button onclick="sendInvite(<?php echo $opp['user_id']; ?>)" class="btn-action" style="background:#b45309; color:white; width:100%; margin-top:5px;">Send Invite</button>
+                                <?php if (isset($opp['type']) && $opp['type'] === 'invite_sent'): ?>
+                                    <button disabled class="btn-action" style="background:#6b7280; color:white; width:100%; margin-top:5px; cursor:not-allowed;">Waiting for Client</button>
+                                <?php else: ?>
+                                    <button onclick="sendInvite(<?php echo $opp['user_id']; ?>)" class="btn-action" style="background:#b45309; color:white; width:100%; margin-top:5px;">Send Invite</button>
+                                <?php endif; ?>
                             </div>
                         </div>
                         <?php endforeach; ?>

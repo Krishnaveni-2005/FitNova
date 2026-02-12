@@ -145,7 +145,7 @@ if ($stmt->execute()) {
     // If approved, send approval email
     if ($action === 'approve') {
         // Get trainer details
-        $trainerStmt = $conn->prepare("SELECT first_name, email FROM users WHERE user_id = ?");
+        $trainerStmt = $conn->prepare("SELECT first_name, last_name, email FROM users WHERE user_id = ?");
         $trainerStmt->bind_param("i", $trainer_id);
         $trainerStmt->execute();
         $trainerResult = $trainerStmt->get_result();
@@ -153,6 +153,13 @@ if ($stmt->execute()) {
         if ($trainer = $trainerResult->fetch_assoc()) {
             // Send approval email
             @sendTrainerApprovalEmail($trainer['email'], $trainer['first_name']);
+
+            // Send Admin Notification (WhatsApp) confirming approval
+            require_once 'admin_notifications.php';
+            $adminMsg = "Trainer " . $trainer['first_name'] . " " . $trainer['last_name'] . " has been approved successfully.";
+            if (function_exists('sendAdminNotification')) {
+                sendAdminNotification($conn, $adminMsg);
+            }
         }
         $trainerStmt->close();
     }
