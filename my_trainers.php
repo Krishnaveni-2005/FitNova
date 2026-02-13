@@ -6,6 +6,22 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'pro') {
 }
 require "db_connect.php";
 
+// Handle Rating Submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_rating'])) {
+    $rating = intval($_POST['rating']);
+    $trainerIdVal = intval($_POST['trainer_id']);
+    $clientId = $_SESSION['user_id'];
+    
+    if ($rating >= 1 && $rating <= 5) {
+        $insStmt = $conn->prepare("INSERT INTO trainer_reviews (trainer_id, client_id, rating) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE rating = ?");
+        $insStmt->bind_param("iiii", $trainerIdVal, $clientId, $rating, $rating);
+        $insStmt->execute();
+        $insStmt->close();
+        header("Location: my_trainers.php");
+        exit();
+    }
+}
+
 // Ensure table exists (Self-healing)
 $conn->query("CREATE TABLE IF NOT EXISTS user_notifications (
     notification_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -81,6 +97,18 @@ if ($stmt) {
     $stmt->close();
 }
 
+
+// Fetch Existing Rating
+$userReview = 0;
+if ($assignedTrainerId > 0) {
+    if ($stmt = $conn->prepare("SELECT rating FROM trainer_reviews WHERE trainer_id = ? AND client_id = ?")) {
+        $stmt->bind_param("ii", $assignedTrainerId, $userId);
+        $stmt->execute();
+        $stmt->bind_result($userReview);
+        $stmt->fetch();
+        $stmt->close();
+    }
+}
 
 // Sync missing notifications
 if ($currentAssignmentStatus === 'pending' && !empty($currentTrainerName)) {
@@ -968,8 +996,8 @@ $gStmt->close();
                         <span class="trainer-status" style="background: rgba(40, 167, 69, 0.1); color: var(--success-color);">Active</span>
                     </div>
                     
-                    <div class="trainer-card" style="margin-bottom: 0;">
-                        <div style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, var(--secondary-color), var(--primary-color)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 36px; border: 4px solid var(--secondary-color); flex-shrink: 0;">
+                    <div class="trainer-card" style="margin-bottom: 0; padding: 15px;">
+                        <div style="width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, var(--secondary-color), var(--primary-color)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 24px; border: 3px solid var(--secondary-color); flex-shrink: 0;">
                             <?php 
                                 $nameParts = explode(' ', $currentTrainerName);
                                 echo strtoupper(substr($nameParts[0], 0, 1));
@@ -977,14 +1005,73 @@ $gStmt->close();
                             ?>
                         </div>
                         <div class="trainer-info" style="flex: 1;">
-                            <h4 style="font-size: 1.25rem; margin-bottom: 5px;">Coach <?php echo htmlspecialchars($currentTrainerName); ?></h4>
-                            <p style="font-size: 0.95rem; margin-bottom: 15px;">Certified Personal Trainer • FitNova Expert</p>
+                            <h4 style="font-size: 1.1rem; margin-bottom: 2px;">Coach <?php echo htmlspecialchars($currentTrainerName); ?></h4>
+                            <p style="font-size: 0.8rem; margin-bottom: 5px; color: #666;">Certified Personal Trainer • FitNova Expert</p>
                             
-                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                <a href="messages.php?trainer=<?php echo $assignedTrainerId; ?>" style="background-color: #0F2C59; color: white; padding: 10px 24px; border-radius: 50px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'"><i class="far fa-comment-dots"></i> Chat Now</a>
-                                <a href="trainer_profile.php?id=<?php echo $assignedTrainerId; ?>" style="background-color: #0F2C59; color: white; padding: 10px 24px; border-radius: 50px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'"><i class="far fa-user"></i> View Profile</a>
-                                <a href="view_my_workout.php?trainer_id=<?php echo $assignedTrainerId; ?>&view_personal=1" style="background-color: #0F2C59; color: white; padding: 10px 24px; border-radius: 50px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'"><i class="fas fa-dumbbell"></i> Workout Plan</a>
-                                <a href="view_my_diet.php?trainer_id=<?php echo $assignedTrainerId; ?>&view_personal=1" style="background-color: #0F2C59; color: white; padding: 10px 24px; border-radius: 50px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'"><i class="fas fa-utensils"></i> Diet Plan</a>
+                            <div class="trainer-rating-box" style="margin-bottom: 10px;">
+                                <?php if ($userReview > 0): ?>
+                                    <div class="user-rating-display" style="color: #f1c40f; font-size: 0.9rem;">
+                                        <?php for($i=1; $i<=5; $i++): ?>
+                                            <i class="<?php echo $i <= $userReview ? 'fas' : 'far'; ?> fa-star"></i>
+                                        <?php endfor; ?>
+                                        <span style="font-size: 0.75rem; color: #666; margin-left: 5px;">(You rated this)</span>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="rate-trainer-input" style="display: flex; align-items: center; gap: 5px;">
+                                        <span style="font-size: 0.8rem; color: #666; margin-right: 5px;">Rate:</span>
+                                        <div class="stars-input" style="cursor: pointer; color: #ddd; font-size: 1rem;">
+                                            <i class="far fa-star rating-star" data-value="1" onclick="submitRating(1)"></i>
+                                            <i class="far fa-star rating-star" data-value="2" onclick="submitRating(2)"></i>
+                                            <i class="far fa-star rating-star" data-value="3" onclick="submitRating(3)"></i>
+                                            <i class="far fa-star rating-star" data-value="4" onclick="submitRating(4)"></i>
+                                            <i class="far fa-star rating-star" data-value="5" onclick="submitRating(5)"></i>
+                                        </div>
+                                    </div>
+                                    <form id="ratingForm" method="POST" style="display:none;">
+                                        <input type="hidden" name="submit_rating" value="1">
+                                        <input type="hidden" name="trainer_id" value="<?php echo $assignedTrainerId; ?>">
+                                        <input type="hidden" name="rating" id="ratingInput">
+                                    </form>
+                                    <script>
+                                        function submitRating(val) {
+                                            if(confirm('Rate this trainer ' + val + ' stars?')) {
+                                                document.getElementById('ratingInput').value = val;
+                                                document.getElementById('ratingForm').submit();
+                                            }
+                                        }
+                                        // Hover effect
+                                        document.querySelectorAll('.rating-star').forEach(star => {
+                                            star.addEventListener('mouseover', function() {
+                                                const val = this.getAttribute('data-value');
+                                                document.querySelectorAll('.rating-star').forEach(s => {
+                                                    s.classList.remove('fas');
+                                                    s.classList.add('far');
+                                                    s.style.color = '#ddd';
+                                                    if(s.getAttribute('data-value') <= val) {
+                                                        s.classList.remove('far');
+                                                        s.classList.add('fas');
+                                                        s.style.color = '#f1c40f'; // Gold
+                                                    }
+                                                });
+                                            });
+                                        });
+                                        // Reset on mouseout
+                                        document.querySelector('.stars-input').addEventListener('mouseout', function() {
+                                             document.querySelectorAll('.rating-star').forEach(s => {
+                                                s.classList.remove('fas');
+                                                s.classList.add('far');
+                                                s.style.color = '#ddd';
+                                             });
+                                        });
+                                    </script>
+                                <?php endif; ?>
+                            </div>
+                            
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <a href="messages.php?trainer=<?php echo $assignedTrainerId; ?>" style="background-color: #0F2C59; color: white; padding: 6px 15px; border-radius: 50px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; font-weight: 500; font-size: 0.85rem; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'"><i class="far fa-comment-dots"></i> Chat</a>
+                                <a href="trainer_profile.php?id=<?php echo $assignedTrainerId; ?>" style="background-color: #0F2C59; color: white; padding: 6px 15px; border-radius: 50px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; font-weight: 500; font-size: 0.85rem; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'"><i class="far fa-user"></i> Profile</a>
+                                <a href="view_my_workout.php?trainer_id=<?php echo $assignedTrainerId; ?>&view_personal=1" style="background-color: #0F2C59; color: white; padding: 6px 15px; border-radius: 50px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; font-weight: 500; font-size: 0.85rem; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'"><i class="fas fa-dumbbell"></i> Workout</a>
+                                <a href="view_my_diet.php?trainer_id=<?php echo $assignedTrainerId; ?>&view_personal=1" style="background-color: #0F2C59; color: white; padding: 6px 15px; border-radius: 50px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; font-weight: 500; font-size: 0.85rem; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'"><i class="fas fa-utensils"></i> Diet</a>
                             </div>
                         </div>
                     </div>

@@ -9,7 +9,7 @@
     <style>
         :root { --primary-color: #0F2C59; --accent-color: #4FACFE; }
         body { background: #F8F9FA; font-family: 'Outfit', sans-serif; }
-        .hero { padding: 80px 0; background: linear-gradient(135deg, #2b32b2 0%, #1488cc 100%); color: white; text-align: center; }
+        .hero { padding: 80px 0; background: linear-gradient(135deg, #0F2C59 0%, #1565C0 100%); color: white; text-align: center; }
         .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
         
         .articles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }

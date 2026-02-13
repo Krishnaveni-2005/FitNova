@@ -304,17 +304,7 @@ if (!$article) {
     <div class="content-container">
         <?php echo $article['content']; ?>
         
-        <div style="margin-top: 50px; padding-top: 30px; border-top: 1px solid #eee; text-align: center;">
-            <p>Did you find this helpful?</p>
-            <div style="display: inline-flex; gap: 15px; align-items: center;">
-                <button onclick="toggleShare()" class="back-link" style="background: var(--primary-color); color: white; border: none; cursor: pointer; font-family: inherit; font-size: 1rem;">Share this Article</button>
-                <div id="shareMenu" class="share-menu" style="display: none; align-items: center; flex-direction: row;">
-                    <a href="#" onclick="shareWhatsApp(); return false;" class="share-btn share-wa" title="Share on WhatsApp">
-                        <i class="fab fa-whatsapp"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
+    
     </div>
     
     <script>

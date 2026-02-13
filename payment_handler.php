@@ -24,14 +24,28 @@ if (empty($plan)) {
 
 // Calculate payment amounts
 $plans = [
-    'lite' => ['name' => 'Lite Member', 'monthly' => 2499, 'yearly' => 7999],
-    'pro' => ['name' => 'Pro Member', 'monthly' => 4999, 'yearly' => 8999]
+    'lite' => ['name' => 'Lite Member', 'monthly' => 2499, '6months' => 4999, 'yearly' => 7999],
+    'pro' => ['name' => 'Pro Member', 'monthly' => 4999, '6months' => 8999, 'yearly' => 8999]
 ];
 
 $selectedPlan = $plans[$plan];
-$baseAmount = ($billing === 'yearly') ? $selectedPlan['yearly'] : $selectedPlan['monthly'];
+if ($billing === 'yearly') {
+    $baseAmount = $selectedPlan['yearly'];
+    $durationMonths = 12;
+} elseif ($billing === '6months') {
+    $baseAmount = $selectedPlan['6months'];
+    $durationMonths = 6;
+} else {
+    $baseAmount = $selectedPlan['monthly'];
+    $durationMonths = 1;
+}
+
 $taxAmount = $baseAmount * 0.18;
 $totalAmount = $baseAmount + $taxAmount;
+
+// Calculate subscription dates
+$subscriptionStart = date('Y-m-d');
+$subscriptionEnd = date('Y-m-d', strtotime("+{$durationMonths} months"));
 
 // Map plans to roles
 $role = "free";
@@ -52,13 +66,29 @@ if ($stmt->execute()) {
     $receiptNumber = 'FN' . date('Ymd') . str_pad($userId, 4, '0', STR_PAD_LEFT) . rand(1000, 9999);
     
     // Save payment receipt to database
-    $receiptSql = "INSERT INTO payment_receipts (user_id, plan_name, billing_cycle, base_amount, tax_amount, total_amount, razorpay_payment_id, razorpay_order_id, receipt_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    $receiptSql = "INSERT INTO payment_receipts (user_id, plan_name, billing_cycle, base_amount, tax_amount, total_amount, razorpay_payment_id, razorpay_order_id, receipt_number, subscription_start, subscription_end) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $receiptStmt = $conn->prepare($receiptSql);
-    $receiptStmt->bind_param("issdddsss", $userId, $selectedPlan['name'], $billing, $baseAmount, $taxAmount, $totalAmount, $razorpayPaymentId, $razorpayOrderId, $receiptNumber);
+    $receiptStmt->bind_param("issdddsssss", $userId, $selectedPlan['name'], $billing, $baseAmount, $taxAmount, $totalAmount, $razorpayPaymentId, $razorpayOrderId, $receiptNumber, $subscriptionStart, $subscriptionEnd);
     
     $receiptId = null;
     if ($receiptStmt->execute()) {
         $receiptId = $conn->insert_id;
+        
+        // Update or insert user subscription tracking
+        $subSql = "INSERT INTO user_subscriptions (user_id, current_plan, billing_cycle, subscription_start, subscription_end, can_switch_after, last_payment_id) 
+                   VALUES (?, ?, ?, ?, ?, ?, ?)
+                   ON DUPLICATE KEY UPDATE 
+                   current_plan = VALUES(current_plan),
+                   billing_cycle = VALUES(billing_cycle),
+                   subscription_start = VALUES(subscription_start),
+                   subscription_end = VALUES(subscription_end),
+                   can_switch_after = VALUES(can_switch_after),
+                   last_payment_id = VALUES(last_payment_id)";
+        
+        $subStmt = $conn->prepare($subSql);
+        $subStmt->bind_param("isssssi", $userId, $role, $billing, $subscriptionStart, $subscriptionEnd, $subscriptionEnd, $receiptId);
+        $subStmt->execute();
+        $subStmt->close();
     }
     $receiptStmt->close();
     

@@ -59,19 +59,21 @@ if ($is_mock && $trainer_name) {
     $stmt->close();
 
     // Ensure ratings table exists
-    $conn->query("CREATE TABLE IF NOT EXISTS trainer_ratings (
-        rating_id INT AUTO_INCREMENT PRIMARY KEY,
+    // Ensure reviews table exists
+    $conn->query("CREATE TABLE IF NOT EXISTS trainer_reviews (
+        review_id INT AUTO_INCREMENT PRIMARY KEY,
         trainer_id INT NOT NULL,
-        user_id INT NOT NULL,
-        rating DECIMAL(3,1) NOT NULL,
-        review TEXT,
+        client_id INT NOT NULL,
+        rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+        review_text TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (trainer_id) REFERENCES users(user_id),
-        FOREIGN KEY (user_id) REFERENCES users(user_id)
+        FOREIGN KEY (client_id) REFERENCES users(user_id),
+        UNIQUE KEY unique_review (trainer_id, client_id)
     )");
 
     // Fetch Average Rating
-    $rateSql = "SELECT AVG(rating) as avg_rating, COUNT(*) as count FROM trainer_ratings WHERE trainer_id = ?";
+    $rateSql = "SELECT AVG(rating) as avg_rating, COUNT(*) as count FROM trainer_reviews WHERE trainer_id = ?";
     $stmt = $conn->prepare($rateSql);
     $stmt->bind_param("i", $trainer_id);
     $stmt->execute();

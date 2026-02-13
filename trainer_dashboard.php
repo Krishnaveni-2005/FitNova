@@ -12,6 +12,10 @@ require "db_connect.php";
 
 $trainerId = $_SESSION['user_id'];
 
+require_once "gamification_helper.php";
+checkAndAwardTrainerBadges($trainerId);
+$tBadges = getUserBadges($trainerId);
+
 // Check Account Status explicitly from DB to prevent session bypass
 $statusSql = "SELECT account_status FROM users WHERE user_id = ?";
 $stmt = $conn->prepare($statusSql);
@@ -74,7 +78,7 @@ if ($stmt) {
 }
 
 // Fetch Rating
-$ratingSql = "SELECT AVG(rating) as avg_rating FROM trainer_ratings WHERE trainer_id = ?";
+$ratingSql = "SELECT AVG(rating) as avg_rating FROM trainer_reviews WHERE trainer_id = ?";
 $stmt = $conn->prepare($ratingSql);
 $rating = "0.0"; // Default
 if ($stmt) {
@@ -583,7 +587,10 @@ if ($stmt) {
                 <i class="fas fa-utensils"></i> Diet Plans
             </a>
             <a href="trainer_achievements.php" class="menu-item">
-                <i class="fas fa-medal"></i> Achievements
+                <i class="fas fa-certificate"></i> Certificates
+            </a>
+            <a href="my_badges.php" class="menu-item">
+                <i class="fas fa-medal"></i> My Badges
             </a>
             <a href="trainer_performance.php" class="menu-item">
                 <i class="fas fa-chart-line"></i> Performance
@@ -641,6 +648,49 @@ if ($stmt) {
                 <div class="stat-icon" style="background: #fdf2f8; color: #ec4899;"><i class="fas fa-star"></i></div>
                 <div class="stat-value"><?php echo $rating; ?></div>
                 <div class="stat-label">Coach Rating</div>
+            </div>
+        </div>
+
+        <!-- Gamification Section -->
+        <div class="section-box" style="margin-bottom: 30px; background: linear-gradient(to right, #ffffff, #f8f9fa);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 class="section-title" style="margin: 0;"><i class="fas fa-medal" style="color: #f1c40f;"></i> My Badges</h3>
+                <a href="my_badges.php" style="text-decoration: none; color: var(--primary-color); font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; background: white; padding: 6px 15px; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: all 0.2s ease;">
+                    View All <i class="fas fa-chevron-right" style="font-size: 0.8em;"></i>
+                </a>
+            </div>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <!-- Box 1: Badges Earned -->
+                <div style="flex: 0 0 150px; background: #fffbeb; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <i class="fas fa-certificate" style="font-size: 24px; color: #f59e0b; margin-bottom: 8px;"></i>
+                    <div style="font-size: 24px; font-weight: 800; color: #333;"><?php echo count($tBadges); ?></div>
+                    <div style="font-size: 12px; color: #666; font-weight: 600;">Badges Earned</div>
+                </div>
+                
+                <!-- Box 2: Rating -->
+                <div style="flex: 0 0 150px; background: #ecfdf5; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <i class="fas fa-star" style="font-size: 24px; color: #10b981; margin-bottom: 8px;"></i>
+                    <div style="font-size: 24px; font-weight: 800; color: #333;"><?php echo $rating; ?></div>
+                    <div style="font-size: 12px; color: #666; font-weight: 600;">Average Rating</div>
+                </div>
+
+                <!-- Badges Scroller -->
+                <div style="flex: 1; display: flex; gap: 15px; overflow-x: auto; padding-bottom: 5px; align-items: center;">
+                    <?php 
+                    $recentBadges = array_slice($tBadges, 0, 4);
+                    if (empty($recentBadges)): ?>
+                        <div style="color: #6c757d; font-style: italic; font-size: 0.9rem;">No badges earned yet. Keep coaching!</div>
+                    <?php else:
+                        foreach ($recentBadges as $badge): 
+                    ?>
+                        <div style="text-align: center; min-width: 80px;">
+                            <div style="width: 50px; height: 50px; background: <?php echo $badge['color']; ?>; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; box-shadow: 0 3px 6px rgba(0,0,0,0.1);">
+                                <i class="<?php echo $badge['icon_class']; ?>" style="color: white; font-size: 1.2rem;"></i>
+                            </div>
+                            <span style="font-size: 11px; color: #333; font-weight: 600; line-height: 1.2; display: block; max-width: 90px; margin: 0 auto;"><?php echo htmlspecialchars($badge['name']); ?></span>
+                        </div>
+                    <?php endforeach; endif; ?>
+                </div>
             </div>
         </div>
 

@@ -16,7 +16,7 @@
         }
         body { background-color: var(--bg-light); font-family: 'Outfit', sans-serif; }
         .hero {
-            background: linear-gradient(135deg, #0F2C59 0%, #00d2ff 100%);
+            background: linear-gradient(135deg, #0F2C59 0%, #1565C0 100%);
             color: white; padding: 80px 0; text-align: center; margin-bottom: 40px;
         }
         .hero h1 { font-size: 3rem; margin-bottom: 10px; }

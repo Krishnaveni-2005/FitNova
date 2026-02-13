@@ -209,6 +209,11 @@ if ($isLoggedIn) {
             
             <?php if ($isLoggedIn): ?>
                 <a href="<?php echo $dashboardLink; ?>" class="nav-link"><?php echo $dashboardLabel ?? 'Dashboard'; ?></a>
+                
+                <?php if(in_array($userRole, ['free', 'lite', 'pro', 'elite'])): ?>
+                    <a href="my_badges.php" class="nav-link">My Badges</a>
+                <?php endif; ?>
+
                 <a href="logout.php" class="btn-signup" style="background: var(--accent-color);">Logout</a>
             <?php else: ?>
                 <a href="#" onclick="handleTalkToExperts(event)" class="nav-link">Talk with Experts</a>

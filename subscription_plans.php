@@ -1,7 +1,39 @@
 <?php
 session_start();
+require 'db_connect.php';
+
 $currentRole = $_SESSION['user_role'] ?? 'guest';
+$userId = $_SESSION['user_id'] ?? 0;
+
+// Check current subscription status
+$canSwitch = true;
+$subscriptionEnd = null;
+$currentPlan = null;
+$daysUntilSwitch = 0;
+
+if ($userId > 0 && $currentRole !== 'free') {
+    $subSql = "SELECT current_plan, subscription_end, can_switch_after FROM user_subscriptions WHERE user_id = ?";
+    $subStmt = $conn->prepare($subSql);
+    $subStmt->bind_param("i", $userId);
+    $subStmt->execute();
+    $subResult = $subStmt->get_result();
+    
+    if ($subRow = $subResult->fetch_assoc()) {
+        $currentPlan = $subRow['current_plan'];
+        $subscriptionEnd = $subRow['subscription_end'];
+        $canSwitchAfter = $subRow['can_switch_after'];
+        
+        // Check if current date is before the can_switch_after date
+        $today = date('Y-m-d');
+        if ($today < $canSwitchAfter) {
+            $canSwitch = false;
+            $daysUntilSwitch = ceil((strtotime($canSwitchAfter) - strtotime($today)) / (60 * 60 * 24));
+        }
+    }
+    $subStmt->close();
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -274,6 +306,130 @@ $currentRole = $_SESSION['user_role'] ?? 'guest';
             box-shadow: none;
         }
 
+        /* Warning Banner */
+        .warning-banner {
+            background: linear-gradient(135deg, #f59e0b 0%, #dc2626 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .warning-banner h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.3rem;
+        }
+        
+        .warning-banner p {
+            margin: 0;
+            opacity: 0.95;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        
+        .modal-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h2 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .modal-body {
+            margin-bottom: 25px;
+        }
+        
+        .modal-body p {
+            line-height: 1.6;
+            color: var(--text-color);
+            margin-bottom: 15px;
+        }
+        
+        .agreement-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .agreement-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .agreement-checkbox label {
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+        
+        .modal-footer {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-cancel {
+            background: #e2e8f0;
+            color: var(--text-color);
+        }
+        
+        .btn-cancel:hover {
+            background: #cbd5e1;
+        }
+        
+        .btn-confirm {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-confirm:hover {
+            background: #1A3C6B;
+        }
+        
+        .btn-confirm:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
         }
     </style>
 </head>
@@ -284,8 +440,16 @@ $currentRole = $_SESSION['user_role'] ?? 'guest';
         <h1>Unlock Your Full Potential</h1>
         <p class="subtitle">Choose the plan that fits your fitness journey.</p>
 
+        <?php if (!$canSwitch && $currentRole !== 'free'): ?>
+        <div class="warning-banner">
+            <h3><i class="fas fa-exclamation-triangle"></i> Plan Switch Restricted</h3>
+            <p>You can switch plans in <?php echo $daysUntilSwitch; ?> days (on <?php echo date('F j, Y', strtotime($subscriptionEnd)); ?>)</p>
+            <p style="font-size: 0.9rem; margin-top: 10px;">No refunds are available for early plan switching. Please wait until your current subscription period ends.</p>
+        </div>
+        <?php endif; ?>
+
         <div class="toggle-container">
-            <span class="toggle-label">Monthly</span>
+            <span class="toggle-label">6 Months</span>
             <label class="switch">
                 <input type="checkbox" id="billingToggle">
                 <span class="slider"></span>
@@ -323,8 +487,8 @@ $currentRole = $_SESSION['user_role'] ?? 'guest';
             <div class="plan-card popular">
                 <div class="popular-tag">Best Value</div>
                 <div class="plan-name">Lite Member</div>
-                <div class="price" id="proPrice">₹2,499</div>
-                <p class="billing-text" id="proBilling">per month</p>
+                <div class="price" id="proPrice">₹4,999</div>
+                <p class="billing-text" id="proBilling">per 6 months</p>
                 <ul class="features">
                     <li><i class="fas fa-check"></i> Unlimited Workouts</li>
                     <li><i class="fas fa-check"></i> Custom Training Plans</li>
@@ -344,8 +508,8 @@ $currentRole = $_SESSION['user_role'] ?? 'guest';
             <!-- Pro Plan (Formerly Elite Spot, New Pro Details) -->
             <div class="plan-card">
                 <div class="plan-name">Pro</div>
-                <div class="price" id="elitePrice">₹4,999</div>
-                <p class="billing-text" id="eliteBilling">per month</p>
+                <div class="price" id="elitePrice">₹8,999</div>
+                <p class="billing-text" id="eliteBilling">per 6 months</p>
                 <ul class="features">
                     <li><i class="fas fa-check"></i> Everything in Lite</li>
                     <li><i class="fas fa-check"></i> Dedicated Personal Coach</li>
@@ -364,7 +528,41 @@ $currentRole = $_SESSION['user_role'] ?? 'guest';
 
     </div>
 
+    <!-- Plan Switch Agreement Modal -->
+    <div id="switchModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚠️ Plan Switch Agreement</h2>
+            </div>
+            <div class="modal-body">
+                <p><strong>IMPORTANT:</strong> Before switching your subscription plan, please read and agree to the following terms:</p>
+                
+                <ul style="line-height: 1.8; padding-left: 20px; color: #64748b;">
+                    <li>Your new plan will start immediately upon payment</li>
+                    <li><strong>No refunds will be provided</strong> for any unused portion of your current subscription</li>
+                    <li>Your subscription period is <strong><?php echo $currentRole === 'lite' || $currentRole === 'pro' ? '6 months' : '1 month'; ?></strong></li>
+                    <li>You cannot switch plans again until the subscription period ends</li>
+                    <li>All plan features will be activated after successful payment</li>
+                </ul>
+                
+                <div class="agreement-checkbox">
+                    <input type="checkbox" id="agreeCheckbox" />
+                    <label for="agreeCheckbox">I understand and agree to the no-refund policy and subscription terms</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn btn-cancel" onclick="closeModal()">Cancel</button>
+                <button class="modal-btn btn-confirm" id="confirmBtn" disabled onclick="proceedToPayment()">Confirm & Continue</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // PHP values
+        const canSwitch = <?php echo $canSwitch ? 'true' : 'false'; ?>;
+        const currentRole = '<?php echo $currentRole; ?>';
+        const daysUntilSwitch = <?php echo $daysUntilSwitch; ?>;
+        
         // Capture trainer ID if present
         const urlParams = new URLSearchParams(window.location.search);
         const trainerId = urlParams.get('trainer_id');
@@ -377,8 +575,59 @@ $currentRole = $_SESSION['user_role'] ?? 'guest';
         const eliteBilling = document.getElementById('eliteBilling');
         const btnLite = document.getElementById('btnLite');
         const btnProHigh = document.getElementById('btnProHigh');
+        const switchModal = document.getElementById('switchModal');
+        const agreeCheckbox = document.getElementById('agreeCheckbox');
+        const confirmBtn = document.getElementById('confirmBtn');
 
         let isYearly = false;
+        let pendingPlan = null;
+        let pendingBilling = null;
+
+        // Enable/disable confirm button based on checkbox
+        if (agreeCheckbox) {
+            agreeCheckbox.addEventListener('change', function() {
+                confirmBtn.disabled = !this.checked;
+            });
+        }
+
+        // Modal functions
+        function showModal(plan, billing) {
+            if (!canSwitch && currentRole !== 'free') {
+                alert(`You cannot switch plans yet. Please wait ${daysUntilSwitch} more days until your current subscription period ends.\n\nNo refunds are available for early switching.`);
+                return false;
+            }
+            
+            pendingPlan = plan;
+            pendingBilling = billing;
+            switchModal.style.display = 'block';
+            return true;
+        }
+
+        function closeModal() {
+            switchModal.style.display = 'none';
+            agreeCheckbox.checked = false;
+            confirmBtn.disabled = true;
+            pendingPlan = null;
+            pendingBilling = null;
+        }
+
+        function proceedToPayment() {
+            if (!agreeCheckbox.checked) {
+                alert('Please agree to the terms before continuing.');
+                return;
+            }
+            
+            let redirectUrl = `payment.php?plan=${pendingPlan}&billing=${pendingBilling}`;
+            if (trainerId) redirectUrl += `&trainer_id=${trainerId}`;
+            window.location.href = redirectUrl;
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target == switchModal) {
+                closeModal();
+            }
+        }
 
         if (billingToggle) {
             billingToggle.addEventListener('change', function () {
@@ -390,11 +639,11 @@ $currentRole = $_SESSION['user_role'] ?? 'guest';
                     if (proBilling) proBilling.innerText = 'per year (save 20%)';
                     if (eliteBilling) eliteBilling.innerText = 'per year (save 20%)';
                 } else {
-                    // Monthly
-                    if (proPrice) proPrice.innerText = '₹2,499';
-                    if (elitePrice) elitePrice.innerText = '₹4,999';
-                    if (proBilling) proBilling.innerText = 'per month';
-                    if (eliteBilling) eliteBilling.innerText = 'per month';
+                    // 6 months
+                    if (proPrice) proPrice.innerText = '₹4,999';
+                    if (elitePrice) elitePrice.innerText = '₹8,999';
+                    if (proBilling) proBilling.innerText = 'per 6 months';
+                    if (eliteBilling) eliteBilling.innerText = 'per 6 months';
                 }
             });
         }
@@ -402,20 +651,16 @@ $currentRole = $_SESSION['user_role'] ?? 'guest';
         if (btnLite) {
             btnLite.addEventListener('click', (e) => {
                 e.preventDefault();
-                const billing = isYearly ? 'yearly' : 'monthly';
-                let redirectUrl = `payment.php?plan=lite&billing=${billing}`;
-                if (trainerId) redirectUrl += `&trainer_id=${trainerId}`;
-                window.location.href = redirectUrl;
+                const billing = isYearly ? 'yearly' : '6months';
+                showModal('lite', billing);
             });
         }
 
         if (btnProHigh) {
             btnProHigh.addEventListener('click', (e) => {
                 e.preventDefault();
-                const billing = isYearly ? 'yearly' : 'monthly';
-                let redirectUrl = `payment.php?plan=pro&billing=${billing}`;
-                if (trainerId) redirectUrl += `&trainer_id=${trainerId}`;
-                window.location.href = redirectUrl;
+                const billing = isYearly ? 'yearly' : '6months';
+                showModal('pro', billing);
             });
         }
     </script>

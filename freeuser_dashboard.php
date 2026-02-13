@@ -10,7 +10,13 @@ $initials = strtoupper(substr($userName, 0, 1) . substr($userName, strpos($userN
 if (strlen($initials) < 2) $initials = strtoupper(substr($userName, 0, 2));
 
 require "db_connect.php";
+require_once "gamification_helper.php";
 $userId = $_SESSION['user_id'];
+
+// Initial Gamification Check
+checkAndAwardBadges($userId);
+$userBadges = getUserBadges($userId);
+$userStats = getUserStats($userId);
 
 // Sync Role
 $checkRole = $conn->query("SELECT role FROM users WHERE user_id = $userId")->fetch_assoc();
@@ -571,6 +577,9 @@ $gStmt->close();
             <a href="my_progress.php" class="menu-item">
                 <i class="fas fa-chart-line"></i> My Progress
             </a>
+            <a href="my_badges.php" class="menu-item">
+                <i class="fas fa-medal"></i> My Badges
+            </a>
             <a href="client_profile_setup.php" class="menu-item">
                 <i class="fas fa-user-circle"></i> Profile
             </a>
@@ -642,6 +651,50 @@ $gStmt->close();
                 <div class="stat-icon"><i class="fas fa-weight"></i></div>
                 <div class="stat-value" id="dashWeight"><?php echo $profileWeight; ?></div>
                 <div class="stat-label">Current Weight</div>
+            </div>
+        </div>
+
+        <!-- Gamification Section -->
+        <div class="section-card" style="margin-bottom: 30px; background: linear-gradient(to right, #ffffff, #f8f9fa);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 class="section-title" style="margin: 0;"><i class="fas fa-medal" style="color: #f1c40f; margin-right: 10px;"></i>My Achievements</h3>
+                <a href="my_badges.php" style="text-decoration: none; color: var(--primary-color); font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; background: white; padding: 6px 15px; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: all 0.2s ease;">
+                    View All <i class="fas fa-chevron-right" style="font-size: 0.8em;"></i>
+                </a>
+            </div>
+            
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <!-- Streak Box -->
+                <div style="flex: 0 0 150px; background: #fff3cd; border: 1px solid #ffeeba; padding: 15px; border-radius: 12px; text-align: center;">
+                    <i class="fas fa-fire fa-2x" style="color: #ffc107; margin-bottom: 10px;"></i>
+                    <h4 style="font-size: 24px; margin: 0; color: #856404;"><?php echo $userStats['current_streak'] ?? 0; ?></h4>
+                    <p style="font-size: 12px; margin: 0; color: #856404;">Day Streak</p>
+                </div>
+
+                <!-- Points Box -->
+                <div style="flex: 0 0 150px; background: #d1ecf1; border: 1px solid #bee5eb; padding: 15px; border-radius: 12px; text-align: center;">
+                    <i class="fas fa-star fa-2x" style="color: #17a2b8; margin-bottom: 10px;"></i>
+                    <h4 style="font-size: 24px; margin: 0; color: #0c5460;"><?php echo $userStats['total_points'] ?? 0; ?></h4>
+                    <p style="font-size: 12px; margin: 0; color: #0c5460;">Total Points</p>
+                </div>
+
+                <!-- Badges List -->
+                <div style="flex: 1; display: flex; gap: 15px; overflow-x: auto; padding-bottom: 5px; align-items: center;">
+                    <?php if (empty($userBadges)): ?>
+                        <div style="color: var(--text-light); font-size: 14px; font-style: italic;">
+                            No badges yet. Start your journey today!
+                        </div>
+                    <?php else: ?>
+                        <?php foreach ($userBadges as $badge): ?>
+                            <div class="badge-item" title="<?php echo htmlspecialchars($badge['description']); ?>" style="text-align: center; min-width: 80px;">
+                                <div style="width: 50px; height: 50px; background: <?php echo $badge['color']; ?>; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px; box-shadow: 0 3px 6px rgba(0,0,0,0.1);">
+                                    <i class="<?php echo $badge['icon_class']; ?>"></i>
+                                </div>
+                                <span style="font-size: 11px; font-weight: 600; color: var(--text-color); display: block; line-height: 1.2;"><?php echo htmlspecialchars($badge['name']); ?></span>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
 
