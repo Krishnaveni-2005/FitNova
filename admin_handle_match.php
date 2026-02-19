@@ -31,10 +31,18 @@ if ($clientId && $trainerId) {
     }
     
     // To Trainer
-    $cRes = $conn->query("SELECT first_name FROM users WHERE user_id = $clientId");
+    $cRes = $conn->query("SELECT first_name, last_name FROM users WHERE user_id = $clientId");
+    $cName = "Client"; 
     if ($cRow = $cRes->fetch_assoc()) {
-        $cName = $cRow['first_name'];
+        $cName = $cRow['first_name'] . ' ' . ($cRow['last_name'] ?? '');
         $conn->query("INSERT INTO user_notifications (user_id, notification_type, message) VALUES ($trainerId, 'admin_match_approved', 'Admin approved your application for $cName. Invite sent.')");
+    }
+    
+    // Notify Admin (WhatsApp)
+    require_once 'admin_notifications.php';
+    $adminMsg = "Match Confirmed: Admin has successfully assigned Coach $tName to Client $cName.";
+    if (function_exists('sendAdminNotification')) {
+        sendAdminNotification($conn, $adminMsg);
     }
     
     echo json_encode(['success' => true]);

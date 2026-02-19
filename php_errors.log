@@ -1673,3 +1673,164 @@ Stack trace:
 Stack trace:
 #0 {main}
   thrown in C:\xamppp\htdocs\fitnova\fitshop.php on line 606
+[15-Feb-2026 08:33:10 Europe/Berlin] Sent admin notification to krishnavenirnair2005@gmail.com (ID: 1)
+[15-Feb-2026 08:45:34 Europe/Berlin] Sent admin notification to krishnavenirnair2005@gmail.com (ID: 1)
+[15-Feb-2026 08:46:26 Europe/Berlin] Sent admin notification to krishnavenirnair2005@gmail.com (ID: 1)
+[15-Feb-2026 08:57:54 Europe/Berlin] ✅ WhatsApp sent successfully: Trainer Albin Sunny has requested approval to join FitNova.
+[15-Feb-2026 08:58:35 Europe/Berlin] ✅ WhatsApp sent successfully: Trainer Albin Sunny has been approved successfully.
+[15-Feb-2026 08:58:53 Europe/Berlin] ✅ WhatsApp sent successfully: Trainer Amal Damy has been approved successfully.
+[15-Feb-2026 08:59:15 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function fetch_assoc() on bool in C:\xamppp\htdocs\fitnova\admin_notify_trainer.php:38
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\admin_notify_trainer.php on line 38
+[15-Feb-2026 08:59:25 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function fetch_assoc() on bool in C:\xamppp\htdocs\fitnova\admin_notify_trainer.php:38
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\admin_notify_trainer.php on line 38
+[18-Feb-2026 09:49:52 Asia/Kolkata] ✅ WhatsApp sent successfully: Lite User Krishnananda has requested a trainer match.
+Goal: Yoga & Flexibility
+Style: Running
+[18-Feb-2026 10:08:17 Asia/Kolkata] ✅ WhatsApp sent successfully: Lite User Krishnananda has requested a trainer match.
+Goal: Weight Loss
+Style: Gym Training
+[18-Feb-2026 10:09:34 Asia/Kolkata] ✅ WhatsApp sent successfully: Lite User Krishnananda has requested a trainer match.
+Goal: Muscle Building
+Style: No Preference
+[18-Feb-2026 05:46:16 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xamppp\htdocs\fitnova\signup_handler.php:203
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\signup_handler.php on line 203
+[18-Feb-2026 05:48:25 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function fetch_assoc() on bool in C:\xamppp\htdocs\fitnova\admin_notify_trainer.php:38
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\admin_notify_trainer.php on line 38
+[18-Feb-2026 05:48:31 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function fetch_assoc() on bool in C:\xamppp\htdocs\fitnova\admin_notify_trainer.php:38
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\admin_notify_trainer.php on line 38
+[18-Feb-2026 12:55:22 Asia/Kolkata] ✅ WhatsApp sent successfully: Lite User Krishnananda has requested a trainer match.
+Goal: Weight Loss
+Style: Gym Training
+[18-Feb-2026 15:10:29 Asia/Kolkata] ✅ WhatsApp sent successfully: Lite User Krishnananda has requested a trainer match.
+Goal: Weight Loss
+Style: Gym Training
+[18-Feb-2026 15:10:51 Asia/Kolkata] ✅ WhatsApp sent successfully: Lite User Krishnananda has requested a trainer match.
+Goal: Yoga & Flexibility
+Style: Running
+[18-Feb-2026 15:13:16 Asia/Kolkata] ✅ WhatsApp sent successfully: Lite User Krishnananda has requested a trainer match.
+Goal: Weight Loss
+Style: Gym Training
+[18-Feb-2026 15:14:17 Asia/Kolkata] ✅ WhatsApp sent successfully: Lite User Krishnananda has requested a trainer match.
+Goal: Weight Loss
+Style: Gym Training
+[18-Feb-2026 15:19:06 Asia/Kolkata] ✅ WhatsApp sent successfully: Lite User Krishnananda has requested a trainer match.
+Goal: Weight Loss
+Style: Gym Training
+[18-Feb-2026 15:35:18 Asia/Kolkata] ✅ WhatsApp sent successfully: Lite User Krishnananda has requested a trainer match.
+Goal: Yoga & Flexibility
+Style: Running
+[18-Feb-2026 11:06:27 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function fetch_assoc() on bool in C:\xamppp\htdocs\fitnova\admin_notify_trainer.php:38
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\admin_notify_trainer.php on line 38
+[18-Feb-2026 16:30:44 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added: 100% Gold Whey Isolate (1.5kg)
+Category: men
+Price: ₹500
+[18-Feb-2026 16:39:52 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added: Compression Fit Sports Top
+Category: men
+Price: ₹999
+[18-Feb-2026 16:41:29 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added: Muscle Fit Sports Vest Top
+Category: men
+Price: ₹699
+[18-Feb-2026 16:42:58 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added: Under Armour Men's Tech Textured SS TEE
+Category: men
+Price: ₹499
+[18-Feb-2026 16:44:15 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added: Regular Fit Sports Vest Top
+Category: men
+Price: ₹699
+[18-Feb-2026 16:46:51 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added: Cult Men's Performance T‑shirt
+Category: men
+Price: ₹499
+[18-Feb-2026 16:48:16 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added: Cult Men's High Impact Training T‑shirt
+Category: men
+Price: ₹399
+[18-Feb-2026 16:49:52 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added: MuscleBlaze Active Tee Half Sleeve
+Category: men
+Price: ₹399
+[18-Feb-2026 16:50:43 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added:  Sleeveless Muscle Fit Tank Top
+Category: men
+Price: ₹300
+[18-Feb-2026 16:51:43 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added: Lightweight Microfiber Active Wear T‑Shirt
+Category: men
+Price: ₹599
+[18-Feb-2026 16:56:12 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added: Track Pants
+Category: men
+Price: ₹599
+[18-Feb-2026 16:57:07 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added: Joggers
+Category: men
+Price: ₹399
+[18-Feb-2026 16:58:31 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added: Compression Tights
+Category: men
+Price: ₹299
+[18-Feb-2026 17:00:53 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added: Gym T-Shirt
+Category: women
+Price: ₹599
+[18-Feb-2026 17:01:56 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added: Tank Top
+Category: men
+Price: ₹299
+[18-Feb-2026 17:03:34 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added: sleeveless top
+Category: men
+Price: ₹299
+[18-Feb-2026 17:06:25 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added: Long Sleeve Workout Top
+Category: women
+Price: ₹499
+[18-Feb-2026 17:07:03 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added: Sports Bra
+Category: women
+Price: ₹499
+[18-Feb-2026 17:07:47 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added: Cropped Gym Top
+Category: women
+Price: ₹499
+[18-Feb-2026 17:08:39 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added: Workout Hoodie
+Category: women
+Price: ₹599
+[18-Feb-2026 17:09:30 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added: Zip-Up Jacket
+Category: men
+Price: ₹399
+[18-Feb-2026 17:11:01 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added: BCAA
+Category: supplements
+Price: ₹599
+[18-Feb-2026 17:11:34 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added: EAA
+Category: supplements
+Price: ₹399
+[18-Feb-2026 17:12:25 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added: Creatine Monohydrate
+Category: supplements
+Price: ₹499
+[18-Feb-2026 17:12:25 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added: Creatine Monohydrate
+Category: supplements
+Price: ₹499
+[18-Feb-2026 17:13:19 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added: Creatine HCL
+Category: supplements
+Price: ₹399
+[18-Feb-2026 17:15:13 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added: Treadmill
+Category: equipment
+Price: ₹49999
+[18-Feb-2026 17:16:00 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added: Elliptical Cross Trainer
+Category: equipment
+Price: ₹39999
+[19-Feb-2026 09:00:09 Asia/Kolkata] ✅ WhatsApp sent successfully: Lite User Krishnananda has requested a trainer match.
+Goal: Weight Loss
+Style: Gym Training
+[19-Feb-2026 09:10:41 Asia/Kolkata] ✅ WhatsApp sent successfully: Lite User Krishnananda has requested a trainer match.
+Goal: Yoga & Flexibility
+Style: Running
+[19-Feb-2026 04:41:24 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function fetch_assoc() on bool in C:\xamppp\htdocs\fitnova\admin_notify_trainer.php:38
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\admin_notify_trainer.php on line 38
+[19-Feb-2026 09:18:50 Asia/Kolkata] ✅ WhatsApp sent successfully: Lite User Krishnananda has requested a trainer match.
+Goal: Weight Loss
+Style: Gym Training
+[19-Feb-2026 04:49:16 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function fetch_assoc() on bool in C:\xamppp\htdocs\fitnova\admin_notify_trainer.php:38
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\admin_notify_trainer.php on line 38

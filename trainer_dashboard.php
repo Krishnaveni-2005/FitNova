@@ -92,7 +92,11 @@ if ($stmt) {
 }
 
 // Fetch Pending Requests
-$pendingSql = "SELECT user_id, first_name, last_name, email FROM users WHERE assigned_trainer_id = ? AND assignment_status = 'pending'";
+$pendingSql = "SELECT u.user_id, u.first_name, u.last_name, u.email, cp.dob, cp.gender,
+               cp.primary_goal as fitness_goals, cp.weight_kg, cp.height_cm, cp.activity_level, cp.medical_conditions, cp.workout_days_per_week
+               FROM users u 
+               LEFT JOIN client_profiles cp ON u.user_id = cp.user_id
+               WHERE u.assigned_trainer_id = ? AND u.assignment_status = 'pending'";
 $stmt = $conn->prepare($pendingSql);
 $pendingRequests = [];
 if ($stmt) {
@@ -129,7 +133,9 @@ if ($stmt) {
 $opportunities = [];
 
 // 1. Admin Suggested (Potential Matches)
-$oppSql = "SELECT u.user_id, u.first_name, u.last_name, cp.primary_goal as fitness_goals, 'suggestion' as type 
+$oppSql = "SELECT u.user_id, u.first_name, u.last_name, u.email, cp.dob, cp.gender, 
+           cp.primary_goal as fitness_goals, cp.weight_kg, cp.height_cm, cp.activity_level, cp.medical_conditions, cp.workout_days_per_week, 
+           'suggestion' as type 
            FROM users u 
            JOIN trainer_applications ta ON u.user_id = ta.client_id
            LEFT JOIN client_profiles cp ON u.user_id = cp.user_id 
@@ -146,7 +152,9 @@ if ($stmt) {
 }
 
 // 2. Pending Invites(Sent by Admin or Trainer, waiting for Client)
-$invSql = "SELECT u.user_id, u.first_name, u.last_name, cp.primary_goal as fitness_goals, 'invite_sent' as type
+$invSql = "SELECT u.user_id, u.first_name, u.last_name, u.email, cp.dob, cp.gender, 
+           cp.primary_goal as fitness_goals, cp.weight_kg, cp.height_cm, cp.activity_level, cp.medical_conditions, cp.workout_days_per_week, 
+           'invite_sent' as type
            FROM users u 
            LEFT JOIN client_profiles cp ON u.user_id = cp.user_id 
            WHERE u.assigned_trainer_id = ? AND u.assignment_status = 'trainer_invite'";
@@ -558,6 +566,21 @@ if ($stmt) {
             .main-content { margin-left: 0; }
             .dashboard-layout { grid-template-columns: 1fr; }
         }
+
+        /* Modal Styles */
+        .modal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
+        .modal-content { background-color: #fefefe; margin: 10% auto; padding: 25px; border: 1px solid #888; width: 90%; max-width: 500px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); animation: modalFadeIn 0.3s; }
+        @keyframes modalFadeIn { from {opacity: 0; transform: translateY(-20px);} to {opacity: 1; transform: translateY(0);} }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .close:hover, .close:focus { color: black; text-decoration: none; cursor: pointer; }
+        .modal-header { border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; }
+        .modal-header h2 { font-size: 20px; color: var(--primary-color); margin: 0; }
+        .modal-body { margin-bottom: 25px; }
+        .detail-row { display: flex; margin-bottom: 12px; border-bottom: 1px solid #f8f9fa; padding-bottom: 8px; }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-label { width: 140px; font-weight: 600; color: #555; font-size: 14px; }
+        .detail-value { flex: 1; color: #333; font-size: 14px; }
+        .modal-footer { text-align: right; display: flex; gap: 10px; justify-content: flex-end; }
     </style>
 </head>
 
@@ -746,17 +769,21 @@ if ($stmt) {
                     <?php else: ?>
                         <?php foreach ($opportunities as $opp): 
                              $oppInitials = strtoupper(substr($opp['first_name'], 0, 1) . substr($opp['last_name'], 0, 1));
+                             $oppJson = htmlspecialchars(json_encode($opp), ENT_QUOTES, 'UTF-8');
                         ?>
-                        <div class="client-item" id="opp-<?php echo $opp['user_id']; ?>" style="background: white; border: 1px solid #fcd34d;">
-                            <div class="user-avatar" style="min-width: 40px; width: 40px; height: 40px; background: #fbbf24; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px;"><?php echo $oppInitials; ?></div>
-                            <div class="client-info">
-                                <h5><?php echo htmlspecialchars($opp['first_name'] . ' ' . $opp['last_name']); ?></h5>
-                                <p>Goal: <?php echo htmlspecialchars($opp['fitness_goals'] ?? 'Fitness'); ?></p>
-                                <?php if (isset($opp['type']) && $opp['type'] === 'invite_sent'): ?>
-                                    <button disabled class="btn-action" style="background:#6b7280; color:white; width:100%; margin-top:5px; cursor:not-allowed;">Waiting for Client</button>
-                                <?php else: ?>
-                                    <button onclick="sendInvite(<?php echo $opp['user_id']; ?>)" class="btn-action" style="background:#b45309; color:white; width:100%; margin-top:5px;">Send Invite</button>
-                                <?php endif; ?>
+                        <div class="client-item" id="opp-<?php echo $opp['user_id']; ?>" style="background: white; border: 1px solid #fcd34d; padding: 12px; align-items: flex-start;">
+                            <div class="user-avatar" style="min-width: 40px; width: 40px; height: 40px; background: #fbbf24; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; margin-top: 2px;"><?php echo $oppInitials; ?></div>
+                            <div class="client-info" style="width: 100%;">
+                                <h5 style="margin-bottom: 2px;"><?php echo htmlspecialchars($opp['first_name'] . ' ' . $opp['last_name']); ?></h5>
+                                <p style="margin-bottom: 8px; font-size: 12px;">Goal: <?php echo htmlspecialchars($opp['fitness_goals'] ?? 'Fitness'); ?></p>
+                                <div style="display:flex; gap:8px;">
+                                    <?php if (isset($opp['type']) && $opp['type'] === 'invite_sent'): ?>
+                                        <button disabled class="btn-action" style="flex:1; background:#9ca3af; color:white; font-size: 12px; padding: 6px; cursor:not-allowed; border:none;">Waiting</button>
+                                    <?php else: ?>
+                                        <button onclick="sendInvite(<?php echo $opp['user_id']; ?>)" class="btn-action" style="flex:1; background:#b45309; color:white; font-size: 12px; padding: 6px; border:none; transition: opacity 0.2s;">Send Invite</button>
+                                    <?php endif; ?>
+                                    <button onclick='openProfileModal(<?php echo $oppJson; ?>)' class="btn-action" style="flex:1; background:white; border: 1px solid #b45309; color:#b45309; font-size: 12px; padding: 6px;">View Profile</button>
+                                </div>
                             </div>
                         </div>
                         <?php endforeach; ?>
@@ -771,21 +798,22 @@ if ($stmt) {
                     <?php else: ?>
                         <?php foreach ($pendingRequests as $req): 
                             $reqInitials = strtoupper(substr($req['first_name'], 0, 1) . substr($req['last_name'], 0, 1));
+                            $reqJson = htmlspecialchars(json_encode($req), ENT_QUOTES, 'UTF-8');
                         ?>
-                        <div class="client-item" id="req-<?php echo $req['user_id']; ?>">
-                            <div class="user-avatar" style="width: 35px; height: 35px; font-size: 12px; background: var(--secondary-color); color: var(--primary-color); display: flex; align-items: center; justify-content: center; border-radius: 50%;"><?php echo $reqInitials; ?></div>
-                            <div class="client-info">
-                                <h5><?php echo htmlspecialchars($req['first_name'] . ' ' . $req['last_name']); ?></h5>
-                                <p>Wants to hire you</p>
-                                <div style="margin-top: 5px;">
-                                    <button onclick="handleRequest(<?php echo $req['user_id']; ?>, 'approve')" class="btn-action btn-primary" style="padding: 4px 10px; font-size: 11px;">Approve</button>
-                                    <button onclick="handleRequest(<?php echo $req['user_id']; ?>, 'reject')" class="btn-action btn-outline" style="padding: 4px 10px; font-size: 11px; border: 1px solid #ccc;">Reject</button>
+                        <div class="client-item" id="req-<?php echo $req['user_id']; ?>" style="padding: 12px; align-items: flex-start;">
+                            <div class="user-avatar" style="width: 35px; height: 35px; font-size: 12px; background: var(--secondary-color); color: var(--primary-color); display: flex; align-items: center; justify-content: center; border-radius: 50%; margin-right: 12px; margin-top: 2px;"><?php echo $reqInitials; ?></div>
+                            <div class="client-info" style="width: 100%;">
+                                <h5 style="margin-bottom: 2px;"><?php echo htmlspecialchars($req['first_name'] . ' ' . $req['last_name']); ?></h5>
+                                <p style="font-size: 11px; margin-bottom: 8px;">Wants to hire you</p>
+                                <div style="display:flex; gap:8px; margin-bottom: 8px;">
+                                    <button onclick="handleRequest(<?php echo $req['user_id']; ?>, 'approve')" class="btn-action" style="flex:1; background: #10b981; color: white; border: none; font-size: 11px; padding: 6px 10px;">Approve</button>
+                                    <button onclick="handleRequest(<?php echo $req['user_id']; ?>, 'reject')" class="btn-action" style="flex:1; background: white; border: 1px solid #ef4444; color: #ef4444; font-size: 11px; padding: 6px 10px;">Reject</button>
                                 </div>
+                                <button onclick='openProfileModal(<?php echo $reqJson; ?>)' class="btn-action" style="width:100%; background: #f8fafc; border: 1px solid #e2e8f0; color: #475569; font-size: 11px; padding: 6px; transition: all 0.2s;">View Profile</button>
                             </div>
                         </div>
                         <?php endforeach; ?>
                         
-
                     <?php endif; ?>
                     <button class="btn-action btn-outline" style="width: 100%; margin-top: 10px;">Review all Requests</button>
                 </div>
@@ -886,6 +914,67 @@ if ($stmt) {
             }
         })
         .catch(err => console.error(err));
+    }
+    </script>
+    <!-- Profile Modal -->
+    <div id="profileModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeProfileModal()">&times;</span>
+        <div class="modal-header">
+            <h2 id="modalName">Client Profile</h2>
+        </div>
+        <div class="modal-body" id="modalBody">
+            <!-- Dynamic Content -->
+        </div>
+        <div class="modal-footer">
+             <button class="btn-action btn-outline" onclick="closeProfileModal()">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+    const modal = document.getElementById("profileModal");
+    const modalName = document.getElementById("modalName");
+    const modalBody = document.getElementById("modalBody");
+
+    function openProfileModal(data) {
+        modal.style.display = "block";
+        modalName.innerText = data.first_name + ' ' + data.last_name;
+        
+        // Calculate age
+        let age = 'N/A';
+        if (data.dob) {
+            const birthDate = new Date(data.dob);
+            const otherDate = new Date();
+            let years = (otherDate.getFullYear() - birthDate.getFullYear());
+            if (otherDate.getMonth() < birthDate.getMonth() || (otherDate.getMonth() == birthDate.getMonth() && otherDate.getDate() < birthDate.getDate())) {
+                years--;
+            }
+            age = years;
+        }
+
+        let html = '';
+        html += `<div class="detail-row"><div class="detail-label">Email:</div><div class="detail-value">${data.email || 'N/A'}</div></div>`;
+        html += `<div class="detail-row"><div class="detail-label">Age:</div><div class="detail-value">${age}</div></div>`;
+        html += `<div class="detail-row"><div class="detail-label">Gender:</div><div class="detail-value">${data.gender ? data.gender.charAt(0).toUpperCase() + data.gender.slice(1) : 'N/A'}</div></div>`;
+        html += `<div class="detail-row"><div class="detail-label">Primary Goal:</div><div class="detail-value">${data.fitness_goals ? data.fitness_goals.replace('_', ' ') : 'N/A'}</div></div>`;
+        html += `<div class="detail-row"><div class="detail-label">Current Weight:</div><div class="detail-value">${data.weight_kg ? data.weight_kg + ' kg' : 'N/A'}</div></div>`;
+        html += `<div class="detail-row"><div class="detail-label">Height:</div><div class="detail-value">${data.height_cm ? data.height_cm + ' cm' : 'N/A'}</div></div>`;
+        html += `<div class="detail-row"><div class="detail-label">Activity Level:</div><div class="detail-value">${data.activity_level ? data.activity_level.replace('_', ' ') : 'N/A'}</div></div>`;
+        html += `<div class="detail-row"><div class="detail-label">Workout Days:</div><div class="detail-value">${data.workout_days_per_week ? data.workout_days_per_week + ' days/week' : 'N/A'}</div></div>`;
+        html += `<div class="detail-row"><div class="detail-label">Medical Cond.:</div><div class="detail-value">${data.medical_conditions || 'None'}</div></div>`;
+        
+        modalBody.innerHTML = html;
+    }
+
+    function closeProfileModal() {
+        modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
     }
     </script>
 </body>

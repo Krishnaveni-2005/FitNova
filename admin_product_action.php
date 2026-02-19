@@ -28,6 +28,26 @@ if ($action === 'delete') {
     }
     $stmt->close();
 
+
+} elseif ($action === 'update_stock') {
+    $product_id = $_POST['product_id'] ?? 0;
+    $stock_quantity = $_POST['stock_quantity'] ?? 0;
+
+    if (!$product_id) {
+        echo json_encode(["status" => "error", "message" => "Invalid product ID"]);
+        exit();
+    }
+
+    $stmt = $conn->prepare("UPDATE products SET stock_quantity = ? WHERE product_id = ?");
+    $stmt->bind_param("ii", $stock_quantity, $product_id);
+
+    if ($stmt->execute()) {
+        echo json_encode(["status" => "success", "message" => "Stock updated successfully"]);
+    } else {
+        echo json_encode(["status" => "error", "message" => "Database error: " . $conn->error]);
+    }
+    $stmt->close();
+
 } elseif ($action === 'save') {
     $product_id = $_POST['product_id'] ?? ''; // Empty for new
     $name = $_POST['name'] ?? '';
@@ -97,19 +117,33 @@ if ($action === 'delete') {
         exit();
     }
 
+    // Default stock to 50 if not set
+    $stock = isset($_POST['stock_quantity']) ? intval($_POST['stock_quantity']) : 50;
+
     if (!empty($product_id)) {
         // Update
-        $stmt = $conn->prepare("UPDATE products SET name=?, category=?, price=?, image_url=?, description=? WHERE product_id=?");
-        $stmt->bind_param("ssdssi", $name, $category, $price, $image_url, $description, $product_id);
+        $stmt = $conn->prepare("UPDATE products SET name=?, category=?, price=?, image_url=?, description=?, stock_quantity=? WHERE product_id=?");
+        $stmt->bind_param("ssdssii", $name, $category, $price, $image_url, $description, $stock, $product_id);
     } else {
         // Insert
         $rating = 4.5; 
         $review_count = 0;
-        $stmt = $conn->prepare("INSERT INTO products (name, category, price, image_url, rating, review_count, description) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssdsdis", $name, $category, $price, $image_url, $rating, $review_count, $description);
+        $stmt = $conn->prepare("INSERT INTO products (name, category, price, image_url, rating, review_count, description, stock_quantity) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssdsdisi", $name, $category, $price, $image_url, $rating, $review_count, $description, $stock);
     }
 
     if ($stmt->execute()) {
+        // Notify Admin of New Product (only on INSERT, i.e., empty product_id)
+        if (empty($product_id)) {
+            require_once 'admin_notifications.php';
+            $currency = '₹'; // Assuming INR based on context, or use generic symbol
+            $msg = "New Product Added: $name\nCategory: $category\nPrice: $currency$price";
+            
+            if (function_exists('sendAdminNotification')) {
+                sendAdminNotification($conn, $msg);
+            }
+        }
+
         echo json_encode(["status" => "success", "message" => "Product saved successfully"]);
     } else {
         echo json_encode(["status" => "error", "message" => "Database error: " . $conn->error]);

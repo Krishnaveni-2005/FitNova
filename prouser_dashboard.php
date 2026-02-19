@@ -12,6 +12,14 @@ $userId = $_SESSION['user_id'];
 
 // Initialize Gamification
 checkAndAwardBadges($userId);
+
+// Fetch Recent Activity Logs
+$logSql = "SELECT * FROM user_activity_logs WHERE user_id = ? ORDER BY log_date DESC, created_at DESC LIMIT 5";
+$lStmt = $conn->prepare($logSql);
+$lStmt->bind_param("i", $userId);
+$lStmt->execute();
+$recentLogs = $lStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$lStmt->close();
 $userStats = getUserStats($userId);
 $userBadges = getUserBadges($userId);
 
@@ -178,6 +186,20 @@ $uFnRes = $uFnStmt->get_result()->fetch_assoc();
 $dbFullName = $uFnRes['first_name'] . ' ' . $uFnRes['last_name'];
 $firstNameOnly = explode(' ', trim($uFnRes['first_name']))[0];
 $uFnStmt->close();
+// Fetch User Orders
+$myOrders = [];
+$orderSql = "SELECT o.*, 
+            (SELECT COUNT(*) FROM shop_order_items WHERE order_id = o.order_id) as item_count
+            FROM shop_orders o
+            WHERE o.user_id = ?
+            ORDER BY o.order_date DESC LIMIT 5";
+$stmt = $conn->prepare($orderSql);
+if ($stmt) {
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $myOrders = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -783,7 +805,6 @@ $uFnStmt->close();
             align-items: center;
             text-align: center;
         }
-
         .progress-circle {
             width: 150px;
             height: 150px;
@@ -795,7 +816,6 @@ $uFnStmt->close();
             margin-bottom: 20px;
             position: relative;
         }
-
         .progress-circle::before {
             content: '';
             width: 120px;
@@ -856,6 +876,74 @@ $uFnStmt->close();
             .dashboard-layout {
                 grid-template-columns: 1fr;
             }
+        }
+
+        /* Order Tracker Styles */
+        .track-container {
+            margin: 30px 0;
+            position: relative;
+        }
+        .validation-step-list {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            list-style: none;
+        }
+        .validation-step-list::before {
+            content: "";
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: #e2e8f0;
+            z-index: 1;
+        }
+        .validation-step {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            width: 33.33%;
+        }
+        .step-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #cbd5e1;
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            border: 4px solid #fff;
+            transition: all 0.3s;
+        }
+        .step-label {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        /* Active/Completed States */
+        .step-active .step-icon {
+            background: #f59e0b;
+            box-shadow: 0 0 0 2px #fef3c7;
+        }
+        .step-completed .step-icon {
+            background: #10b981;
+        }
+        
+        .progress-bar-track {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(to right, #10b981, #f59e0b);
+            z-index: 1;
+            width: 0%;
+            transition: width 0.3s;
         }
     </style>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
@@ -1118,7 +1206,7 @@ $uFnStmt->close();
         <div class="stats-grid">
             <div class="stat-card blue">
                 <div class="stat-icon"><i class="fas fa-fire"></i></div>
-                <div class="stat-value" id="dashCalories">0</div>
+                <div class="stat-value" id="dashCalories"><?php echo number_format($userStats['total_calories'] ?? 0); ?></div>
                 <div class="stat-label">Calories Burned (Total)</div>
             </div>
             <div class="stat-card gold">
@@ -1128,7 +1216,7 @@ $uFnStmt->close();
             </div>
             <div class="stat-card green">
                 <div class="stat-icon"><i class="fas fa-check-double"></i></div>
-                <div class="stat-value" id="dashWorkouts">0</div>
+                <div class="stat-value" id="dashWorkouts"><?php echo number_format($userStats['completed_workouts'] ?? 0); ?></div>
                 <div class="stat-label">Workouts Logged</div>
             </div>
         </div>
@@ -1487,6 +1575,52 @@ $uFnStmt->close();
 
             <!-- Right Column: Progress -->
             <div class="col-right">
+
+                <!-- Recent Activity Section -->
+                <div class="section-card">
+                    <div class="section-header" style="align-items: center; margin-bottom: 20px;">
+                        <h3 class="section-title" style="margin:0;">Recent Activity</h3>
+                        <a href="my_progress.php" style="background: var(--bg-color); color: var(--primary-color); padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; text-decoration: none; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">View All <i class="fas fa-arrow-right" style="font-size: 10px; margin-left: 3px;"></i></a>
+                    </div>
+                    <?php if (empty($recentLogs)): ?>
+                        <div style="text-align: center; padding: 30px 20px;">
+                            <div style="width: 50px; height: 50px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; color: #94a3b8;">
+                                <i class="fas fa-walking" style="font-size: 20px;"></i>
+                            </div>
+                            <p style="color: var(--text-light); font-size: 0.9rem; margin: 0;">No activities logged yet.</p>
+                            <a href="my_progress.php" style="display: inline-block; margin-top: 10px; font-size: 0.85rem; color: var(--accent-color); font-weight: 600; text-decoration: none;">Log your first workout</a>
+                        </div>
+                    <?php else: ?>
+                        <div class="activity-list">
+                        <?php foreach($recentLogs as $log): 
+                            $icon = 'fa-dumbbell';
+                            $act = strtolower($log['activity_type']);
+                            if (strpos($act, 'run') !== false) $icon = 'fa-running';
+                            elseif (strpos($act, 'walk') !== false) $icon = 'fa-walking';
+                            elseif (strpos($act, 'cycle') !== false) $icon = 'fa-bicycle';
+                            elseif (strpos($act, 'swim') !== false) $icon = 'fa-swimmer';
+                            elseif (strpos($act, 'yoga') !== false) $icon = 'fa-spa';
+                        ?>
+                        <div style="display: flex; align-items: center; padding: 12px; margin-bottom: 10px; background: #f8f9fa; border-radius: 12px; transition: 0.2s; border: 1px solid transparent;" onmouseover="this.style.background='white'; this.style.borderColor='#eee'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='#f8f9fa'; this.style.borderColor='transparent'; this.style.boxShadow='none'; this.style.transform='none';">
+                            <div style="width: 45px; height: 45px; background: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 15px; color: var(--primary-color); font-size: 1.2rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                                <i class="fas <?php echo $icon; ?>"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0; font-size: 0.95rem; font-weight: 600; color: var(--text-color);"><?php echo htmlspecialchars(ucfirst($log['activity_type'])); ?></h4>
+                                <div style="font-size: 0.8rem; color: #888; margin-top: 3px; display: flex; align-items: center; gap: 5px;">
+                                    <i class="far fa-clock" style="font-size: 0.75rem;"></i> <?php echo $log['duration_minutes']; ?> min
+                                    <span style="font-size: 5px; vertical-align: middle; color: #cbd5e1;">●</span>
+                                    <?php echo date('M d', strtotime($log['log_date'])); ?>
+                                </div>
+                            </div>
+                            <span style="font-weight: 700; color: var(--accent-color); font-size: 0.9rem; background: rgba(230, 57, 70, 0.1); padding: 4px 10px; border-radius: 20px;">
+                                <?php echo $log['calories_burned']; ?> <span style="font-size: 0.75rem; opacity: 0.8;">kcal</span>
+                            </span>
+                        </div>
+                        <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
                 <div class="section-card">
                     <div class="section-header">
                         <h3 class="section-title">Phase Progress</h3>
@@ -1526,6 +1660,42 @@ $uFnStmt->close();
                         </div>
                         <button class="btn-action" onclick="addToCart()"><i class="fas fa-shopping-cart"></i></button>
                     </div>
+                </div>
+
+                <!-- Recent Orders Section -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">Recent Orders</h3>
+                    </div>
+                    <?php if(empty($myOrders)): ?>
+                        <p style="color: var(--text-light); text-align: center;">No orders placed yet.</p>
+                    <?php else: ?>
+                        <?php foreach($myOrders as $order): ?>
+                            <div class="workout-item">
+                                <div style="display: flex; flex-direction: column; align-items: center; margin-right: 15px; width: 60px;">
+                                    <div style="background: var(--bg-color); color: var(--primary-color); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                                        <i class="fas fa-box"></i>
+                                    </div>
+                                    <span style="font-size: 10px; color: var(--text-light); margin-top: 4px;">#<?php echo $order['order_id']; ?></span>
+                                </div>
+                                <div class="workout-info">
+                                    <h4 class="workout-name">Order #<?php echo $order['order_id']; ?></h4>
+                                    <div class="workout-meta">
+                                        <span><?php echo $order['item_count']; ?> Items</span>
+                                        <span style="display: inline-block; width: 4px; height: 4px; background: #ccc; border-radius: 50%; margin: 6px 4px;"></span>
+                                        <span>₹<?php echo number_format($order['total_amount'], 2); ?></span>
+                                        <span style="display: inline-block; width: 4px; height: 4px; background: #ccc; border-radius: 50%; margin: 6px 4px;"></span>
+                                        <span style="color: <?php echo $order['order_status']=='Delivered'?'var(--success-color)':'var(--warning-color)'; ?>; font-weight: 600;">
+                                            <?php echo htmlspecialchars($order['order_status']); ?>
+                                        </span>
+                                    </div>
+                                </div>
+                                <button class="btn-action" onclick="openTrackModal('<?php echo $order['order_status']; ?>', <?php echo $order['order_id']; ?>)">
+                                    Track
+                                </button>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -1580,6 +1750,41 @@ $uFnStmt->close();
             </div>
         </div>
     </main>
+
+    <!-- Track Order Modal -->
+    <div id="trackOrderModal" class="modal-overlay" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
+        <div class="modal-content" style="background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 500px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+                <h3 style="color: var(--primary-color); margin: 0;">Order Tracking</h3>
+                <button onclick="closeTrackModal()" style="border: none; background: none; font-size: 20px; color: #999; cursor: pointer;">&times;</button>
+            </div>
+            
+            <div class="track-container">
+                <div class="progress-bar-track" id="user-track-line"></div>
+                <div class="validation-step-list">
+                    <div class="validation-step" id="user-step-placed">
+                        <div class="step-icon"><i class="fas fa-shopping-basket"></i></div>
+                        <div class="step-label">Placed</div>
+                    </div>
+                    <div class="validation-step" id="user-step-transit">
+                        <div class="step-icon"><i class="fas fa-shipping-fast"></i></div>
+                        <div class="step-label">Shipped</div>
+                    </div>
+                    <div class="validation-step" id="user-step-completed">
+                        <div class="step-icon"><i class="fas fa-check"></i></div>
+                        <div class="step-label">Delivered</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 25px;">
+                <p style="color: var(--text-light); font-size: 14px;">Order Status: <strong id="userTrackStatus" style="color: var(--primary-color);"></strong></p>
+                <p style="font-size: 13px; color: #999; margin-top: 5px;">Order ID: #<span id="userTrackId"></span></p>
+            </div>
+
+            <button onclick="closeTrackModal()" style="width: 100%; padding: 12px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 20px;">Close</button>
+        </div>
+    </div>
 
     <!-- Session Details Modal -->
     <div id="sessionModal" class="modal-overlay" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
@@ -1740,6 +1945,65 @@ $uFnStmt->close();
             if (typeof window.updateCartDisplay === 'function') {
                 window.updateCartDisplay();
             }
+        }
+
+        function openTrackModal(status, orderId) {
+            document.getElementById('userTrackId').innerText = orderId;
+            document.getElementById('userTrackStatus').innerText = status;
+            
+            const stepPlaced = document.getElementById('user-step-placed');
+            const stepTransit = document.getElementById('user-step-transit');
+            const stepCompleted = document.getElementById('user-step-completed');
+            const trackLine = document.getElementById('user-track-line');
+            const modal = document.getElementById('trackOrderModal');
+
+            // Reset
+            [stepPlaced, stepTransit, stepCompleted].forEach(el => {
+                el.className = 'validation-step';
+                el.querySelector('.step-icon').style.background = '#cbd5e1';
+                el.querySelector('.step-icon').style.boxShadow = 'none';
+            });
+            trackLine.style.background = 'linear-gradient(to right, #10b981, #f59e0b)';
+            trackLine.style.width = '0%';
+
+            if (status === 'Cancelled') {
+                trackLine.style.width = '0%';
+                trackLine.style.background = '#ef4444';
+                modal.style.display = 'flex';
+                return;
+            }
+
+            // Helper
+            const setStep = (el, state) => {
+                if(state === 'completed') {
+                    el.classList.add('step-completed');
+                    el.querySelector('.step-icon').style.background = '#10b981';
+                } else if(state === 'active') {
+                    el.classList.add('step-active');
+                    el.querySelector('.step-icon').style.background = '#f59e0b';
+                    el.querySelector('.step-icon').style.boxShadow = '0 0 0 3px #fef3c7';
+                }
+            };
+
+            if (status === 'Placed') {
+                setStep(stepPlaced, 'active');
+                trackLine.style.width = '10%';
+            } else if (status === 'Shipped') {
+                setStep(stepPlaced, 'completed');
+                setStep(stepTransit, 'active');
+                trackLine.style.width = '50%';
+            } else if (status === 'Delivered') {
+                setStep(stepPlaced, 'completed');
+                setStep(stepTransit, 'completed');
+                setStep(stepCompleted, 'completed');
+                trackLine.style.width = '100%';
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function closeTrackModal() {
+            document.getElementById('trackOrderModal').style.display = 'none';
         }
 
         function subscribeGym() {

@@ -182,7 +182,77 @@ if ($isLoggedIn) {
             font-size: 0.85rem;
         }
     }
+    }
+
+    /* Order Tracker Styles */
+    .track-container { margin: 30px 0; position: relative; }
+    .validation-step-list { display: flex; justify-content: space-between; position: relative; list-style: none; padding: 0; margin: 0; }
+    .validation-step-list::before { content: ""; position: absolute; top: 20px; left: 0; width: 100%; height: 4px; background: #e2e8f0; z-index: 1; }
+    .validation-step { position: relative; z-index: 2; text-align: center; width: 33.33%; }
+    .step-icon { width: 40px; height: 40px; border-radius: 50%; background: #cbd5e1; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; border: 4px solid #fff; transition: all 0.3s; }
+    .step-label { margin-top: 10px; font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase; }
+    .step-active .step-icon { background: #f59e0b; box-shadow: 0 0 0 2px #fef3c7; }
+    .step-completed .step-icon { background: #10b981; }
+    .progress-bar-track { position: absolute; top: 20px; left: 0; height: 4px; background: linear-gradient(to right, #10b981, #f59e0b); z-index: 1; width: 0%; transition: width 0.3s; }
+
+    /* Toast Notifications Global */
+    .toast-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .toast {
+        background: white;
+        color: #333;
+        padding: 16px 24px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 300px;
+        border-left: 5px solid #333;
+        opacity: 0;
+        transform: translateX(50px);
+        animation: slideIn 0.3s forwards;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .toast.success { border-left-color: #10b981; }
+    .toast.error { border-left-color: #ef4444; }
+    .toast.info { border-left-color: #3b82f6; }
+
+    .toast-icon { font-size: 1.2rem; }
+    .success .toast-icon { color: #10b981; }
+    .error .toast-icon { color: #ef4444; }
+    .info .toast-icon { color: #3b82f6; }
+
+    .toast-message { font-size: 0.95rem; font-weight: 500; }
+    
+    .toast-close {
+        margin-left: auto;
+        cursor: pointer;
+        color: #999;
+        font-size: 1.1rem;
+    }
+
+    @keyframes slideIn {
+        to { opacity: 1; transform: translateX(0); }
+    }
+    
+    @keyframes fadeOut {
+        to { opacity: 0; transform: translateX(50px); }
+    }
 </style>
+
+<!-- Toast Container -->
+<div id="toastContainer" class="toast-container"></div>
 
 <!-- Nav -->
 <nav class="navbar">
@@ -265,6 +335,41 @@ if ($isLoggedIn) {
         <div id="ordersListContainer" style="overflow-y:auto; flex:1;">
             <!-- content -->
         </div>
+    </div>
+</div>
+
+<!-- Track Order Modal (Global) -->
+<div id="trackOrderModal" class="g-modal">
+    <div class="g-modal-content" style="max-width: 500px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+            <h3 style="color: var(--primary-color); margin: 0;">Order Tracking</h3>
+            <span onclick="document.getElementById('trackOrderModal').style.display='none'" style="border: none; background: none; font-size: 20px; color: #999; cursor: pointer;">&times;</span>
+        </div>
+        
+        <div class="track-container">
+            <div class="progress-bar-track" id="global-track-line"></div>
+            <ul class="validation-step-list">
+                <li class="validation-step" id="global-step-placed">
+                    <div class="step-icon"><i class="fas fa-shopping-basket"></i></div>
+                    <div class="step-label">Placed</div>
+                </li>
+                <li class="validation-step" id="global-step-transit">
+                    <div class="step-icon"><i class="fas fa-shipping-fast"></i></div>
+                    <div class="step-label">Shipped</div>
+                </li>
+                <li class="validation-step" id="global-step-completed">
+                    <div class="step-icon"><i class="fas fa-check"></i></div>
+                    <div class="step-label">Delivered</div>
+                </li>
+            </ul>
+        </div>
+
+        <div style="text-align: center; margin-top: 25px;">
+            <p style="color: var(--text-light); font-size: 14px;">Order Status: <strong id="globalTrackStatus" style="color: var(--primary-color);"></strong></p>
+            <p style="font-size: 13px; color: #999; margin-top: 5px;">Order ID: #<span id="globalTrackId"></span></p>
+        </div>
+
+        <button onclick="document.getElementById('trackOrderModal').style.display='none'" style="width: 100%; padding: 12px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 20px; margin-bottom:0;">Close</button>
     </div>
 </div>
 
@@ -538,7 +643,7 @@ if ($isLoggedIn) {
                                     <span style="font-size:0.85rem; color:#666;">${date}</span>
                                 </div>
                                 <div style="font-size:0.9rem; margin-bottom:5px;">
-                                    <strong>Status:</strong> <span style="color:orange; font-weight:600;">${order.order_status}</span> 
+                                    <strong>Status:</strong> <span style="color:${order.order_status === 'Delivered' ? '#28a745' : 'orange'}; font-weight:600;">${order.order_status}</span> 
                                     <span style="color:#aaa;">|</span> 
                                     <strong>Total:</strong> ₹${parseFloat(order.total_amount).toLocaleString()}
                                     <span style="color:#aaa;">|</span> 
@@ -546,6 +651,11 @@ if ($isLoggedIn) {
                                 </div>
                                 <div style="background:white; padding:10px; border-radius:6px; border:1px solid #eee;">
                                     ${itemsHtml}
+                                </div>
+                                <div style="text-align:right; margin-top:10px;">
+                                    <button onclick="window.openGlobalTrackModal('${order.order_status}', ${order.order_id})" style="background:var(--primary-color); color:white; border:none; padding:5px 15px; border-radius:4px; cursor:pointer; font-size:0.85rem;">
+                                        <i class="fas fa-map-marker-alt"></i> Track Order
+                                    </button>
                                 </div>
                             </div>
                         `;
@@ -557,6 +667,61 @@ if ($isLoggedIn) {
                     container.innerHTML = '<div style="color:red; text-align:center;">Failed to load orders.</div>';
                 });
         }
+
+        window.openGlobalTrackModal = function(status, orderId) {
+            document.getElementById('globalTrackId').innerText = orderId;
+            document.getElementById('globalTrackStatus').innerText = status;
+            
+            const stepPlaced = document.getElementById('global-step-placed');
+            const stepTransit = document.getElementById('global-step-transit');
+            const stepCompleted = document.getElementById('global-step-completed');
+            const trackLine = document.getElementById('global-track-line');
+            const modal = document.getElementById('trackOrderModal');
+
+            // Reset
+            [stepPlaced, stepTransit, stepCompleted].forEach(el => {
+                el.className = 'validation-step';
+                el.querySelector('.step-icon').style.background = '#cbd5e1';
+                el.querySelector('.step-icon').style.boxShadow = 'none';
+            });
+            trackLine.style.background = 'linear-gradient(to right, #10b981, #f59e0b)';
+            trackLine.style.width = '0%';
+
+            if (status === 'Cancelled') {
+                trackLine.style.width = '0%';
+                trackLine.style.background = '#ef4444';
+                modal.style.display = 'block';
+                return;
+            }
+
+            // Helper
+            const setStep = (el, state) => {
+                if(state === 'completed') {
+                    el.classList.add('step-completed');
+                    el.querySelector('.step-icon').style.background = '#10b981';
+                } else if(state === 'active') {
+                    el.classList.add('step-active');
+                    el.querySelector('.step-icon').style.background = '#f59e0b';
+                    el.querySelector('.step-icon').style.boxShadow = '0 0 0 3px #fef3c7';
+                }
+            };
+
+            if (status === 'Placed') {
+                setStep(stepPlaced, 'active');
+                trackLine.style.width = '10%';
+            } else if (status === 'Shipped') {
+                setStep(stepPlaced, 'completed');
+                setStep(stepTransit, 'active');
+                trackLine.style.width = '50%';
+            } else if (status === 'Delivered') {
+                setStep(stepPlaced, 'completed');
+                setStep(stepTransit, 'completed');
+                setStep(stepCompleted, 'completed');
+                trackLine.style.width = '100%';
+            }
+
+            modal.style.display = 'block';
+        };
         
         // Export needed functions for onclick
         window.closeCart = closeCart;
@@ -565,13 +730,50 @@ if ($isLoggedIn) {
         window.handleTalkToExperts = handleTalkToExperts;
     });
 
+    /* Global Toast Function */
+    function showToast(message, type = 'success') {
+        const container = document.getElementById('toastContainer');
+        if (!container) return; 
+        
+        // Create Toast Element
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        // Icon
+        let iconClass = 'fa-check-circle';
+        if (type === 'error') iconClass = 'fa-exclamation-circle';
+        if (type === 'info') iconClass = 'fa-info-circle';
+        
+        // HTML Content
+        toast.innerHTML = `
+            <div class="toast-icon">
+                <i class="fas ${iconClass}"></i>
+            </div>
+            <div class="toast-message">${message}</div>
+            <div class="toast-close" onclick="this.parentElement.remove()">
+                <i class="fas fa-times"></i>
+            </div>
+        `;
+        
+        // Append and Auto-remove
+        container.appendChild(toast);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            toast.style.animation = 'fadeOut 0.3s forwards';
+            toast.addEventListener('animationend', () => {
+                toast.remove();
+            });
+        }, 3000);
+    }
+
     function startCartCheckout() {
         const userId = "<?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : ''; ?>";
         const cartKey = userId ? `cart_${userId}` : 'cart_guest';
 
         const cart = JSON.parse(localStorage.getItem(cartKey) || '[]');
         if (cart.length === 0) {
-            alert("Your cart is empty!");
+            showToast("Your cart is empty!", "info");
             return;
         }
         document.getElementById('globalCheckoutModal').style.display = 'block';
@@ -587,7 +789,7 @@ if ($isLoggedIn) {
          const zip = document.getElementById('gZip').value;
 
          if (!addr || !city || !zip) {
-             alert('Please fill all address fields');
+             showToast('Please fill all address fields', "error");
              return;
          }
 

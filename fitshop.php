@@ -363,6 +363,7 @@ session_start();
             overflow: hidden;
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
             animation: modalSlideIn 0.3s ease-out;
+            position: relative;
         }
 
         @keyframes modalSlideIn {
@@ -571,6 +572,8 @@ session_start();
                 padding: 20px;
             }
         }
+        
+
     </style>
 </head>
 
@@ -793,6 +796,28 @@ session_start();
         </div>
     </div>
 
+    <!-- Auth Prompt Modal -->
+    <div id="authModal" class="product-modal" style="z-index: 3000;">
+        <div class="modal-container" style="max-width: 400px; text-align: center; padding: 40px 30px;">
+            <span class="modal-close" onclick="closeAuthModal()">&times;</span>
+            <div style="background: #eef2ff; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                <i class="fas fa-user-lock" style="font-size: 2rem; color: var(--primary-color);"></i>
+            </div>
+            <h3 style="margin-bottom: 10px; color: var(--primary-color); font-size: 1.5rem;">Access Restricted</h3>
+            <p id="authModalMessage" style="color: var(--text-gray); margin-bottom: 30px; line-height: 1.6;">You must be a registered client to perform this action.</p>
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <button onclick="window.location.href='signup.php'" class="add-to-cart-btn" style="margin: 0; padding: 12px;">
+                    Create Account
+                </button>
+                <button onclick="window.location.href='login.php'" class="add-to-cart-btn" style="margin: 0; padding: 12px; background: transparent; color: var(--text-gray); border: 1px solid #ddd;">
+                    Already have an account? Login
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+
     <script>
         let currentProduct = null;
         let selectedSize = null;
@@ -862,9 +887,7 @@ session_start();
         function addToCartFromModal() {
             // Check if user is logged in
             if (!isLoggedIn) {
-                if (confirm("You must be a registered client to add items to the cart. \n\nClick OK to Sign Up now.")) {
-                    window.location.href = 'signup.php';
-                }
+                showAuthModal("You must be a registered client to add items to the cart.");
                 return;
             }
 
@@ -872,7 +895,7 @@ session_start();
             
             // Check if size is required but not selected
             if (currentProduct.has_sizes == 1 && !selectedSize) {
-                alert('Please select a size before adding to cart!');
+                showToast('Please select a size before adding to cart!', 'error');
                 return;
             }
             
@@ -906,71 +929,26 @@ session_start();
             
             localStorage.setItem(cartKey, JSON.stringify(cart));
             
-            // We need to call the header's update function if it exists, 
-            // otherwise use a local one which might be redundant if header.php is included.
-            // Since header.php exposes updateCartDisplay, we can call it?
-            // Actually header.php's updateCartDisplay is not exposed globally by name 'updateCartDisplay'?
-            // Wait, in previous step 212/236 I saw: window.updateCartItem = ...
-            // But updateCartDisplay was defined inside the Listener.
-            // However, header.php runs on every page load.
-            // If we are on fitshop.php, header.php is included.
-            // We should rely on header.php's logic if possible, or replicate the key logic.
-            // But to trigger the update UI immediately:
-            if (typeof updateCartDisplay === 'function') {
-                 // But it's not exposed.
-            }
-            
-            // The simplest way: Reload the page? No, that's bad UX.
-            // Trigger a custom event?
-            // Or just update the DOM elements directly if we know them.
-            // header.php attaches event listener to 'storage' events? No.
-            // Let's just update the cartCount element directly here using the new key.
             updateCartCount(); 
 
-            alert(`${currentProduct.name} ${selectedSize ? '(Size ' + selectedSize + ')' : ''} added to cart!`);
+            showToast(`${currentProduct.name} ${selectedSize ? '(Size ' + selectedSize + ')' : ''} added to cart!`, 'success');
             closeProductModal();
         }
 
         function quickAddToCart(productId, productName) {
             // Check if user is logged in
             if (!isLoggedIn) {
-                if (confirm("You must be a registered client to add items to the cart. \n\nClick OK to Sign Up now.")) {
-                    window.location.href = 'signup.php';
-                }
+                showAuthModal("You must be a registered client to add items to the cart.");
                 return;
             }
 
-            // Get user-specific key
-            const userId = "<?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : ''; ?>";
-            const cartKey = userId ? `cart_${userId}` : 'cart_guest';
-
-            // Use XHR or just assume standard data since we don't have full product object here?
-            // Wait, quickAddToCart was passed just ID and Name. It missed price and image!
-            // The previous logic (in view_file) was just: alert(`${productName} added to cart! Click on the card for more options.`);
-            // It DID NOT actually add to cart because it didn't have the data!
-            
-            // To fix this comprehensively, we would need the full product data.
-            // But since the user didn't complain about "quick add" button specifically, but rather "cart items not showing",
-            // The issue was likely adding from the Modal which creates the item.
-            
-            // However, looking at the code, `quickAddToCart` was indeed just an alert placeholder?
-            // "alert(`${productName} added to cart! Click on the card for more options.`);"
-            // Yes, it was fake!
-            
-            // I will leave it as is for now unless asked, to minimize diffs, OR I can make it open the modal.
-            // Opening the modal is better UX than a fake alert.
-            // But I don't have the full product object to pass to `openProductModal`.
-            // So I will just leave it be, as it redirects users to click the card.
-            
-            alert(`${productName} added to cart! Click on the card for more options.`);
+            showToast('Please click on the product card to view options and add to cart.', 'info');
         }
 
         function quickBuyNow(event, product) {
             // Check login
             if (!isLoggedIn) {
-                if (confirm("You must be a registered client to buy items. \n\nClick OK to Sign Up now.")) {
-                    window.location.href = 'signup.php';
-                }
+                showAuthModal("You must be a registered client to buy items.");
                 return;
             }
 
@@ -983,7 +961,7 @@ session_start();
                 if (sizeSelect && sizeSelect.value) {
                     size = sizeSelect.value;
                 } else {
-                    alert('Please select a size from the dropdown first!');
+                    showToast('Please select a size from the dropdown first!', 'error');
                     return;
                 }
             }
@@ -997,14 +975,12 @@ session_start();
 
         function openCheckoutModal() {
             if (!isLoggedIn) {
-                if (confirm("You must be a registered client to buy items. \n\nClick OK to Sign Up now.")) {
-                    window.location.href = 'signup.php';
-                }
+                showAuthModal("You must be a registered client to buy items.");
                 return;
             }
 
             if (currentProduct.has_sizes == 1 && !selectedSize) {
-                alert('Please select a size first!');
+                showToast('Please select a size first!', 'error');
                 return;
             }
 
@@ -1028,7 +1004,7 @@ session_start();
             const zip = document.getElementById('chkZip').value;
 
             if (!addr || !city || !zip) {
-                alert("Please fill in all delivery details.");
+                showToast('Please fill in all delivery details.', 'error');
                 return;
             }
 
@@ -1117,6 +1093,40 @@ session_start();
 
             // Handle "No Results" message if needed
         });
+
+        // Auth Modal Helper Functions
+        function showAuthModal(msg) {
+            if(msg) document.getElementById('authModalMessage').innerText = msg;
+            document.getElementById('authModal').style.display = 'block';
+            // Only hide overflow if it's not already hidden by another modal (corner case)
+            if (document.body.style.overflow !== 'hidden') {
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').style.display = 'none';
+            // Restore overflow only if no other modals are open
+            if (document.getElementById('productModal').style.display !== 'block') {
+                document.body.style.overflow = 'auto';
+            }
+        }
+        
+        // Close auth modal on outside click
+        window.onclick = function(event) {
+            const authModal = document.getElementById('authModal');
+            if (event.target === authModal) {
+                closeAuthModal();
+            }
+            if (event.target.id === 'productModal') {
+                closeProductModal();
+            }
+            if (event.target.id === 'checkoutModal') {
+                document.getElementById('checkoutModal').style.display='none';
+            }
+        }
+        
+
     </script>
     <?php include 'footer.php'; ?>
 </body>

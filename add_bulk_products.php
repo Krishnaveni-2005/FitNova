@@ -92,4 +92,11 @@ insertProducts($conn, $equip_base, 'equipment', $images['equipment']);
 insertProducts($conn, $supp_base, 'supplements', $images['supplements']);
 
 echo "<hr><p>Done! <a href='fitshop.php'>Go to Shop</a></p>";
+
+// Notify Admin of Bulk Operation
+require_once 'admin_notifications.php';
+$bulkMsg = "Bulk Import Complete: 80 new products added to the shop.";
+if (function_exists('sendAdminNotification')) {
+    sendAdminNotification($conn, $bulkMsg);
+}
 ?>

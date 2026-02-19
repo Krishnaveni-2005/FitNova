@@ -51,6 +51,20 @@ if ($stmt->execute()) {
         $nStmt->bind_param("is", $client_id, $notifMsg);
         $nStmt->execute();
         $nStmt->close();
+
+        // Notify Admin of the Action (WhatsApp + Dash)
+        require_once 'admin_notifications.php';
+        $trainerName = $_SESSION['user_name'] ?? 'Trainer';
+        
+        // Get Client Name
+        $cRes = $conn->query("SELECT first_name, last_name FROM users WHERE user_id = $client_id");
+        $clientName = ($row = $cRes->fetch_assoc()) ? $row['first_name'] . ' ' . $row['last_name'] : "Client #$client_id";
+        
+        $adminMsg = "Update: Trainer $trainerName has " . ($action === 'approve' ? 'ACCEPTED' : 'DECLINED') . " the direct hire request from Client $clientName.";
+        
+        if (function_exists('sendAdminNotification')) {
+            sendAdminNotification($conn, $adminMsg);
+        }
         
         echo json_encode(['success' => true]);
     } else {

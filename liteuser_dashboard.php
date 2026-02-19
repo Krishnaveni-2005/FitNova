@@ -12,6 +12,14 @@ $userName = $_SESSION['user_name'] ?? 'User';
 
 // Initialize Gamification
 checkAndAwardBadges($userId);
+
+// Fetch Recent Activity Logs
+$logSql = "SELECT * FROM user_activity_logs WHERE user_id = ? ORDER BY log_date DESC, created_at DESC LIMIT 5";
+$lStmt = $conn->prepare($logSql);
+$lStmt->bind_param("i", $userId);
+$lStmt->execute();
+$recentLogs = $lStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$lStmt->close();
 $userStats = getUserStats($userId);
 $userBadges = getUserBadges($userId);
 
@@ -546,26 +554,10 @@ $gStmt->close();
         <!-- Stats Overview -->
         <div class="stats-grid">
             <div class="stat-card blue">
-                <div><i class="fas fa-fire" style="color: var(--primary-color);"></i> Calories Burned</div>
-                <div class="stat-value" id="dashboardCalories">0</div>
+                <div><i class="fas fa-fire" style="color: var(--primary-color);"></i> Calories Burned (Total)</div>
+                <div class="stat-value" id="dashboardCalories"><?php echo number_format($userStats['total_calories'] ?? 0); ?></div>
             </div>
-            <script>
-                document.addEventListener('DOMContentLoaded', () => {
-                    const userId = "<?php echo $_SESSION['user_id']; ?>";
-                    const calKey = `fitnova_calories_${userId}`;
-                    const workKey = `fitnova_workouts_${userId}`;
-                    
-                    const savedCalories = localStorage.getItem(calKey);
-                    if (savedCalories) {
-                        document.getElementById('dashboardCalories').innerText = parseInt(savedCalories).toLocaleString();
-                    }
-                    
-                    const savedWorkouts = localStorage.getItem(workKey);
-                    if (savedWorkouts) {
-                        document.getElementById('dashboardWorkouts').innerText = parseInt(savedWorkouts);
-                    }
-                });
-            </script>
+            <!-- Removed outdated localStorage JS -->
             <div class="stat-card gold">
                 <div><i class="fas fa-dumbbell" style="color: #8D99AE;"></i> Current Weight</div>
                 <div class="stat-value"><?php echo $profile['weight_kg'] ?? '0'; ?>kg</div>
@@ -584,7 +576,7 @@ $gStmt->close();
             </div>
             <div class="stat-card blue">
                 <div><i class="fas fa-running" style="color: var(--secondary-color);"></i> Workouts Logged</div>
-                <div class="stat-value" id="dashboardWorkouts">0</div>
+                <div class="stat-value" id="dashboardWorkouts"><?php echo number_format($userStats['completed_workouts'] ?? 0); ?></div>
             </div>
         </div>
 
@@ -704,6 +696,52 @@ $gStmt->close();
 
             <!-- Right Column -->
             <div class="col-right">
+
+                <!-- Recent Activity Section -->
+                <div class="section-card">
+                    <div class="section-header" style="align-items: center; margin-bottom: 20px;">
+                        <h3 class="section-title" style="margin:0;">Recent Activity</h3>
+                        <a href="my_progress.php" style="background: var(--bg-color); color: var(--primary-color); padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; text-decoration: none; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">View All <i class="fas fa-arrow-right" style="font-size: 10px; margin-left: 3px;"></i></a>
+                    </div>
+                    <?php if (empty($recentLogs)): ?>
+                        <div style="text-align: center; padding: 30px 20px;">
+                            <div style="width: 50px; height: 50px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; color: #94a3b8;">
+                                <i class="fas fa-walking" style="font-size: 20px;"></i>
+                            </div>
+                            <p style="color: var(--text-light); font-size: 0.9rem; margin: 0;">No activities logged yet.</p>
+                            <a href="my_progress.php" style="display: inline-block; margin-top: 10px; font-size: 0.85rem; color: var(--accent-color); font-weight: 600; text-decoration: none;">Log your first workout</a>
+                        </div>
+                    <?php else: ?>
+                        <div class="activity-list">
+                        <?php foreach($recentLogs as $log): 
+                            $icon = 'fa-dumbbell';
+                            $act = strtolower($log['activity_type']);
+                            if (strpos($act, 'run') !== false) $icon = 'fa-running';
+                            elseif (strpos($act, 'walk') !== false) $icon = 'fa-walking';
+                            elseif (strpos($act, 'cycle') !== false) $icon = 'fa-bicycle';
+                            elseif (strpos($act, 'swim') !== false) $icon = 'fa-swimmer';
+                            elseif (strpos($act, 'yoga') !== false) $icon = 'fa-spa';
+                        ?>
+                        <div style="display: flex; align-items: center; padding: 12px; margin-bottom: 10px; background: #f8f9fa; border-radius: 12px; transition: 0.2s; border: 1px solid transparent;" onmouseover="this.style.background='white'; this.style.borderColor='#eee'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='#f8f9fa'; this.style.borderColor='transparent'; this.style.boxShadow='none'; this.style.transform='none';">
+                            <div style="width: 45px; height: 45px; background: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 15px; color: var(--primary-color); font-size: 1.2rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                                <i class="fas <?php echo $icon; ?>"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0; font-size: 0.95rem; font-weight: 600; color: var(--text-color);"><?php echo htmlspecialchars(ucfirst($log['activity_type'])); ?></h4>
+                                <div style="font-size: 0.8rem; color: #888; margin-top: 3px; display: flex; align-items: center; gap: 5px;">
+                                    <i class="far fa-clock" style="font-size: 0.75rem;"></i> <?php echo $log['duration_minutes']; ?> min
+                                    <span style="font-size: 5px; vertical-align: middle; color: #cbd5e1;">●</span>
+                                    <?php echo date('M d', strtotime($log['log_date'])); ?>
+                                </div>
+                            </div>
+                            <span style="font-weight: 700; color: var(--accent-color); font-size: 0.9rem; background: rgba(230, 57, 70, 0.1); padding: 4px 10px; border-radius: 20px;">
+                                <?php echo $log['calories_burned']; ?> <span style="font-size: 0.75rem; opacity: 0.8;">kcal</span>
+                            </span>
+                        </div>
+                        <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
                 <div class="section-card">
                     <h3 class="section-title">Upgrade to Pro</h3>
                     <p style="font-size: 14px; color: var(--text-light); margin-bottom: 15px;">

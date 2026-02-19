@@ -43,6 +43,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     $stmt->close();
+
+    // Send Notification only on success
+    if ($response['success']) {
+        require_once 'admin_notifications.php';
+        $adminMsg = "New Expert Enquiry from $name ($phone): " . substr($reason, 0, 50) . "...";
+        if (function_exists('sendAdminNotification')) {
+            sendAdminNotification($conn, $adminMsg);
+        }
+    }
 } else {
     $response['message'] = 'Invalid request method.';
 }

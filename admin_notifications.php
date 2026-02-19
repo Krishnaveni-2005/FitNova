@@ -6,59 +6,60 @@
 
 if (!function_exists('sendAdminNotification')) {
     function sendAdminNotification($conn, $message) {
+        // --- 1. Dashboard Notification (Attempt) ---
+        // Fetch Main Admin
         $adminEmail = 'krishnavenirnair2005@gmail.com';
-        
-        // Use prepared statement for security
         $stmt = $conn->prepare("SELECT user_id FROM users WHERE email = ? LIMIT 1");
-        if (!$stmt) {
-            error_log("Failed to prepare statement in admin_notifications.php: " . $conn->error);
-            return false;
-        }
         
-        $stmt->bind_param("s", $adminEmail);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        
-        if ($row = $result->fetch_assoc()) {
-            $adminId = $row['user_id'];
+        if ($stmt) {
+            $stmt->bind_param("s", $adminEmail);
+            $stmt->execute();
+            $result = $stmt->get_result();
             
-            // 1. Dashboard Notification
-            // Check if notification helper function exists, if not, direct query
-            if (function_exists('createNotification')) {
-                createNotification($conn, $adminId, 'admin_alert', $message);
-            } else {
-                // Fallback direct insert
-                $notifSql = "INSERT INTO user_notifications (user_id, notification_type, message) VALUES (?, 'admin_alert', ?)";
-                $nStmt = $conn->prepare($notifSql);
-                if ($nStmt) {
-                    $nStmt->bind_param("is", $adminId, $message);
-                    $nStmt->execute();
-                    $nStmt->close();
-                }
-            }
-            
-            // 2. WhatsApp Notification
-            // Check if Twilio helper exists
-            if (file_exists(__DIR__ . '/twilio_helper.php')) {
-                require_once __DIR__ . '/twilio_helper.php';
-                if (function_exists('sendWhatsAppNotification')) {
-                    $waResult = sendWhatsAppNotification($message);
-                    if (!$waResult) {
-                        error_log("WhatsApp failed for admin: $adminEmail");
+            if ($row = $result->fetch_assoc()) {
+                $adminId = $row['user_id'];
+                
+                // Check if notification helper function exists, if not, direct query
+                if (function_exists('createNotification')) {
+                    createNotification($conn, $adminId, 'admin_alert', $message);
+                } else {
+                    $notifSql = "INSERT INTO user_notifications (user_id, notification_type, message) VALUES (?, 'admin_alert', ?)";
+                    $nStmt = $conn->prepare($notifSql);
+                    if ($nStmt) {
+                        $nStmt->bind_param("is", $adminId, $message);
+                        $nStmt->execute();
+                        $nStmt->close();
                     }
                 }
-            } else {
-                 error_log("twilio_helper.php missing for admin_notifications.php");
             }
-            
-            error_log("Sent admin notification to $adminEmail (ID: $adminId)");
-            return true;
+            $stmt->close();
         } else {
-            error_log("Admin user not found for email: $adminEmail");
-            return false;
+            error_log("Failed to prepare statement in admin_notifications.php for dashboard notification");
+        }
+
+        // --- 2. WhatsApp Notification (ALWAYS SEND) ---
+        // Check if Twilio helper exists
+        if (file_exists(__DIR__ . '/twilio_helper.php')) {
+            require_once __DIR__ . '/twilio_helper.php';
+            if (function_exists('sendWhatsAppNotification')) {
+                // Determine Admin Number from Config or Hardcoded fallback
+                $recipient = defined('ADMIN_WHATSAPP_NUMBER') ? ADMIN_WHATSAPP_NUMBER : 'whatsapp:+918078998813';
+                
+                $waResult = sendWhatsAppNotification($message, $recipient);
+                
+                // Log result
+                if ($waResult) {
+                    error_log("✅ WhatsApp sent successfully: $message");
+                } else {
+                    error_log("❌ WhatsApp FAILED for message: $message");
+                }
+                return $waResult;
+            }
+        } else {
+             error_log("twilio_helper.php missing for admin_notifications.php");
         }
         
-        $stmt->close();
+        return true;
     }
 }
 ?>

@@ -935,6 +935,74 @@ $conn->close();
             font-family: inherit;
             font-size: 14px;
         }
+
+        /* Order Tracker Styles */
+        .track-container {
+            margin: 30px 0;
+            position: relative;
+        }
+        .validation-step-list {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            list-style: none;
+        }
+        .validation-step-list::before {
+            content: "";
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: #e2e8f0;
+            z-index: 1;
+        }
+        .validation-step {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            width: 33.33%;
+        }
+        .step-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #cbd5e1;
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            border: 4px solid #fff;
+            transition: all 0.3s;
+        }
+        .step-label {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        /* Active/Completed States */
+        .step-active .step-icon {
+            background: #f59e0b; /* Yellow/Orange */
+            box-shadow: 0 0 0 2px #fef3c7;
+        }
+        .step-completed .step-icon {
+            background: #10b981; /* Green */
+        }
+        
+        .progress-bar-track {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(to right, #10b981, #f59e0b);
+            z-index: 1;
+            width: 0%;
+            transition: width 0.3s;
+        }
     </style>
 
 </head>
@@ -1154,6 +1222,7 @@ $conn->close();
                                 <th>Delivery Date</th>
                                 <th>Status</th>
                                 <th>Phone</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1169,11 +1238,23 @@ $conn->close();
                                     <td><?php echo date('M d, Y', strtotime($order['order_date'])); ?></td>
                                     <td><?php echo htmlspecialchars($order['delivery_date']); ?></td>
                                     <td>
-                                        <span class="badge <?php echo $order['order_status'] == 'Placed' ? 'badge-pending' : 'badge-active'; ?>">
-                                            <?php echo htmlspecialchars($order['order_status']); ?>
+                                        <?php 
+                                            $status = $order['order_status'];
+                                            $badgeClass = 'badge-pending';
+                                            if($status == 'Delivered') $badgeClass = 'badge-active';
+                                            elseif($status == 'Cancelled') $badgeClass = 'badge-inactive';
+                                            elseif($status == 'Shipped' || $status == 'Processing') $badgeClass = 'badge-active'; // Or custom blue
+                                        ?>
+                                        <span class="badge <?php echo $badgeClass; ?>">
+                                            <?php echo htmlspecialchars($status); ?>
                                         </span>
                                     </td>
                                     <td><?php echo htmlspecialchars($order['zip']); // Using zip as placeholder if no phone stored. Address is text. ?></td> 
+                                    <td>
+                                        <button class="action-btn" onclick="openOrderModal(<?php echo $order['order_id']; ?>, '<?php echo htmlspecialchars($order['order_status']); ?>')">
+                                            Track/Update
+                                        </button>
+                                    </td>
                                 </tr>
                                 <?php endforeach; ?>
                             <?php else: ?>
@@ -1638,9 +1719,16 @@ $conn->close();
                                     <span class="info-label">Rating</span>
                                     <span class="info-value">⭐ <?php echo $product['rating']; ?> (<?php echo $product['review_count']; ?>)</span>
                                 </div>
+                                <div class="info-row">
+                                    <span class="info-label">Stock</span>
+                                    <span class="info-value" style="color: <?php echo $product['stock_quantity'] < 10 ? '#dc2626' : '#16a34a'; ?>; font-weight: 700;">
+                                        <?php echo $product['stock_quantity'] ?? 0; ?> Units
+                                    </span>
+                                </div>
                             </div>
                             <div class="card-actions">
                                 <button class="action-btn" onclick='openProductModal(<?php echo json_encode($product, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'>Edit</button>
+                                <button class="action-btn" style="background: #eff6ff; color: #1e40af; border: 1px solid #dbeafe;" onclick="openStockModal(<?php echo $product['product_id']; ?>, '<?php echo htmlspecialchars(addslashes($product['name'])); ?>', <?php echo $product['stock_quantity'] ?? 0; ?>)">Stock</button>
                                 <button class="action-btn" style="color: #dc2626;" onclick="deleteProduct(<?php echo $product['product_id']; ?>)">Delete</button>
                             </div>
                         </div>
@@ -2186,6 +2274,11 @@ $conn->close();
                     </div>
 
                     <div class="detail-row">
+                        <label class="detail-label">Stock Quantity</label>
+                        <input type="number" id="p_stock" name="stock_quantity" class="editable-input" style="display:block; width: 60%;" min="0" required>
+                    </div>
+
+                    <div class="detail-row">
                         <label class="detail-label">Image URL (Optional)</label>
                         <input type="text" id="p_image" name="image_url" class="editable-input" style="display:block; width: 60%;" placeholder="https://...">
                     </div>
@@ -2207,6 +2300,30 @@ $conn->close();
                     </div>
                 </form>
             </div>
+        </div>
+    </div>
+
+    <!-- Update Stock Modal -->
+    <div id="stockModal" class="modal">
+        <div class="modal-content" style="width: 400px;">
+            <span class="close" onclick="closeModal('stockModal')">&times;</span>
+            <div class="modal-header">
+                <h2>Update Stock</h2>
+            </div>
+            <form id="stockForm" onsubmit="event.preventDefault(); saveStock();">
+                <input type="hidden" id="stock_p_id">
+                <div class="detail-row">
+                    <label class="detail-label">Product</label>
+                    <span class="detail-value" id="stock_p_name" style="font-weight:700;"></span>
+                </div>
+                <div class="detail-row">
+                    <label class="detail-label">Stock Quantity</label>
+                    <input type="number" id="stock_qty" class="editable-input" style="width:80px; text-align:right;" min="0" required>
+                </div>
+                <div style="text-align: right; margin-top:20px;">
+                     <button type="submit" class="admin-btn btn-primary">Update Stock</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -2273,6 +2390,66 @@ $conn->close();
         </div>
     </div>
 
+    <!-- Order Status Modal -->
+    <div id="orderStatusModal" class="modal">
+        <div class="modal-content" style="width: 400px;">
+            <span class="close" onclick="closeModal('orderStatusModal')">&times;</span>
+            <div class="modal-header">
+                <h2>Update Order Status</h2>
+            </div>
+            
+            <!-- Tracker Visualization -->
+            <div class="track-container">
+                <div class="progress-bar-track" id="track-line"></div>
+                <div class="validation-step-list">
+                    <div class="validation-step" id="step-placed">
+                        <div class="step-icon"><i class="fas fa-shopping-basket"></i></div>
+                        <div class="step-label">Order Placed</div>
+                    </div>
+                    <div class="validation-step" id="step-transit">
+                        <div class="step-icon"><i class="fas fa-shipping-fast"></i></div>
+                        <div class="step-label">In Transit</div>
+                    </div>
+                    <div class="validation-step" id="step-completed">
+                        <div class="step-icon"><i class="fas fa-check"></i></div>
+                        <div class="step-label">Completed</div>
+                    </div>
+                </div>
+            </div>
+
+            <form id="orderStatusForm" onsubmit="event.preventDefault(); saveOrderStatus();">
+                <input type="hidden" id="order_id_track">
+                <div class="detail-row">
+                    <label class="detail-label">Order ID</label>
+                    <span class="detail-value" id="order_display_id" style="font-weight:700;"></span>
+                </div>
+                <div class="detail-row">
+                    <label class="detail-label">Current Status</label>
+                    <select id="order_status_select" class="editable-input" style="width: 100%;" onchange="updateTrackerVisual(this.value)">
+                        <option value="Placed">Placed</option>
+                        <option value="Shipped">Shipped</option>
+                        <option value="Delivered">Delivered</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <div style="text-align: right; margin-top:20px;">
+                     <button type="submit" class="admin-btn btn-primary">Update Status</button>
+                </div>
+            </form>
+        </div>
+        </div>
+    </div>
+
+    <!-- Custom Dialog Modal -->
+    <div id="customDialogModal" class="modal" style="z-index: 10000; align-items: center; justify-content: center;">
+        <div class="modal-content" style="max-width: 400px; text-align: center; padding: 30px; border-radius: 16px; margin: 0;">
+             <div id="dialogIcon" style="font-size: 40px; margin-bottom: 20px;"></div>
+             <h3 id="dialogTitle" style="margin-bottom: 10px; color: #1e293b; font-size: 20px;">Notification</h3>
+             <p id="dialogMessage" style="color: #64748b; margin-bottom: 25px; line-height: 1.5; font-size: 15px;"></p>
+             <div id="dialogActions" style="display: flex; gap: 10px; justify-content: center;"></div>
+        </div>
+    </div>
+
     <!-- Subscription Modal -->
     <div id="subscriptionModal" class="modal">
         <div class="modal-content" style="width: 400px;">
@@ -2326,15 +2503,14 @@ $conn->close();
             .then(res => res.json())
             .then(data => {
                 if(data.status === 'success') {
-                    alert(data.message);
-                    location.reload();
+                    showCustomAlert(data.message, 'success', () => location.reload());
                 } else {
-                    alert('Error: ' + data.message);
+                    showCustomAlert('Error: ' + data.message, 'error');
                 }
             })
             .catch(err => {
                 console.error(err);
-                alert('Request failed');
+                showCustomAlert('Request failed', 'error');
             });
         }
 
@@ -2369,15 +2545,14 @@ $conn->close();
                  body: JSON.stringify(data)
              })
              .then(res => res.json())
-             .then(data => {
-                 if(data.status === 'success') {
-                     alert(data.message);
-                     location.reload();
-                 } else {
-                     alert(data.message);
-                 }
-             })
-             .catch(err => console.error(err));
+            .then(data => {
+                if(data.status === 'success') {
+                    showCustomAlert(data.message, 'success', () => location.reload());
+                } else {
+                    showCustomAlert(data.message, 'error');
+                }
+            })
+            .catch(err => console.error(err));
         }
 
         function showSection(section) {
@@ -2397,10 +2572,88 @@ $conn->close();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function logout() {
-            if (confirm('Are you sure you want to logout from the admin panel?')) {
-                window.location.href = 'logout.php';
+        // Custom Dialog Logic
+        function closeDialog() {
+            document.getElementById('customDialogModal').style.display = 'none';
+        }
+
+        function showCustomAlert(message, type = 'info', callback = null) {
+            const modal = document.getElementById('customDialogModal');
+            const icon = document.getElementById('dialogIcon');
+            const title = document.getElementById('dialogTitle');
+            const msg = document.getElementById('dialogMessage');
+            const actions = document.getElementById('dialogActions');
+            
+            // Reset
+            actions.innerHTML = '';
+            
+            // Config
+            if(type === 'success') {
+                icon.innerHTML = '<i class="fas fa-check-circle" style="color: #10b981;"></i>';
+                title.innerText = 'Success';
+            } else if(type === 'error') {
+                icon.innerHTML = '<i class="fas fa-exclamation-circle" style="color: #ef4444;"></i>';
+                title.innerText = 'Error';
+            } else {
+                icon.innerHTML = '<i class="fas fa-info-circle" style="color: #3b82f6;"></i>';
+                title.innerText = 'Information';
             }
+            
+            msg.innerText = message;
+            
+            // OK Button
+            const btn = document.createElement('button');
+            btn.className = 'admin-btn btn-primary';
+            btn.innerText = 'OK';
+            btn.style.minWidth = '100px';
+            btn.onclick = function() {
+                closeDialog();
+                if(callback) callback();
+            };
+            actions.appendChild(btn);
+            
+            modal.style.display = 'flex';
+        }
+
+        function showCustomConfirm(message, onConfirm) {
+            const modal = document.getElementById('customDialogModal');
+            const icon = document.getElementById('dialogIcon');
+            const title = document.getElementById('dialogTitle');
+            const msg = document.getElementById('dialogMessage');
+            const actions = document.getElementById('dialogActions');
+            
+            actions.innerHTML = '';
+            
+            icon.innerHTML = '<i class="fas fa-question-circle" style="color: #f59e0b;"></i>';
+            title.innerText = 'Confirm Action';
+            msg.innerText = message;
+            
+            // Cancel Button
+            const btnCancel = document.createElement('button');
+            btnCancel.className = 'admin-btn btn-secondary';
+            btnCancel.innerText = 'Cancel';
+            btnCancel.onclick = closeDialog;
+            
+            // Confirm Button
+            const btnConfirm = document.createElement('button');
+            btnConfirm.className = 'admin-btn btn-primary';
+            btnConfirm.innerText = 'Confirm';
+            btnConfirm.style.background = '#0F2C59';
+            btnConfirm.onclick = function() {
+                closeDialog();
+                if(onConfirm) onConfirm();
+            };
+            
+            actions.appendChild(btnCancel);
+            actions.appendChild(btnConfirm);
+            
+            modal.style.display = 'flex';
+        }
+
+        function logout() {
+            showCustomConfirm('Are you sure you want to logout from the admin panel?', () => {
+                window.location.href = 'logout.php';
+            });
         }
         function filterTrainers() {
             const input = document.getElementById('trainerSearch');
@@ -2419,48 +2672,46 @@ $conn->close();
         }
 
         function handleTrainerAction(trainerId, action) {
-            if (!confirm(`Are you sure you want to ${action} this trainer?`)) return;
-
-            fetch('admin_trainer_action.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: action, trainer_id: trainerId })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if(data.status === 'success') {
-                    alert(data.message);
-                    location.reload();
-                } else {
-                    alert('Error: ' + data.message);
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                alert('Request failed');
+            showCustomConfirm(`Are you sure you want to ${action} this trainer?`, () => {
+                fetch('admin_trainer_action.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: action, trainer_id: trainerId })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.status === 'success') {
+                        showCustomAlert(data.message, 'success', () => location.reload());
+                    } else {
+                        showCustomAlert('Error: ' + data.message, 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    showCustomAlert('Request failed', 'error');
+                });
             });
         }
         function handleClientAction(clientId, action) {
              const actionText = action === 'delete' ? 'permanently delete' : action;
-             if (!confirm(`Are you sure you want to ${actionText} this client?`)) return;
-
-             fetch('admin_client_action.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: action, client_id: clientId })
-             })
-             .then(res => res.json())
-             .then(data => {
-                 if(data.status === 'success') {
-                     alert(data.message);
-                     location.reload();
-                 } else {
-                     alert('Error: ' + data.message);
-                 }
-             })
-             .catch(err => {
-                 console.error(err);
-                 alert('Request failed');
+             showCustomConfirm(`Are you sure you want to ${actionText} this client?`, () => {
+                 fetch('admin_client_action.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: action, client_id: clientId })
+                 })
+                 .then(res => res.json())
+                 .then(data => {
+                     if(data.status === 'success') {
+                         showCustomAlert(data.message, 'success', () => location.reload());
+                     } else {
+                         showCustomAlert('Error: ' + data.message, 'error');
+                     }
+                 })
+                 .catch(err => {
+                     console.error(err);
+                     showCustomAlert('Request failed', 'error');
+                 });
              });
         }
 
@@ -2563,15 +2814,14 @@ $conn->close();
             .then(res => res.json())
             .then(data => {
                 if(data.status === 'success') {
-                    alert(data.message);
-                    location.reload();
+                    showCustomAlert(data.message, 'success', () => location.reload());
                 } else {
-                    alert('Error: ' + data.message);
+                    showCustomAlert('Error: ' + data.message, 'error');
                 }
             })
             .catch(err => {
                 console.error(err);
-                alert('Request failed');
+                showCustomAlert('Request failed', 'error');
             });
         }
 
@@ -2635,11 +2885,13 @@ $conn->close();
                 document.getElementById('p_name').value = product.name;
                 document.getElementById('p_category').value = product.category;
                 document.getElementById('p_price').value = product.price;
+                document.getElementById('p_stock').value = product.stock_quantity ?? 50;
                 document.getElementById('p_image').value = product.image_url;
                 document.getElementById('p_description').value = product.description || '';
             } else {
                 document.getElementById('productModalTitle').innerText = 'Add New Product';
                 document.getElementById('p_id').value = '';
+                document.getElementById('p_stock').value = '50';
                 document.getElementById('p_description').value = '';
             }
             
@@ -2657,41 +2909,39 @@ $conn->close();
             .then(res => res.json())
             .then(data => {
                 if(data.status === 'success') {
-                    alert(data.message);
-                    location.reload();
+                    showCustomAlert(data.message, 'success', () => location.reload());
                 } else {
-                    alert('Error: ' + data.message);
+                    showCustomAlert('Error: ' + data.message, 'error');
                 }
             })
             .catch(err => {
                 console.error(err);
-                alert('Request failed');
+                showCustomAlert('Request failed', 'error');
             });
         }
 
         function deleteProduct(id) {
-            if(!confirm('Are you sure you want to delete this product?')) return;
-            
-            const formData = new FormData();
-            formData.append('action', 'delete');
-            formData.append('product_id', id);
+            showCustomConfirm('Are you sure you want to delete this product?', () => {
+                const formData = new FormData();
+                formData.append('action', 'delete');
+                formData.append('product_id', id);
 
-            fetch('admin_product_action.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(res => res.json())
-            .then(data => {
-                if(data.status === 'success') {
-                    alert(data.message);
-                    location.reload();
-                } else {
-                    alert('Error: ' + data.message);
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                alert('Request failed');
+                fetch('admin_product_action.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.status === 'success') {
+                        showCustomAlert(data.message, 'success', () => location.reload());
+                    } else {
+                        showCustomAlert('Error: ' + data.message, 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    showCustomAlert('Request failed', 'error');
+                });
             });
         }
 
@@ -2717,15 +2967,14 @@ $conn->close();
             .then(res => res.json())
             .then(data => {
                 if(data.status === 'success') {
-                    alert(data.message);
-                    location.reload(); 
+                    showCustomAlert(data.message, 'success', () => location.reload());
                 } else {
-                    alert('Error: ' + data.message);
+                    showCustomAlert('Error: ' + data.message, 'error');
                 }
             })
             .catch(err => {
                 console.error(err);
-                alert('Request failed');
+                showCustomAlert('Request failed', 'error');
             });
         }
 
@@ -2755,50 +3004,168 @@ $conn->close();
         }
 
         function clockOutTrainer(trainerId, trainerName) {
-            if (!confirm(`Are you sure you want to clock out ${trainerName}?`)) return;
-
-            fetch('admin_trainer_attendance.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'clock_out', trainer_id: trainerId })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if(data.status === 'success') {
-                    alert(data.message);
-                    location.reload();
-                } else {
-                    alert('Error: ' + data.message);
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                alert('Request failed');
+            showCustomConfirm(`Are you sure you want to clock out ${trainerName}?`, () => {
+                fetch('admin_trainer_attendance.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'clock_out', trainer_id: trainerId })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.status === 'success') {
+                        showCustomAlert(data.message, 'success', () => location.reload());
+                    } else {
+                        showCustomAlert('Error: ' + data.message, 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    showCustomAlert('Request failed', 'error');
+                });
             });
         }
     function notifyTrainer(clientId) {
         const trainerId = document.getElementById('trainer-select-' + clientId).value;
         if (!trainerId) {
-            alert('Please select a trainer first.');
+            showCustomAlert('Please select a trainer first.', 'error');
             return;
         }
-        if(!confirm('Inform this trainer about the opportunity?')) return;
-        
-        fetch('admin_notify_trainer.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ client_id: clientId, trainer_id: trainerId })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Trainer notified!');
-                location.reload(); // To see updated status if we track it? Or just keep it.
-            } else {
-                alert('Error: ' + data.message);
+        showCustomConfirm('Inform this trainer about the opportunity?', () => {
+            fetch('admin_notify_trainer.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ client_id: clientId, trainer_id: trainerId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showCustomAlert('Trainer notified!', 'success', () => location.reload());
+                } else {
+                    showCustomAlert('Error: ' + data.message, 'error');
+                }
+            })
+            .catch(err => console.error(err));
+        });
+    }
+
+    // Stock Management
+    function openStockModal(id, name, qty) {
+        document.getElementById('stockModal').style.display = 'block';
+        document.getElementById('stock_p_id').value = id;
+        document.getElementById('stock_p_name').innerText = name;
+        document.getElementById('stock_qty').value = qty;
+    }
+
+    function saveStock() {
+        showCustomConfirm('Update stock for this product?', () => {
+            const formData = new FormData();
+            formData.append('action', 'update_stock');
+            formData.append('product_id', document.getElementById('stock_p_id').value);
+            formData.append('stock_quantity', document.getElementById('stock_qty').value);
+
+            fetch('admin_product_action.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    showCustomAlert(data.message, 'success', () => location.reload());
+                } else {
+                    showCustomAlert('Error: ' + data.message, 'error');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showCustomAlert('Request failed', 'error');
+            });
+        });
+    }
+
+    // Order Tracking Management
+    function openOrderModal(orderId, currentStatus) {
+        document.getElementById('orderStatusModal').style.display = 'block';
+        document.getElementById('order_id_track').value = orderId;
+        document.getElementById('order_display_id').innerText = '#' + orderId;
+        document.getElementById('order_status_select').value = currentStatus;
+        updateTrackerVisual(currentStatus);
+    }
+
+    function updateTrackerVisual(status) {
+        const stepPlaced = document.getElementById('step-placed');
+        const stepTransit = document.getElementById('step-transit');
+        const stepCompleted = document.getElementById('step-completed');
+        const trackLine = document.getElementById('track-line');
+
+        // Reset
+        [stepPlaced, stepTransit, stepCompleted].forEach(el => {
+            el.className = 'validation-step';
+            el.querySelector('.step-icon').style.background = '#cbd5e1';
+            el.querySelector('.step-icon').style.boxShadow = 'none';
+        });
+        trackLine.style.background = 'linear-gradient(to right, #10b981, #f59e0b)';
+        trackLine.style.width = '0%';
+
+        if (status === 'Cancelled') {
+            trackLine.style.width = '0%';
+            trackLine.style.background = '#ef4444'; // Red
+            return;
+        }
+
+        // Helper to set active/completed
+        const setStep = (el, state) => {
+            if(state === 'completed') {
+                el.classList.add('step-completed');
+                el.querySelector('.step-icon').style.background = '#10b981';
+            } else if(state === 'active') {
+                el.classList.add('step-active');
+                el.querySelector('.step-icon').style.background = '#f59e0b';
+                el.querySelector('.step-icon').style.boxShadow = '0 0 0 3px #fef3c7';
             }
-        })
-        .catch(err => console.error(err));
+        };
+
+        if (status === 'Placed') {
+            setStep(stepPlaced, 'active');
+            trackLine.style.width = '10%';
+        } else if (status === 'Shipped') {
+            setStep(stepPlaced, 'completed');
+            setStep(stepTransit, 'active');
+            trackLine.style.width = '50%';
+        } else if (status === 'Delivered') {
+            setStep(stepPlaced, 'completed');
+            setStep(stepTransit, 'completed');
+            setStep(stepCompleted, 'completed');
+            trackLine.style.width = '100%';
+        }
+    }
+
+    function saveOrderStatus() {
+        showCustomConfirm('Update order status?', () => {
+            const orderId = document.getElementById('order_id_track').value;
+            const status = document.getElementById('order_status_select').value;
+
+            const formData = new FormData();
+            formData.append('action', 'update_status');
+            formData.append('order_id', orderId);
+            formData.append('status', status);
+
+            fetch('admin_order_action.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    showCustomAlert(data.message, 'success', () => location.reload());
+                } else {
+                    showCustomAlert('Error: ' + data.message, 'error');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showCustomAlert('Request failed', 'error');
+            });
+        });
     }
     </script>
 </body>

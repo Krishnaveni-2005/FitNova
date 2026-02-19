@@ -216,7 +216,6 @@
             <div class="chart-card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h3>Recent Logs</h3>
-                    <button onclick="clearLogs()" style="background: none; border: none; color: #E63946; cursor: pointer; font-size: 0.8rem;">Clear All</button>
                 </div>
                 <ul id="recentLogsList" style="list-style: none; width: 100%; overflow-y: auto; max-height: 400px; padding-right: 5px;">
                     <!-- Logs will appear here -->
@@ -262,170 +261,170 @@
     <script>
         // User Identity
         const CURRENT_USER_ID = "<?php echo $_SESSION['user_id']; ?>";
-        const S_KEY = (key) => `${key}_${CURRENT_USER_ID}`;
 
         // Chart Instance
         let myChart = null;
+        let globalLogs = [];
 
-        // Use LocalStorage to persist data
         document.addEventListener('DOMContentLoaded', () => {
-            loadStats();
-            renderLogs();
-            renderChart();
+            fetchStatsAndLogs();
+            
+            // Save weight on change (still local for now or could be API)
+            // Ideally we should have an API for weight too, but keeping it simple for this task
+            const savedWeight = localStorage.getItem(`fitnova_weight_${CURRENT_USER_ID}`);
+            if (savedWeight) document.getElementById('weightInput').value = savedWeight;
 
-            // Save weight on change
             document.getElementById('weightInput').addEventListener('change', (e) => {
-                localStorage.setItem(S_KEY('fitnova_weight'), e.target.value);
+                localStorage.setItem(`fitnova_weight_${CURRENT_USER_ID}`, e.target.value);
             });
         });
 
-        function loadStats() {
-            const savedWeight = localStorage.getItem(S_KEY('fitnova_weight'));
-            if (savedWeight) document.getElementById('weightInput').value = savedWeight;
-            
-            // Recalculate totals from logs to ensure accuracy
-            calculateTotalsFromLogs();
+        async function fetchStatsAndLogs() {
+            try {
+                const response = await fetch('api_log_workout.php?action=fetch_logs');
+                const data = await response.json();
+
+                if (data.success) {
+                    globalLogs = data.logs;
+                    updateUI(data.stats, data.logs);
+                } else {
+                    console.error('Failed to fetch logs:', data.message);
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
         }
 
-        function calculateTotalsFromLogs() {
-            const logs = JSON.parse(localStorage.getItem(S_KEY('fitnova_logs')) || '[]');
-            
-            const totalCalories = logs.reduce((sum, log) => sum + parseInt(log.calories || 0), 0);
-            const totalWorkouts = logs.length;
+        function updateUI(stats, logs) {
+            // Update Stats Cards
+            // If stats are returned from API, use them. 
+            // Note: api returns 'completed_workouts' and 'total_calories' in stats object
+            if (stats) {
+                document.getElementById('totalCaloriesDisplay').innerText = (stats.total_calories || 0).toLocaleString();
+                document.getElementById('workoutCount').innerText = (stats.completed_workouts || 0);
+            }
 
-            document.getElementById('totalCaloriesDisplay').innerText = totalCalories.toLocaleString();
-            document.getElementById('workoutCount').innerText = totalWorkouts;
-
-            // Sync legacy keys just in case other pages read them
-            localStorage.setItem(S_KEY('fitnova_calories'), totalCalories);
-            localStorage.setItem(S_KEY('fitnova_workouts'), totalWorkouts);
+            renderLogs(logs);
+            renderChart(logs);
         }
 
         function openLogModal() {
-            const modal = document.getElementById('logModal');
-            modal.classList.add('active');
+            document.getElementById('logModal').classList.add('active');
         }
 
         function closeLogModal() {
-            const modal = document.getElementById('logModal');
-            modal.classList.remove('active');
-            // Clear inputs
+            document.getElementById('logModal').classList.remove('active');
             document.getElementById('logActivity').selectedIndex = 0;
             document.getElementById('logDuration').value = '';
             document.getElementById('calEstimate').innerText = '';
         }
 
         const METS = {
-            'run': 8.0,
-            'walk': 3.5,
-            'cycle': 6.0,
-            'swim': 6.0,
-            'weights': 3.5,
-            'yoga': 2.5,
-            'hiit': 8.0
+            'run': 8.0, 'walk': 3.5, 'cycle': 6.0, 'swim': 6.0,
+            'weights': 3.5, 'yoga': 2.5, 'hiit': 8.0, 
+            'pilates': 3.0, 'boxing': 9.0, 'dance': 5.0
         };
 
-        function saveLog() {
+        async function saveLog() {
             const activity = document.getElementById('logActivity').value;
             const duration = parseInt(document.getElementById('logDuration').value) || 0;
-            const weight = parseFloat(document.getElementById('weightInput').value) || 0; // Default 0kg
+            const weight = parseFloat(document.getElementById('weightInput').value) || 70; // Default 70kg if epmty
 
             if (!activity || duration <= 0) {
                 alert('Please select an activity and enter valid duration');
                 return;
             }
 
-            // Calculate Calories: (MET * 3.5 * weight) / 200 * duration
-            // Simplified Formula: Calories = MET * weight * (duration/60)
-            const met = METS[activity] || 1;
+            // Estimate Calories
+            const met = METS[activity] || 3;
             const calories = Math.round(met * weight * (duration / 60));
 
-            // Create Log Object
-            const newLog = {
-                id: Date.now(),
+            const payload = {
+                action: 'log_workout',
                 activity: activity,
-                calories: calories,
                 duration: duration,
-                date: new Date().toLocaleDateString(),
-                timestamp: Date.now()
+                calories: calories
             };
 
-            // Save Log
-            const logs = JSON.parse(localStorage.getItem(S_KEY('fitnova_logs')) || '[]');
-            logs.unshift(newLog); 
-            localStorage.setItem(S_KEY('fitnova_logs'), JSON.stringify(logs));
+            try {
+                const response = await fetch('api_log_workout.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
 
-            // Save Time
-            let savedTime = parseFloat(localStorage.getItem(S_KEY('fitnova_time')) || 0);
-            savedTime += (duration / 60);
-            localStorage.setItem(S_KEY('fitnova_time'), savedTime);
-            calculateTotalsFromLogs();
-
-            // Refresh UI
-            renderLogs();
-            renderChart();
-            closeLogModal();
-            
-            alert(`Activity Logged! You burned approx ${calories} kcal 🔥`);
+                if (result.success) {
+                    alert(`Activity Logged! You burned approx ${calories} kcal 🔥`);
+                    closeLogModal();
+                    // Refresh data
+                    fetchStatsAndLogs();
+                } else {
+                    alert('Error saving log: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error saving log:', error);
+                alert('Network error. Please try again.');
+            }
         }
 
-        function renderLogs() {
+        function renderLogs(logs) {
             const list = document.getElementById('recentLogsList');
-            const noLogsMsg = document.getElementById('noLogsMsg');
-            const logs = JSON.parse(localStorage.getItem(S_KEY('fitnova_logs')) || '[]');
+            // Check if element exists before modifying
+            if (!list) return;
 
-            // Clear list
             list.innerHTML = '';
 
-            if (logs.length === 0) {
-                list.appendChild(noLogsMsg);
-                noLogsMsg.style.display = 'block';
+            if (!logs || logs.length === 0) {
+                list.innerHTML = '<p id="noLogsMsg" style="color: #999; text-align: center; margin-top: 40px;">No recent activities found.</p>';
                 return;
             }
-
-            // Hide empty message
-            if(noLogsMsg) noLogsMsg.style.display = 'none';
 
             logs.forEach(log => {
                 const li = document.createElement('li');
                 li.style.cssText = 'display: flex; align-items: center; padding: 15px 0; border-bottom: 1px solid #eee;';
                 
                 let iconClass = 'fa-dumbbell';
-                if (log.activity === 'run') iconClass = 'fa-running';
-                if (log.activity === 'walk') iconClass = 'fa-walking';
-                if (log.activity === 'cycle') iconClass = 'fa-bicycle';
-                if (log.activity === 'swim') iconClass = 'fa-swimmer';
+                const act = log.activity_type.toLowerCase();
+                if (act.includes('run')) iconClass = 'fa-running';
+                else if (act.includes('walk')) iconClass = 'fa-walking';
+                else if (act.includes('cycle')) iconClass = 'fa-bicycle';
+                else if (act.includes('swim')) iconClass = 'fa-swimmer';
+                else if (act.includes('yoga')) iconClass = 'fa-spa';
 
-                // Format activity Name
-                const activityName = log.activity.charAt(0).toUpperCase() + log.activity.slice(1);
+                // Format Date
+                const dateObj = new Date(log.created_at || log.log_date);
+                const dateStr = dateObj.toLocaleDateString();
 
                 li.innerHTML = `
                     <div style="width: 40px; height: 40px; background: rgba(15, 44, 89, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--primary-color); margin-right: 15px;">
                         <i class="fas ${iconClass}"></i>
                     </div>
                     <div style="flex: 1;">
-                        <h4 style="font-size: 0.95rem; margin-bottom: 3px;">${activityName}</h4>
-                        <span style="font-size: 0.8rem; color: #999;">${log.date} • ${log.duration} min</span>
+                        <h4 style="font-size: 0.95rem; margin-bottom: 3px; text-transform: capitalize;">${log.activity_type}</h4>
+                        <span style="font-size: 0.8rem; color: #999;">${dateStr} • ${log.duration_minutes} min</span>
                     </div>
                     <div style="font-weight: 700; color: var(--accent-color);">
-                        ${log.calories} kcal
+                        ${log.calories_burned} kcal
                     </div>
                 `;
                 list.appendChild(li);
             });
         }
 
-        function renderChart() {
+        function renderChart(logs) {
             const ctx = document.getElementById('progressChart').getContext('2d');
-            const logs = JSON.parse(localStorage.getItem(S_KEY('fitnova_logs')) || '[]');
             
-            const recentLogs = logs.slice(0, 10).reverse(); 
+            // Take recent 10, reverse for chronological order on chart
+            // Copy array to avoid mutating global
+            const recentLogs = [...(logs || [])].slice(0, 10).reverse(); 
             
-            const labels = recentLogs.map(log => log.activity.charAt(0).toUpperCase() + log.activity.slice(1));
-            const actualData = recentLogs.map(log => parseInt(log.calories));
+            const labels = recentLogs.map(log => log.activity_type.charAt(0).toUpperCase() + log.activity_type.slice(1));
+            const actualData = recentLogs.map(log => parseInt(log.calories_burned));
             
-            // Fixed Target for visualization (e.g., 600 kcal per session goal)
             const targetVal = 600;
+            // Ensure non-negative remaining
             const remainingData = actualData.map(val => Math.max(0, targetVal - val));
 
             if (myChart) {
@@ -440,14 +439,14 @@
                         {
                             label: 'Calories Burned',
                             data: actualData.length ? actualData : [0],
-                            backgroundColor: '#E65100', // Dark Orange
+                            backgroundColor: '#E65100',
                             maxBarThickness: 30,
                             stack: 'Stack 0'
                         },
                         {
-                            label: 'Target',
+                            label: 'Target Goal',
                             data: actualData.length ? remainingData : [targetVal],
-                            backgroundColor: '#FFE0B2', // Light Orange
+                            backgroundColor: 'rgba(230, 81, 0, 0.1)',
                             maxBarThickness: 30,
                             stack: 'Stack 0'
                         }
@@ -457,76 +456,27 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { 
-                            display: true,
-                            position: 'bottom',
-                            labels: {
-                                usePointStyle: true,
-                                color: '#333'
-                            }
-                        },
-                        title: {
-                            display: true,
-                            text: 'Progress Chart',
-                            color: '#E65100',
-                            font: {
-                                size: 18,
-                                family: 'Outfit',
-                                weight: 'bold'
-                            },
-                            padding: { bottom: 20 }
-                        },
+                        legend: { position: 'bottom' },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    if(context.dataset.label === 'Target') return 'Goal: ' + targetVal + ' kcal';
+                                    if(context.dataset.label === 'Target Goal') return 'Goal Target: ' + targetVal;
                                     return 'Burned: ' + context.parsed.y + ' kcal';
                                 }
                             }
                         }
                     },
                     scales: {
-                        y: {
-                            beginAtZero: true,
-                            stacked: true,
-                            grid: { display: false },
-                            ticks: { font: { family: 'Inter' } }
-                        },
-                        x: {
-                            stacked: true,
-                            grid: { display: false },
-                            ticks: { 
-                                font: { family: 'Inter' },
-                                maxRotation: 45,
-                                minRotation: 45
-                            }
-                        }
+                        y: { beginAtZero: true, stacked: true },
+                        x: { stacked: true }
                     }
                 }
             });
         }
 
-        function clearLogs() {
-            if(confirm('Clear all activity history?')) {
-                localStorage.removeItem(S_KEY('fitnova_logs'));
-                localStorage.setItem(S_KEY('fitnova_calories'), '0');
-                localStorage.setItem(S_KEY('fitnova_workouts'), '0');
-                localStorage.setItem(S_KEY('fitnova_time'), '0');
-                
-                // Reset UI
-                document.getElementById('totalCaloriesDisplay').innerText = '0';
-                document.getElementById('workoutCount').innerText = '0';
-                
-                renderLogs();
-                renderChart();
-            }
-        }
-
         // Close on outside click
         document.getElementById('logModal').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('logModal')) {
-                closeLogModal();
-            }
+            if (e.target === document.getElementById('logModal')) closeLogModal();
         });
     </script>
 
