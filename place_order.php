@@ -68,16 +68,14 @@ if ($stmt->execute()) {
         $stmtItem->bind_param("iisidss", $orderId, $pId, $name, $qty, $price, $size, $image);
         $stmtItem->execute();
         
-        // Decrement Stock
+        // Decrement Stock (use `stock` column added by fitshop.php migration)
         if ($pId > 0) {
-            // Using direct query for simplicity within loop, or prepare once outside.
-            // Prepared statements are better.
-            // Let's assume stock_quantity exists.
-            $updStock = $conn->prepare("UPDATE products SET stock_quantity = GREATEST(0, stock_quantity - ?) WHERE product_id = ?");
+            $updStock = $conn->prepare("UPDATE products SET stock = GREATEST(0, stock - ?) WHERE product_id = ?");
             $updStock->bind_param("ii", $qty, $pId);
             $updStock->execute();
             $updStock->close();
         }
+
     }
     $stmtItem->close();
 

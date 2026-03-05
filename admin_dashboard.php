@@ -1179,13 +1179,7 @@ $conn->close();
 
 
 
-                <div class="hub-card" onclick="showSection('settings')">
-                    <div class="hub-icon" style="background: #ede9fe; color: #8b5cf6;">
-                        <i class="fas fa-cog"></i>
-                    </div>
-                    <div class="hub-title">System Settings</div>
-                    <div class="hub-desc">Access global configuration and administrative preferences.</div>
-                </div>
+
             </div>
         </div>
 
@@ -1222,6 +1216,7 @@ $conn->close();
                                 <th>Delivery Date</th>
                                 <th>Status</th>
                                 <th>Phone</th>
+                                <th>Return Reason</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -1241,17 +1236,29 @@ $conn->close();
                                         <?php 
                                             $status = $order['order_status'];
                                             $badgeClass = 'badge-pending';
+                                            $customStyle = '';
                                             if($status == 'Delivered') $badgeClass = 'badge-active';
                                             elseif($status == 'Cancelled') $badgeClass = 'badge-inactive';
-                                            elseif($status == 'Shipped' || $status == 'Processing') $badgeClass = 'badge-active'; // Or custom blue
+                                            elseif($status == 'Return Requested') { $badgeClass = ''; $customStyle = 'background-color: #fce7f3; color: #be185d; border: 1px solid #fbcfe8;'; }
+                                            elseif($status == 'Returned') { $badgeClass = ''; $customStyle = 'background-color: #f3f4f6; color: #4b5563; border: 1px solid #e5e7eb;'; }
+                                            elseif($status == 'Shipped' || $status == 'Processing') $badgeClass = 'badge-active'; 
                                         ?>
-                                        <span class="badge <?php echo $badgeClass; ?>">
+                                        <span class="badge <?php echo $badgeClass; ?>" style="<?php echo $customStyle; ?>">
                                             <?php echo htmlspecialchars($status); ?>
                                         </span>
                                     </td>
                                     <td><?php echo htmlspecialchars($order['zip']); // Using zip as placeholder if no phone stored. Address is text. ?></td> 
                                     <td>
-                                        <button class="action-btn" onclick="openOrderModal(<?php echo $order['order_id']; ?>, '<?php echo htmlspecialchars($order['order_status']); ?>')">
+                                        <?php if (!empty($order['return_reason'])): ?>
+                                            <span style="font-size: 0.8rem; color: #be185d; background: #fce7f3; padding: 2px 6px; border-radius: 4px; display: inline-block; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<?php echo htmlspecialchars($order['return_reason']); ?>">
+                                                <?php echo htmlspecialchars($order['return_reason']); ?>
+                                            </span>
+                                        <?php else: ?>
+                                            <span style="color: #aaa; font-style: italic; font-size: 0.8rem;">None</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <button class="action-btn" onclick="openOrderModal(<?php echo $order['order_id']; ?>, '<?php echo htmlspecialchars($order['order_status']); ?>', '<?php echo htmlspecialchars(addslashes($order['return_reason'] ?? '')); ?>', '<?php echo htmlspecialchars(addslashes($order['admin_message'] ?? '')); ?>')">
                                             Track/Update
                                         </button>
                                     </td>
@@ -1259,7 +1266,7 @@ $conn->close();
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="8" style="text-align:center; padding: 20px;">No orders found.</td>
+                                    <td colspan="10" style="text-align:center; padding: 20px;">No orders found.</td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>
@@ -1721,14 +1728,14 @@ $conn->close();
                                 </div>
                                 <div class="info-row">
                                     <span class="info-label">Stock</span>
-                                    <span class="info-value" style="color: <?php echo $product['stock_quantity'] < 10 ? '#dc2626' : '#16a34a'; ?>; font-weight: 700;">
-                                        <?php echo $product['stock_quantity'] ?? 0; ?> Units
+                                    <span class="info-value" style="color: <?php echo ($product['stock'] ?? 0) < 10 ? '#dc2626' : '#16a34a'; ?>; font-weight: 700;">
+                                        <?php echo $product['stock'] ?? 0; ?> Units
                                     </span>
                                 </div>
                             </div>
                             <div class="card-actions">
                                 <button class="action-btn" onclick='openProductModal(<?php echo json_encode($product, JSON_HEX_APOS | JSON_HEX_QUOT); ?>)'>Edit</button>
-                                <button class="action-btn" style="background: #eff6ff; color: #1e40af; border: 1px solid #dbeafe;" onclick="openStockModal(<?php echo $product['product_id']; ?>, '<?php echo htmlspecialchars(addslashes($product['name'])); ?>', <?php echo $product['stock_quantity'] ?? 0; ?>)">Stock</button>
+                                <button class="action-btn" style="background: #eff6ff; color: #1e40af; border: 1px solid #dbeafe;" onclick="openStockModal(<?php echo $product['product_id']; ?>, '<?php echo htmlspecialchars(addslashes($product['name'])); ?>', <?php echo $product['stock'] ?? 0; ?>)">Stock</button>
                                 <button class="action-btn" style="color: #dc2626;" onclick="deleteProduct(<?php echo $product['product_id']; ?>)">Delete</button>
                             </div>
                         </div>
@@ -2423,14 +2430,24 @@ $conn->close();
                     <label class="detail-label">Order ID</label>
                     <span class="detail-value" id="order_display_id" style="font-weight:700;"></span>
                 </div>
+                <div class="detail-row" id="return_reason_row" style="display: none; background: #fff1f2; padding: 10px; border-radius: 6px; border: 1px dashed #fecdd3; flex-direction: column;">
+                    <label class="detail-label" style="color: #be185d;">Client's Return Reason</label>
+                    <div style="font-size: 0.9rem; color: #9f1239; margin-top: 5px; font-weight: 500;" id="order_return_reason_display"></div>
+                </div>
                 <div class="detail-row">
                     <label class="detail-label">Current Status</label>
                     <select id="order_status_select" class="editable-input" style="width: 100%;" onchange="updateTrackerVisual(this.value)">
                         <option value="Placed">Placed</option>
                         <option value="Shipped">Shipped</option>
                         <option value="Delivered">Delivered</option>
+                        <option value="Return Requested">Return Requested</option>
+                        <option value="Returned">Returned</option>
                         <option value="Cancelled">Cancelled</option>
                     </select>
+                </div>
+                <div class="detail-row" style="flex-direction: column; align-items: flex-start;">
+                    <label class="detail-label" style="width: 100%; margin-bottom: 5px;">Admin Message (To Client)</label>
+                    <textarea id="order_admin_message" class="editable-input" style="width: 100%; min-height: 60px; resize: vertical;" placeholder="e.g. The team will contact you shortly about your return."></textarea>
                 </div>
                 <div style="text-align: right; margin-top:20px;">
                      <button type="submit" class="admin-btn btn-primary">Update Status</button>
@@ -3083,11 +3100,21 @@ $conn->close();
     }
 
     // Order Tracking Management
-    function openOrderModal(orderId, currentStatus) {
+    function openOrderModal(orderId, currentStatus, returnReason = '', adminMessage = '') {
         document.getElementById('orderStatusModal').style.display = 'block';
         document.getElementById('order_id_track').value = orderId;
         document.getElementById('order_display_id').innerText = '#' + orderId;
         document.getElementById('order_status_select').value = currentStatus;
+        document.getElementById('order_admin_message').value = adminMessage;
+        
+        const returnRow = document.getElementById('return_reason_row');
+        if (returnReason && (currentStatus === 'Return Requested' || currentStatus === 'Returned')) {
+            document.getElementById('order_return_reason_display').innerText = returnReason;
+            returnRow.style.display = 'flex';
+        } else {
+            returnRow.style.display = 'none';
+        }
+
         updateTrackerVisual(currentStatus);
     }
 
@@ -3136,6 +3163,18 @@ $conn->close();
             setStep(stepTransit, 'completed');
             setStep(stepCompleted, 'completed');
             trackLine.style.width = '100%';
+        } else if (status === 'Return Requested') {
+            setStep(stepPlaced, 'completed');
+            setStep(stepTransit, 'completed');
+            setStep(stepCompleted, 'active');
+            trackLine.style.background = '#f472b6'; // Pinkish
+            trackLine.style.width = '100%';
+        } else if (status === 'Returned') {
+            setStep(stepPlaced, 'completed');
+            setStep(stepTransit, 'completed');
+            setStep(stepCompleted, 'completed');
+            trackLine.style.background = '#64748b'; // Gray slate
+            trackLine.style.width = '100%';
         }
     }
 
@@ -3143,11 +3182,13 @@ $conn->close();
         showCustomConfirm('Update order status?', () => {
             const orderId = document.getElementById('order_id_track').value;
             const status = document.getElementById('order_status_select').value;
+            const adminMessage = document.getElementById('order_admin_message').value;
 
             const formData = new FormData();
             formData.append('action', 'update_status');
             formData.append('order_id', orderId);
             formData.append('status', status);
+            formData.append('admin_message', adminMessage);
 
             fetch('admin_order_action.php', {
                 method: 'POST',

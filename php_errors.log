@@ -1834,3 +1834,48 @@ Style: Gym Training
 Stack trace:
 #0 {main}
   thrown in C:\xamppp\htdocs\fitnova\admin_notify_trainer.php on line 38
+[05-Mar-2026 10:53:32 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xamppp\htdocs\fitnova\api_wishlist.php:55
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\api_wishlist.php on line 55
+[05-Mar-2026 10:53:35 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xamppp\htdocs\fitnova\api_wishlist.php:34
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\api_wishlist.php on line 34
+[05-Mar-2026 10:53:45 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xamppp\htdocs\fitnova\api_wishlist.php:34
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\api_wishlist.php on line 34
+[05-Mar-2026 10:58:24 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xamppp\htdocs\fitnova\api_wishlist.php:55
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\api_wishlist.php on line 55
+[05-Mar-2026 10:58:28 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xamppp\htdocs\fitnova\api_wishlist.php:78
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\api_wishlist.php on line 78
+[05-Mar-2026 10:58:33 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xamppp\htdocs\fitnova\api_wishlist.php:34
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\api_wishlist.php on line 34
+[05-Mar-2026 10:58:36 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xamppp\htdocs\fitnova\api_wishlist.php:34
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\api_wishlist.php on line 34
+[05-Mar-2026 11:01:45 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xamppp\htdocs\fitnova\api_wishlist.php:94
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\api_wishlist.php on line 94
+[05-Mar-2026 11:01:48 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xamppp\htdocs\fitnova\api_wishlist.php:94
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\api_wishlist.php on line 94
+[05-Mar-2026 11:01:54 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xamppp\htdocs\fitnova\api_wishlist.php:94
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\api_wishlist.php on line 94
+[05-Mar-2026 11:02:57 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function bind_param() on bool in C:\xamppp\htdocs\fitnova\api_wishlist.php:94
+Stack trace:
+#0 {main}
+  thrown in C:\xamppp\htdocs\fitnova\api_wishlist.php on line 94
+[05-Mar-2026 18:12:14 Europe/Berlin] ✅ WhatsApp sent successfully: Return requested for Order #4 by client #48. Reason: Item arrived damaged.

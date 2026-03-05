@@ -271,6 +271,7 @@ if ($isLoggedIn) {
                 <a href="#" class="nav-link" id="ordersIcon" title="My Orders" style="margin-right: 15px;">
                     <i class="fas fa-clipboard-list" style="font-size: 1.2rem;"></i>
                 </a>
+
                 <a href="#" class="nav-link" id="cartIcon" style="position: relative;">
                     <i class="fas fa-shopping-cart" style="font-size: 1.2rem;"></i>
                     <span id="cartCount" style="position: absolute; top: -8px; right: -8px; background: var(--accent-color); color: white; font-size: 0.7rem; padding: 2px 6px; border-radius: 50%; display: none;">0</span>
@@ -311,6 +312,8 @@ if ($isLoggedIn) {
         <button class="btn-checkout" onclick="startCartCheckout()">Proceed to Checkout</button>
     </div>
 </div>
+
+
 
 <!-- Global Checkout Modal -->
 <div id="globalCheckoutModal" class="g-modal" onclick="if(event.target===this)this.style.display='none'">
@@ -372,6 +375,44 @@ if ($isLoggedIn) {
         <button onclick="document.getElementById('trackOrderModal').style.display='none'" style="width: 100%; padding: 12px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 20px; margin-bottom:0;">Close</button>
     </div>
 </div>
+
+<!-- Return Order Modal -->
+<div id="returnOrderModal" class="g-modal" onclick="if(event.target===this)this.style.display='none'">
+    <div class="g-modal-content" style="max-width: 500px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+            <h3 style="color: #dc3545; margin: 0;"><i class="fas fa-undo"></i> Request Return</h3>
+            <span onclick="document.getElementById('returnOrderModal').style.display='none'" style="border: none; background: none; font-size: 20px; color: #999; cursor: pointer;">&times;</span>
+        </div>
+        
+        <form id="returnOrderForm" onsubmit="event.preventDefault(); submitReturnOrder();">
+            <input type="hidden" id="returnOrderId">
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem;">Why are you returning this?</label>
+                <select id="returnReason" required class="g-input" style="width: 100%; margin-bottom: 10px; cursor: pointer;">
+                    <option value="" disabled selected>Choose a response</option>
+                    <option value="Item defective or doesn't work">Item defective or doesn't work</option>
+                    <option value="Wrong item was sent">Wrong item was sent</option>
+                    <option value="Item arrived damaged">Item arrived damaged</option>
+                    <option value="Item description was inaccurate">Item description was inaccurate</option>
+                    <option value="Changed my mind">Changed my mind / No longer needed</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem;">Comments (Optional)</label>
+                <textarea id="returnComment" class="g-input" placeholder="Provide additional details..." style="width: 100%; min-height: 80px; resize: vertical;"></textarea>
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <button type="button" onclick="document.getElementById('returnOrderModal').style.display='none'" style="flex: 1; padding: 12px; background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: 600; cursor: pointer;">Cancel</button>
+                <button type="submit" style="flex: 1; padding: 12px; background: #dc3545; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#c82333'" onmouseout="this.style.background='#dc3545'">Submit Request</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 
 <!-- Talk with Experts Modal -->
 <div id="expertModal" class="g-modal">
@@ -464,12 +505,11 @@ if ($isLoggedIn) {
         const ordersModal = document.getElementById('ordersModal');
         const globalCheckoutModal = document.getElementById('globalCheckoutModal');
 
+
         // User specific cart key
         const userId = "<?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : ''; ?>";
         const cartKey = userId ? `cart_${userId}` : 'cart_guest';
 
-        // Initial Load
-        updateCartDisplay();
 
         // Event Listeners
         if (cartIcon) {
@@ -479,15 +519,20 @@ if ($isLoggedIn) {
             });
         }
 
-        if (cartOverlay) {
-            cartOverlay.addEventListener('click', closeCart);
-        }
+
+
+            if (cartOverlay) {
+                cartOverlay.addEventListener('click', () => {
+                    closeCart();
+                });
+            }
         
-        // Mobile sidebar close button
-        const closeBtn = document.querySelector('.close-cart');
-        if(closeBtn) {
-            closeBtn.addEventListener('click', closeCart);
-        }
+        const closeBtns = document.querySelectorAll('.close-cart');
+        closeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                closeCart();
+            });
+        });
 
         if (ordersIcon) {
             ordersIcon.addEventListener('click', (e) => {
@@ -582,28 +627,7 @@ if ($isLoggedIn) {
             }
         }
 
-        // Expose helper functions to window for inline onclicks
-        window.updateCartItem = function(index, delta) {
-            let cart = JSON.parse(localStorage.getItem(cartKey) || '[]');
-            const item = cart[index];
-            if (item) {
-                let currentQty = parseInt(item.quantity) || 0;
-                item.quantity = currentQty + delta;
-                
-                if (item.quantity <= 0) {
-                    cart.splice(index, 1);
-                }
-                localStorage.setItem(cartKey, JSON.stringify(cart));
-                updateCartDisplay();
-            }
-        };
 
-        window.removeCartItem = function(index) {
-            let cart = JSON.parse(localStorage.getItem(cartKey) || '[]');
-            cart.splice(index, 1);
-            localStorage.setItem(cartKey, JSON.stringify(cart));
-            updateCartDisplay();
-        };
 
         // Orders Fetching
         function fetchOrders() {
@@ -634,7 +658,26 @@ if ($isLoggedIn) {
                             `;
                         });
 
-                        const date = new Date(order.order_date).toLocaleDateString();
+                        const orderDate = new Date(order.order_date);
+                        const today = new Date();
+                        const diffTime = Math.abs(today - orderDate);
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                        
+                        let returnBtn = '';
+                        if (diffDays <= 10 && !['Return Requested', 'Returned', 'Cancelled'].includes(order.order_status)) {
+                            returnBtn = `<button onclick="window.requestReturn(${order.order_id})" style="background:#dc3545; color:white; border:none; padding:5px 15px; border-radius:4px; cursor:pointer; font-size:0.85rem; margin-right:10px; transition:0.3s;" onmouseover="this.style.background='#c82333'" onmouseout="this.style.background='#dc3545'">
+                                <i class="fas fa-undo"></i> Return Item(s)
+                            </button>`;
+                        }
+
+                        const date = orderDate.toLocaleDateString();
+
+                        let adminMsgHtml = '';
+                        if (order.admin_message && order.admin_message.trim() !== '') {
+                            adminMsgHtml = `<div style="margin-top:10px; padding:10px; background:#e0f2fe; border-left:4px solid #0284c7; border-radius:4px; font-size:0.9rem; color:#0c4a6e;">
+                                <strong><i class="fas fa-info-circle"></i> Message from Team:</strong> ${order.admin_message}
+                            </div>`;
+                        }
 
                         html += `
                             <div style="border:1px solid #eee; padding:15px; border-radius:8px; margin-bottom:15px; background:#fafafa;">
@@ -643,7 +686,7 @@ if ($isLoggedIn) {
                                     <span style="font-size:0.85rem; color:#666;">${date}</span>
                                 </div>
                                 <div style="font-size:0.9rem; margin-bottom:5px;">
-                                    <strong>Status:</strong> <span style="color:${order.order_status === 'Delivered' ? '#28a745' : 'orange'}; font-weight:600;">${order.order_status}</span> 
+                                    <strong>Status:</strong> <span style="color:${order.order_status === 'Delivered' ? '#28a745' : (order.order_status === 'Return Requested' ? '#e83e8c' : 'orange')}; font-weight:600;">${order.order_status}</span> 
                                     <span style="color:#aaa;">|</span> 
                                     <strong>Total:</strong> ₹${parseFloat(order.total_amount).toLocaleString()}
                                     <span style="color:#aaa;">|</span> 
@@ -652,8 +695,10 @@ if ($isLoggedIn) {
                                 <div style="background:white; padding:10px; border-radius:6px; border:1px solid #eee;">
                                     ${itemsHtml}
                                 </div>
+                                ${adminMsgHtml}
                                 <div style="text-align:right; margin-top:10px;">
-                                    <button onclick="window.openGlobalTrackModal('${order.order_status}', ${order.order_id})" style="background:var(--primary-color); color:white; border:none; padding:5px 15px; border-radius:4px; cursor:pointer; font-size:0.85rem;">
+                                    ${returnBtn}
+                                    <button onclick="window.openGlobalTrackModal('${order.order_status}', ${order.order_id})" style="background:var(--primary-color); color:white; border:none; padding:5px 15px; border-radius:4px; cursor:pointer; font-size:0.85rem; transition:0.3s;" onmouseover="this.style.background='#0a1f3f'" onmouseout="this.style.background='var(--primary-color)'">
                                         <i class="fas fa-map-marker-alt"></i> Track Order
                                     </button>
                                 </div>
@@ -667,6 +712,44 @@ if ($isLoggedIn) {
                     container.innerHTML = '<div style="color:red; text-align:center;">Failed to load orders.</div>';
                 });
         }
+
+        window.requestReturn = function(orderId) {
+            document.getElementById('returnOrderId').value = orderId;
+            document.getElementById('returnReason').value = '';
+            document.getElementById('returnComment').value = '';
+            document.getElementById('returnOrderModal').style.display = 'block';
+        };
+
+        window.submitReturnOrder = function() {
+            const orderId = document.getElementById('returnOrderId').value;
+            const reason = document.getElementById('returnReason').value;
+            const comment = document.getElementById('returnComment').value;
+
+            if (!reason) {
+                showToast("Please select a reason for the return.", "error");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('order_id', orderId);
+            formData.append('reason', reason);
+            formData.append('comment', comment);
+
+            fetch('return_order.php', { method: 'POST', body: formData })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        document.getElementById('returnOrderModal').style.display = 'none';
+                        showToast(data.message, 'success');
+                        fetchOrders(); // refresh view
+                    } else {
+                        showToast(data.message || 'Error processing return.', 'error');
+                    }
+                })
+                .catch(err => {
+                    showToast('Network error while processing return request.', 'error');
+                });
+        };
 
         window.openGlobalTrackModal = function(status, orderId) {
             document.getElementById('globalTrackId').innerText = orderId;
@@ -717,6 +800,18 @@ if ($isLoggedIn) {
                 setStep(stepPlaced, 'completed');
                 setStep(stepTransit, 'completed');
                 setStep(stepCompleted, 'completed');
+                trackLine.style.width = '100%';
+            } else if (status === 'Return Requested') {
+                setStep(stepPlaced, 'completed');
+                setStep(stepTransit, 'completed');
+                setStep(stepCompleted, 'active');
+                trackLine.style.background = '#f472b6'; // Pinkish
+                trackLine.style.width = '100%';
+            } else if (status === 'Returned') {
+                setStep(stepPlaced, 'completed');
+                setStep(stepTransit, 'completed');
+                setStep(stepCompleted, 'completed');
+                trackLine.style.background = '#64748b'; // Gray slate
                 trackLine.style.width = '100%';
             }
 

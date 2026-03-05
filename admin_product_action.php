@@ -31,15 +31,15 @@ if ($action === 'delete') {
 
 } elseif ($action === 'update_stock') {
     $product_id = $_POST['product_id'] ?? 0;
-    $stock_quantity = $_POST['stock_quantity'] ?? 0;
+    $stock = $_POST['stock_quantity'] ?? 0;
 
     if (!$product_id) {
         echo json_encode(["status" => "error", "message" => "Invalid product ID"]);
         exit();
     }
 
-    $stmt = $conn->prepare("UPDATE products SET stock_quantity = ? WHERE product_id = ?");
-    $stmt->bind_param("ii", $stock_quantity, $product_id);
+    $stmt = $conn->prepare("UPDATE products SET stock = ? WHERE product_id = ?");
+    $stmt->bind_param("ii", $stock, $product_id);
 
     if ($stmt->execute()) {
         echo json_encode(["status" => "success", "message" => "Stock updated successfully"]);
@@ -122,13 +122,13 @@ if ($action === 'delete') {
 
     if (!empty($product_id)) {
         // Update
-        $stmt = $conn->prepare("UPDATE products SET name=?, category=?, price=?, image_url=?, description=?, stock_quantity=? WHERE product_id=?");
+        $stmt = $conn->prepare("UPDATE products SET name=?, category=?, price=?, image_url=?, description=?, stock=? WHERE product_id=?");
         $stmt->bind_param("ssdssii", $name, $category, $price, $image_url, $description, $stock, $product_id);
     } else {
         // Insert
         $rating = 4.5; 
         $review_count = 0;
-        $stmt = $conn->prepare("INSERT INTO products (name, category, price, image_url, rating, review_count, description, stock_quantity) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO products (name, category, price, image_url, rating, review_count, description, stock) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->bind_param("ssdsdisi", $name, $category, $price, $image_url, $rating, $review_count, $description, $stock);
     }
 

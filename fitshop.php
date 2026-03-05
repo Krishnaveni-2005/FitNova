@@ -148,6 +148,61 @@ session_start();
             color: #aaa;
         }
 
+        /* Search Dropdown */
+        .search-results-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            box-shadow: var(--shadow);
+            z-index: 100;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .search-result-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .search-result-item:hover {
+            background: #f8f9fa;
+        }
+
+        .search-result-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            object-fit: cover;
+        }
+
+        .search-result-info {
+            flex: 1;
+        }
+
+        .search-result-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 2px;
+        }
+
+        .search-result-price {
+            font-size: 0.8rem;
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
         /* Category Menu */
         .cat-menu {
             list-style: none;
@@ -182,6 +237,157 @@ session_start();
             border-radius: 10px;
             color: #777;
         }
+
+        /* Filter Widget (sidebar - kept for structure) */
+        .filter-options {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            color: var(--text-gray);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            user-select: none;
+        }
+
+        .filter-label:hover {
+            color: var(--primary-color);
+            background: rgba(52, 152, 219, 0.1);
+        }
+
+        .filter-checkbox {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: var(--primary-color);
+        }
+
+
+        /* ── Premium Horizontal Price Filter Bar ── */
+        .price-filter-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px 10px 0;
+            background: transparent;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+        }
+
+        .price-filter-bar .filter-label-text {
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 16px 8px 18px;
+            background: linear-gradient(135deg, var(--primary-color), #1a3a6e);
+            color: white;
+            border-radius: 10px 0 0 10px;
+            margin-right: 12px;
+            height: 42px;
+            box-shadow: 3px 0 12px rgba(15,44,89,0.18);
+            clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%);
+            padding-right: 24px;
+        }
+
+        .price-pills-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .price-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 18px;
+            border: 1.5px solid #d8dde8;
+            border-radius: 50px;
+            font-size: 0.83rem;
+            font-weight: 600;
+            color: #4a5568;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            background: white;
+            user-select: none;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+
+        .price-pill:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background: #f0f4ff;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 14px rgba(15,44,89,0.15);
+        }
+
+        .price-pill.active {
+            background: linear-gradient(135deg, var(--primary-color), #1a3a6e);
+            border-color: transparent;
+            color: #ffffff;
+            box-shadow: 0 5px 16px rgba(15,44,89,0.3);
+            transform: translateY(-2px);
+        }
+
+        .price-pill input[type="checkbox"] {
+            display: none;
+        }
+
+        .price-pill .pill-check {
+            font-size: 0.65rem;
+            display: none;
+            background: rgba(255,255,255,0.25);
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .price-pill.active .pill-check {
+            display: inline-flex;
+        }
+
+        .clear-filter-btn {
+            display: none;
+            align-items: center;
+            gap: 5px;
+            margin-left: 6px;
+            font-size: 0.78rem;
+            color: #e63946;
+            cursor: pointer;
+            font-weight: 700;
+            border: 1.5px solid #e63946;
+            background: transparent;
+            padding: 6px 14px;
+            border-radius: 50px;
+            transition: all 0.18s;
+            white-space: nowrap;
+            line-height: 1.4;
+        }
+
+        .clear-filter-btn:hover {
+            background: #e63946;
+            color: white;
+            box-shadow: 0 4px 12px rgba(230,57,70,0.3);
+        }
+
 
         /* Product Grid */
         .category-section {
@@ -257,6 +463,58 @@ session_start();
             font-weight: 700;
             text-transform: uppercase;
             z-index: 2;
+        }
+
+
+
+        /* Out-of-Stock Styling */
+        .product-card.out-of-stock {
+            pointer-events: none;
+            opacity: 0.75;
+        }
+
+        .product-card.out-of-stock .add-btn {
+            pointer-events: none;
+        }
+
+        .product-card.out-of-stock .product-img img {
+            filter: grayscale(60%) brightness(0.88);
+        }
+
+        .product-card.out-of-stock:hover {
+            transform: none;
+            box-shadow: var(--shadow);
+        }
+
+        .product-card.out-of-stock:hover .product-img img {
+            transform: none;
+        }
+
+        .out-of-stock-badge {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0,0,0,0.58);
+            color: white;
+            text-align: center;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            padding: 6px 0;
+            z-index: 5;
+        }
+
+        .btn-out-of-stock {
+            background: #ccc !important;
+            color: #888 !important;
+            cursor: not-allowed !important;
+            font-size: 0.75rem;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: none;
+            font-weight: 600;
         }
 
         .product-details {
@@ -428,6 +686,13 @@ session_start();
             color: #FFC107;
             font-size: 1.2rem;
             margin-bottom: 20px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: inline-block;
+        }
+
+        .modal-rating:hover {
+            transform: scale(1.05);
         }
 
         .modal-description {
@@ -573,7 +838,42 @@ session_start();
             }
         }
         
-
+        /* Review List Styles */
+        .reviews-container {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .review-item {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .reviewer-name {
+            font-weight: 700;
+            color: var(--text-dark);
+            font-size: 0.95rem;
+        }
+        .review-date {
+            color: #999;
+            font-size: 0.8rem;
+        }
+        .review-stars {
+            color: #FFC107;
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+        }
+        .review-text {
+            color: var(--text-gray);
+            line-height: 1.5;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 
@@ -592,8 +892,45 @@ session_start();
 
         <!-- Left Column: Products -->
         <main class="products-area">
+
+            <!-- Horizontal Price Filter Bar -->
+            <div class="price-filter-bar" id="priceFilterBar">
+                <span class="filter-label-text">
+                    <i class="fas fa-sliders-h"></i> Price Range
+                </span>
+                <div class="price-pills-group">
+                    <label class="price-pill" id="pill-0-500">
+                        <input type="checkbox" class="pill-checkbox" value="0-500" onchange="handlePillFilter(this)">
+                        <i class="fas fa-check pill-check"></i>
+                        Under &#8377;500
+                    </label>
+                    <label class="price-pill" id="pill-500-1000">
+                        <input type="checkbox" class="pill-checkbox" value="500-1000" onchange="handlePillFilter(this)">
+                        <i class="fas fa-check pill-check"></i>
+                        &#8377;500 &ndash; &#8377;1000
+                    </label>
+                    <label class="price-pill" id="pill-1000-2000">
+                        <input type="checkbox" class="pill-checkbox" value="1000-2000" onchange="handlePillFilter(this)">
+                        <i class="fas fa-check pill-check"></i>
+                        &#8377;1000 &ndash; &#8377;2000
+                    </label>
+                    <label class="price-pill" id="pill-2000-999999">
+                        <input type="checkbox" class="pill-checkbox" value="2000-999999" onchange="handlePillFilter(this)">
+                        <i class="fas fa-check pill-check"></i>
+                        Over &#8377;2000
+                    </label>
+                    <button class="clear-filter-btn" id="clearFiltersBtn" onclick="clearAllFilters()">
+                        <i class="fas fa-times"></i> Clear
+                    </button>
+                </div>
+            </div>
+
+
             <?php
-            require "db_connect.php"; // Ensure DB connection works
+            require "db_connect.php";
+
+            // Auto-add stock column if it doesn't exist yet
+            $conn->query("ALTER TABLE products ADD COLUMN IF NOT EXISTS stock INT NOT NULL DEFAULT 100");
             
             // Define categories to display in order
             $categories = [
@@ -604,8 +941,15 @@ session_start();
             ];
 
             foreach ($categories as $catKey => $catTitle):
-                // Fetch products for this category
-                $stmt = $conn->prepare("SELECT * FROM products WHERE category = ? ORDER BY is_bestseller DESC, rating DESC LIMIT 30"); // "Limited to around 20-30" as requested
+                // Fetch products for this category with dynamic rating calculation
+                $sql = "SELECT p.*, 
+                        (SELECT COALESCE(AVG(rating), 0) FROM product_reviews pr WHERE pr.product_id = p.product_id) as avg_rating,
+                        (SELECT COUNT(*) FROM product_reviews pr WHERE pr.product_id = p.product_id) as total_reviews
+                        FROM products p 
+                        WHERE p.category = ? 
+                        ORDER BY p.is_bestseller DESC, avg_rating DESC 
+                        LIMIT 30";
+                $stmt = $conn->prepare($sql);
                 $stmt->bind_param("s", $catKey);
                 $stmt->execute();
                 $result = $stmt->get_result();
@@ -614,23 +958,42 @@ session_start();
                     <div class="cat-header"><?php echo $catTitle; ?></div>
                     <div class="product-grid">
                         <?php if ($result->num_rows > 0): ?>
-                            <?php while ($prod = $result->fetch_assoc()): ?>
-                                <div class="product-card" onclick="openProductModal(<?php echo htmlspecialchars(json_encode($prod)); ?>)">
+                            <?php while ($prod = $result->fetch_assoc()):
+                                $prod['rating'] = number_format($prod['avg_rating'], 1);
+                                $prod['review_count'] = $prod['total_reviews'];
+                                $isOutOfStock = isset($prod['stock']) && (int)$prod['stock'] <= 0;
+                            ?>
+                                <div class="product-card<?php echo $isOutOfStock ? ' out-of-stock' : ''; ?>" onclick="<?php echo $isOutOfStock ? 'void(0)' : 'openProductModal(' . htmlspecialchars(json_encode($prod)) . ')'; ?>">
                                     <div class="product-img">
-                                        <?php if ($prod['is_bestseller']): ?>
+                                        <?php if ($isOutOfStock): ?>
+                                            <span class="out-of-stock-badge">Out of Stock</span>
+                                        <?php elseif ($prod['is_bestseller']): ?>
                                             <span class="badge" style="background:#000;">Best Seller</span>
                                         <?php elseif ($prod['is_sale']): ?>
                                             <span class="badge" style="background:#E63946;">Sale</span>
                                         <?php elseif ($prod['is_new']): ?>
                                             <span class="badge" style="background:var(--secondary-color);">New</span>
                                         <?php endif; ?>
+
                                         <img src="<?php echo htmlspecialchars($prod['image_url']); ?>" alt="<?php echo htmlspecialchars($prod['name']); ?>">
                                     </div>
                                     <div class="product-details">
                                         <span class="product-cat"><?php echo ucfirst($prod['category']); ?></span>
                                         <h3 class="product-title"><?php echo htmlspecialchars($prod['name']); ?></h3>
                                         <div class="rating">
-                                            <i class="fas fa-star"></i> <?php echo $prod['rating']; ?> 
+                                            <?php 
+                                            // Ensure we use the computed average rating
+                                            $currentRating = $prod['total_reviews'] > 0 ? $prod['avg_rating'] : 0;
+                                            for ($i = 1; $i <= 5; $i++) {
+                                                if ($currentRating >= $i) {
+                                                    echo '<i class="fas fa-star"></i>';
+                                                } elseif ($currentRating >= $i - 0.5) {
+                                                    echo '<i class="fas fa-star-half-alt"></i>';
+                                                } else {
+                                                    echo '<i class="far fa-star"></i>';
+                                                }
+                                            }
+                                            ?>
                                             <span style="color:#aaa; font-size: 0.8em;">(<?php echo $prod['review_count']; ?>)</span>
                                         </div>
                                         
@@ -651,10 +1014,14 @@ session_start();
 
                                         <div class="product-footer">
                                             <span class="price">₹<?php echo number_format($prod['price']); ?></span>
+                                            <?php if ($isOutOfStock): ?>
+                                                <button class="btn-out-of-stock" disabled>Out of Stock</button>
+                                            <?php else: ?>
                                             <div style="display: flex; gap: 8px;">
                                                 <button class="add-btn" title="Add to Cart" onclick="event.stopPropagation(); quickAddToCart(<?php echo $prod['product_id']; ?>, '<?php echo htmlspecialchars($prod['name']); ?>')"><i class="fas fa-plus"></i></button>
                                                 <button class="add-btn" title="Buy Now" style="background: #2ECC71; color: white;" onclick="event.stopPropagation(); quickBuyNow(event, <?php echo htmlspecialchars(json_encode($prod)); ?>)"><i class="fas fa-bolt"></i></button>
                                             </div>
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 </div>
@@ -676,8 +1043,9 @@ session_start();
             <div class="sidebar-widget">
                 <div class="widget-title">Search</div>
                 <div class="search-box">
-                    <input type="text" class="search-input" placeholder="Search products...">
+                    <input type="text" id="liveSearchInput" class="search-input" placeholder="Search products..." autocomplete="off">
                     <i class="fas fa-search search-icon"></i>
+                    <div id="liveSearchResults" class="search-results-dropdown"></div>
                 </div>
             </div>
 
@@ -691,6 +1059,8 @@ session_start();
                     <li><a onclick="scrollToCat('equipment')" class="cat-link"><span>Equipment</span> <span class="cat-count">50+</span></a></li>
                 </ul>
             </div>
+
+
 
             <!-- Promo Widget -->
             <div class="sidebar-widget" style="background: var(--primary-color); color: white; text-align: center;">
@@ -755,6 +1125,41 @@ session_start();
                             <li>✓ Perfect fit guarantee</li>
                             <li>✓ Easy care & maintenance</li>
                         </ul>
+                    </div>
+
+                    <!-- Review Display Section -->
+                    <div class="reviews-container">
+                        <h3 style="color: var(--primary-color); margin-bottom: 15px;">Customer Reviews</h3>
+                        <div id="reviewsList">
+                            <!-- Reviews will be loaded here via JS -->
+                            <p style="color: #999; font-style: italic;">Loading reviews...</p>
+                        </div>
+                    </div>
+
+                    <!-- Review Section (Form) -->
+                    <div class="review-section" style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+                        <h3 style="color: var(--primary-color); margin-bottom: 15px;">Write a Review</h3>
+                        <?php if (isset($_SESSION['user_id'])): ?>
+                            <div class="write-review-form">
+                                <div class="rating-input" style="margin-bottom: 15px;">
+                                    <label style="display:block; font-weight:600; margin-bottom:5px;">Your Rating:</label>
+                                    <div class="star-rating-selector" style="font-size: 1.5rem; color: #ddd; cursor: pointer;">
+                                        <i class="fas fa-star" onclick="setRating(1)" onmouseover="hoverRating(1)" onmouseout="resetRating()"></i>
+                                        <i class="fas fa-star" onclick="setRating(2)" onmouseover="hoverRating(2)" onmouseout="resetRating()"></i>
+                                        <i class="fas fa-star" onclick="setRating(3)" onmouseover="hoverRating(3)" onmouseout="resetRating()"></i>
+                                        <i class="fas fa-star" onclick="setRating(4)" onmouseover="hoverRating(4)" onmouseout="resetRating()"></i>
+                                        <i class="fas fa-star" onclick="setRating(5)" onmouseover="hoverRating(5)" onmouseout="resetRating()"></i>
+                                    </div>
+                                    <input type="hidden" id="reviewRating" value="0">
+                                </div>
+                                <div style="margin-bottom: 15px;">
+                                    <textarea id="reviewText" class="search-input" rows="3" placeholder="Write your review here..."></textarea>
+                                </div>
+                                <button class="add-to-cart-btn" onclick="submitReview()" style="padding: 12px; font-size: 1rem; width: auto;">Submit Review</button>
+                            </div>
+                        <?php else: ?>
+                            <p style="color: #666; background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;">Please <a href="login.php" style="color: var(--primary-color); font-weight: bold; text-decoration: underline;">login</a> to leave a review.</p>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -847,7 +1252,38 @@ session_start();
             document.getElementById('modalProductImg').src = product.image_url;
             document.getElementById('modalCategory').textContent = product.category.toUpperCase();
             document.getElementById('modalProductName').textContent = product.name;
-            document.getElementById('modalRating').innerHTML = `<i class="fas fa-star"></i> ${product.rating} <span style="color:#aaa; font-size: 0.9rem;">(${product.review_count} reviews)</span>`;
+            // Generate Star Rating HTML
+            let starHtml = '';
+            let ratingVal = parseInt(product.review_count) > 0 ? parseFloat(product.rating) : 0;
+            for (let i = 1; i <= 5; i++) {
+                if (ratingVal >= i) {
+                    starHtml += '<i class="fas fa-star"></i>';
+                } else if (ratingVal >= i - 0.5) {
+                    starHtml += '<i class="fas fa-star-half-alt"></i>';
+                } else {
+                    starHtml += '<i class="far fa-star"></i>';
+                }
+            }
+            document.getElementById('modalRating').innerHTML = `${starHtml} <span style="color:#aaa; font-size: 0.9rem;">(${product.review_count} reviews)</span>`;
+            
+            // Fetch Reviews
+            fetchReviews(product.product_id);
+
+            // Add click event to scroll to review section
+
+            document.getElementById('modalRating').onclick = function() {
+                const reviewSection = document.querySelector('.review-section');
+                if(reviewSection) {
+                    reviewSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    // Provide visual feedback
+                    const form = reviewSection.querySelector('.write-review-form');
+                    if(form) {
+                        form.style.transition = 'background 0.3s';
+                        form.style.background = '#f0f9ff';
+                        setTimeout(() => form.style.background = 'transparent', 1000);
+                    }
+                }
+            };
             document.getElementById('modalPrice').textContent = '₹' + Number(product.price).toLocaleString();
             document.getElementById('productQty').value = 1;
             
@@ -882,6 +1318,103 @@ session_start();
             if (newVal >= 1 && newVal <= 10) {
                 input.value = newVal;
             }
+        }
+
+        // Review Logic
+        let selectedRating = 0;
+        
+        function setRating(rating) {
+            selectedRating = rating;
+            document.getElementById('reviewRating').value = rating;
+            updateStars(rating);
+        }
+
+        function hoverRating(rating) {
+            updateStars(rating);
+        }
+
+        function resetRating() {
+            updateStars(selectedRating);
+        }
+
+        function updateStars(rating) {
+            const stars = document.querySelectorAll('.star-rating-selector i');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.style.color = '#FFC107';
+                } else {
+                    star.style.color = '#ddd';
+                }
+            });
+        }
+
+        function submitReview() {
+            if (selectedRating === 0) {
+                showToast('Please select a rating.', 'error');
+                return;
+            }
+            
+            const text = document.getElementById('reviewText').value;
+             // Basic implementation - in real app, might want title etc.
+            
+            fetch('submit_review.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    product_id: currentProduct.product_id,
+                    rating: selectedRating,
+                    review_text: text
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('Review submitted successfully!', 'success');
+                    closeProductModal();
+                    setTimeout(() => location.reload(), 1500); // Reload after toast
+                } else {
+                    showToast('Error: ' + data.message, 'error');
+                }
+            })
+            .catch(err => console.error(err));
+        }
+
+        function fetchReviews(productId) {
+            const container = document.getElementById('reviewsList');
+            container.innerHTML = '<p style="color: #999; font-style: italic;">Loading reviews...</p>';
+            
+            fetch(`get_reviews.php?product_id=${productId}`)
+                .then(response => response.json())
+                .then(reviews => {
+                    if (reviews.length > 0) {
+                        let html = '';
+                        reviews.forEach(review => {
+                            // Generate stars
+                            let stars = '';
+                            for (let i = 1; i <= 5; i++) {
+                                stars += i <= review.rating ? '<i class="fas fa-star"></i>' : '<i class="far fa-star" style="color:#ddd;"></i>';
+                            }
+                            
+                            html += `
+                                <div class="review-item">
+                                    <div class="review-header">
+                                        <div class="reviewer-name">${review.user_name}</div>
+                                        <div class="review-date">${review.date}</div>
+                                    </div>
+                                    <div class="review-stars">${stars}</div>
+                                    <div class="review-text">${review.text}</div>
+                                </div>
+                            `;
+                        });
+                        container.innerHTML = html;
+                    } else {
+                        container.innerHTML = '<p style="color: #777;">No reviews yet. Be the first to add one!</p>';
+                    }
+                })
+                .catch(err => {
+                    console.error('Error fetching reviews:', err);
+                    container.innerHTML = '<p style="color: red;">Failed to load reviews.</p>';
+                });
         }
 
         function addToCartFromModal() {
@@ -1059,40 +1592,157 @@ session_start();
             }
         }
 
-        // Search Functionality
-        document.querySelector('.search-input').addEventListener('input', function(e) {
-            const query = e.target.value.toLowerCase().trim();
-            const categories = document.querySelectorAll('.category-section');
+        // Live Search & Autocomplete Functionality
+        const searchInput = document.getElementById('liveSearchInput');
+        const searchResults = document.getElementById('liveSearchResults');
+        let searchTimeout;
 
-            /* Search Products */
-            let hasGlobalResults = false;
+        searchInput.addEventListener('input', function(e) {
+            clearTimeout(searchTimeout);
+            const query = e.target.value.trim();
 
-            categories.forEach(section => {
-                let hasVisibleProduct = false;
-                const cards = section.querySelectorAll('.product-card');
-                
-                cards.forEach(card => {
-                    const title = card.querySelector('.product-title').textContent.toLowerCase();
-                    // Strict search: Only show products starting with the query
-                    if (title.startsWith(query)) {
-                        card.style.display = 'flex'; 
-                        hasVisibleProduct = true;
-                        hasGlobalResults = true;
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
+            if (query.length < 1) {
+                searchResults.style.display = 'none';
+                return;
+            }
 
-                // Hide entire category if no products match
-                if (hasVisibleProduct) {
-                    section.style.display = 'block';
-                } else {
-                    section.style.display = 'none';
-                }
+            searchTimeout = setTimeout(() => {
+                fetch(`api_shop_search.php?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        searchResults.innerHTML = '';
+                        if (data.length > 0) {
+                            data.forEach(product => {
+                                const itemDiv = document.createElement('div');
+                                itemDiv.className = 'search-result-item';
+                                itemDiv.onclick = function() { handleSearchResultClick(product); };
+                                
+                                const img = document.createElement('img');
+                                img.src = product.image_url;
+                                img.className = 'search-result-img';
+                                img.alt = product.name;
+                                
+                                const infoDiv = document.createElement('div');
+                                infoDiv.className = 'search-result-info';
+                                
+                                const nameDiv = document.createElement('div');
+                                nameDiv.className = 'search-result-name';
+                                nameDiv.textContent = product.name;
+                                
+                                const priceDiv = document.createElement('div');
+                                priceDiv.className = 'search-result-price';
+                                priceDiv.textContent = '₹' + Number(product.price).toLocaleString();
+                                
+                                infoDiv.appendChild(nameDiv);
+                                infoDiv.appendChild(priceDiv);
+                                
+                                itemDiv.appendChild(img);
+                                itemDiv.appendChild(infoDiv);
+                                
+                                searchResults.appendChild(itemDiv);
+                            });
+                            searchResults.style.display = 'block';
+                        } else {
+                            searchResults.innerHTML = '<div style="padding: 15px; text-align: center; color: #777; font-size: 0.9rem;">No products found.</div>';
+                            searchResults.style.display = 'block';
+                        }
+                    })
+                    .catch(err => console.error('Search error:', err));
+            }, 300); // 300ms debounce
+        });
+
+        // Hide search results when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.style.display = 'none';
+            }
+        });
+
+        function handleSearchResultClick(product) {
+            openProductModal(product);
+            searchResults.style.display = 'none';
+            searchInput.value = ''; // Reset search input
+        }
+
+        // Price Filter — single-select pill logic (radio-button style)
+        function handlePillFilter(checkbox) {
+            const isChecked = checkbox.checked;
+
+            // Deselect all pills first
+            document.querySelectorAll('.pill-checkbox').forEach(cb => {
+                cb.checked = false;
+                cb.closest('.price-pill').classList.remove('active');
             });
 
-            // Handle "No Results" message if needed
-        });
+            // Re-apply only if this one was just turned on
+            if (isChecked) {
+                checkbox.checked = true;
+                checkbox.closest('.price-pill').classList.add('active');
+            }
+
+            applyFilters();
+
+            const hasActive = document.querySelectorAll('.pill-checkbox:checked').length > 0;
+            document.getElementById('clearFiltersBtn').style.display = hasActive ? 'inline-flex' : 'none';
+        }
+
+        function clearAllFilters() {
+            document.querySelectorAll('.pill-checkbox').forEach(cb => {
+                cb.checked = false;
+                cb.closest('.price-pill').classList.remove('active');
+            });
+            document.getElementById('clearFiltersBtn').style.display = 'none';
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const selectedRanges = Array.from(document.querySelectorAll('.pill-checkbox:checked'))
+                .map(cb => {
+                    const [min, max] = cb.value.split('-').map(Number);
+                    return { min, max };
+                });
+
+            let totalVisible = 0;
+
+            document.querySelectorAll('.category-section').forEach(section => {
+                let hasVisible = false;
+                section.querySelectorAll('.product-card').forEach(card => {
+                    const priceText = card.querySelector('.price')?.textContent || '0';
+                    const price = Number(priceText.replace(/[^0-9]/g, ''));
+                    const matches = selectedRanges.length === 0 ||
+                        selectedRanges.some(r => price >= r.min && price <= r.max);
+                    card.style.display = matches ? '' : 'none';
+                    if (matches) { hasVisible = true; totalVisible++; }
+                });
+                section.style.display = hasVisible ? '' : 'none';
+            });
+
+            // Show / hide empty state message
+            let emptyMsg = document.getElementById('filterEmptyState');
+            if (selectedRanges.length > 0 && totalVisible === 0) {
+                if (!emptyMsg) {
+                    emptyMsg = document.createElement('div');
+                    emptyMsg.id = 'filterEmptyState';
+                    emptyMsg.innerHTML = `
+                        <div style="text-align:center; padding:60px 20px;">
+                            <i class="fas fa-box-open" style="font-size:3.5rem; color:#ccd0dd; display:block; margin-bottom:16px;"></i>
+                            <h3 style="color:var(--primary-color); margin-bottom:8px; font-size:1.2rem;">No Products Found</h3>
+                            <p style="color:#8a95ab; font-size:0.9rem; margin-bottom:20px;">
+                                No items match the selected price range.<br>Try a different range or clear the filter.
+                            </p>
+                            <button onclick="clearAllFilters()" style="padding:9px 24px; background:var(--primary-color); color:white; border:none; border-radius:50px; font-weight:600; cursor:pointer; font-size:0.88rem;">
+                                <i class="fas fa-times" style="margin-right:6px;"></i>Clear Filter
+                            </button>
+                        </div>`;
+                    document.querySelector('.products-area').appendChild(emptyMsg);
+                }
+                emptyMsg.style.display = 'block';
+            } else if (emptyMsg) {
+                emptyMsg.style.display = 'none';
+            }
+        }
+
+
 
         // Auth Modal Helper Functions
         function showAuthModal(msg) {

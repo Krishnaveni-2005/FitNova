@@ -106,6 +106,21 @@ $total = $subtotal + $shipping + $tax;
         .btn-pay:hover { background: #0a1f3f; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(15, 44, 89, 0.3); }
 
         @media (max-width: 900px) { .checkout-container { flex-direction: column; } .checkout-right { order: -1; } }
+</style>
+
+    <!-- Order Success Overlay -->
+    <div id="orderSuccessOverlay" style="display:none; position:fixed; inset:0; background:rgba(10,20,50,0.75); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(6px);">
+        <div style="background:white; border-radius:24px; padding:50px 40px; text-align:center; max-width:420px; width:90%; box-shadow:0 30px 60px rgba(0,0,0,0.25); animation:popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);">
+            <div style="width:80px; height:80px; background:linear-gradient(135deg,#28a745,#20c997); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 22px;">
+                <i class="fas fa-check" style="color:white; font-size:2.2rem;"></i>
+            </div>
+            <h2 style="font-family:'Outfit',sans-serif; color:#0F2C59; font-size:1.6rem; margin-bottom:10px;">Order Placed! 🎉</h2>
+            <p style="color:#555; font-size:1rem; line-height:1.6; margin-bottom:8px;">Your gear is on its way.<br>You'll receive a confirmation shortly.</p>
+            <p id="successRedirectMsg" style="color:#999; font-size:0.82rem; margin-top:16px;">Redirecting in <span id="countdownNum">3</span>s...</p>
+        </div>
+    </div>
+    <style>
+        @keyframes popIn { from { transform:scale(0.7); opacity:0; } to { transform:scale(1); opacity:1; } }
     </style>
 </head>
 
@@ -227,9 +242,19 @@ $total = $subtotal + $shipping + $tax;
                     .then(data => {
                         if (data.status === 'success') {
                             localStorage.removeItem('cart');
-                            setTimeout(() => {
-                                alert('Order Placed Successfully! Your gear is on its way.');
-                                window.location.href = "order_confirmation.php?id=" + data.order_id;
+                            const redirectUrl = "order_confirmation.php?id=" + data.order_id;
+                            // Show in-page success overlay
+                            const overlay = document.getElementById('orderSuccessOverlay');
+                            overlay.style.display = 'flex';
+                            let secs = 3;
+                            const cd = document.getElementById('countdownNum');
+                            const timer = setInterval(() => {
+                                secs--;
+                                cd.textContent = secs;
+                                if (secs <= 0) {
+                                    clearInterval(timer);
+                                    window.location.href = redirectUrl;
+                                }
                             }, 1000);
                         } else {
                             alert('Order Failed: ' + data.message);
