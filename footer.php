@@ -154,13 +154,13 @@
         opacity: 1;
     }
     .radial-menu.active .share-icon:nth-child(1) { /* Facebook */
-        transform: translate(70px, -25px) scale(1);
+        transform: translate(65px, 0px) scale(1);
     }
     .radial-menu.active .share-icon:nth-child(2) { /* WhatsApp */
-        transform: translate(90px, 0) scale(1);
+        transform: translate(45px, 45px) scale(1);
     }
     .radial-menu.active .share-icon:nth-child(3) { /* Telegram */
-        transform: translate(70px, 25px) scale(1);
+        transform: translate(0px, 65px) scale(1);
     }
 </style>
 <footer class="footer">
@@ -184,8 +184,8 @@
                     });
                     
                     function shareSocial(platform) {
-                        var url = encodeURIComponent(window.location.href);
-                        var text = encodeURIComponent('Check out FitNova for your health and wellness journey!');
+                        var url = encodeURIComponent('https://tinyurl.com/2nna9j7w');
+                        var text = encodeURIComponent('Hey, do you want to make your body fit? Join with us!');
                         var shareUrl = '';
                         if (platform === 'facebook') {
                             shareUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + url;
