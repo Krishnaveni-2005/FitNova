@@ -20,7 +20,6 @@
         grid-template-columns: 1.5fr 1fr 1fr;
         gap: 60px;
         padding-bottom: 60px;
-        border-bottom: 1px solid #333;
     }
 
     .f-logo {
@@ -110,6 +109,59 @@
             justify-content: center;
         }
     }
+    .radial-menu {
+        position: relative;
+        width: 40px;
+        height: 40px;
+    }
+    .share-btn {
+        width: 40px;
+        height: 40px;
+        background: #222;
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        z-index: 101;
+    }
+    .radial-menu.active .share-btn {
+        background: #4FACFE;
+        transform: rotate(360deg);
+    }
+    .share-icon {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white !important;
+        text-decoration: none;
+        opacity: 0;
+        transform: translate(0, 0) scale(0.5);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        z-index: 100;
+    }
+    .radial-menu.active .share-icon {
+        opacity: 1;
+    }
+    .radial-menu.active .share-icon:nth-child(1) { /* Facebook */
+        transform: translate(70px, -25px) scale(1);
+    }
+    .radial-menu.active .share-icon:nth-child(2) { /* WhatsApp */
+        transform: translate(90px, 0) scale(1);
+    }
+    .radial-menu.active .share-icon:nth-child(3) { /* Telegram */
+        transform: translate(70px, 25px) scale(1);
+    }
 </style>
 <footer class="footer">
     <div class="container">
@@ -117,11 +169,34 @@
             <div>
                 <div class="f-logo" style="font-size: 32px; font-weight: 900; margin-bottom: 25px; color: white;">FitNova</div>
                 <p class="f-desc" style="color: #999; font-size: 1rem; margin-bottom: 30px; line-height: 1.6; max-width: 350px;">A unified digital ecosystem for your health and wellness journey.</p>
-                <div class="f-socials" style="display: flex; gap: 15px;">
-                    <a href="#" style="width: 40px; height: 40px; background: #222; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" style="width: 40px; height: 40px; background: #222; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;"><i class="fab fa-twitter"></i></a>
-
+                <div class="f-socials" style="display: flex; gap: 15px; position: relative;">
+                    <div id="radialMenu" class="radial-menu">
+                        <a href="#" class="share-icon" onclick="shareSocial('facebook')" style="background: #3b5998 !important;"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="share-icon" onclick="shareSocial('whatsapp')" style="background: #25D366 !important;"><i class="fab fa-whatsapp"></i></a>
+                        <a href="#" class="share-icon" onclick="shareSocial('telegram')" style="background: #0088cc !important;"><i class="fab fa-telegram-plane"></i></a>
+                        <button id="shareBtn" class="share-btn"><i class="fas fa-share-alt"></i></button>
+                    </div>
                 </div>
+                <script>
+                    document.getElementById('shareBtn').addEventListener('click', function(e) {
+                        e.preventDefault();
+                        document.getElementById('radialMenu').classList.toggle('active');
+                    });
+                    
+                    function shareSocial(platform) {
+                        var url = encodeURIComponent(window.location.href);
+                        var text = encodeURIComponent('Check out FitNova for your health and wellness journey!');
+                        var shareUrl = '';
+                        if (platform === 'facebook') {
+                            shareUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + url;
+                        } else if (platform === 'whatsapp') {
+                            shareUrl = 'https://api.whatsapp.com/send?text=' + text + ' ' + url;
+                        } else if (platform === 'telegram') {
+                            shareUrl = 'https://t.me/share/url?url=' + url + '&text=' + text;
+                        }
+                        window.open(shareUrl, '_blank', 'width=600,height=400');
+                    }
+                </script>
             </div>
             <div>
                 <h4 style="margin-bottom: 30px; font-size: 1.2rem; font-weight: 700; color: white;">Platform</h4>
@@ -140,9 +215,6 @@
                     <li style="margin-bottom: 18px;"><a href="admin_login.php" style="color: #999;">Admin Portal</a></li>
                 </ul>
             </div>
-        </div>
-        <div class="footer-bottom" style="text-align: center; color: #666; font-size: 0.9rem; padding-top: 30px; border-top: 1px solid #333; margin-top: 40px;">
-            &copy; <?php echo date('Y'); ?> FitNova. All rights reserved. Registered PHP/MySQL Backend.
         </div>
     </div>
 </footer>
