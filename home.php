@@ -129,7 +129,15 @@
             .h-card img { height: 200px; }
         }
 
-
+        .reveal {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
@@ -146,7 +154,7 @@
     </header>
 
     <!-- Cards Section -->
-    <section class="container hero-cards-section">
+    <section class="container hero-cards-section reveal">
         <div class="hero-cards">
             <!-- Card 1 -->
             <div class="h-card">
@@ -173,7 +181,7 @@
     </section>
 
     <!-- Why Choose Us -->
-    <section class="why-us">
+    <section class="why-us reveal">
         <div class="container">
             <h2 class="section-title">
                 Why Choose FitNova?
@@ -206,7 +214,7 @@
     </section>
 
     <!-- Testimonials -->
-    <section class="testimonials">
+    <section class="testimonials reveal">
         <div class="container">
             <h2 class="section-title">
                 Real Stories, Real Results
@@ -588,6 +596,22 @@
         function getBotResponse(input) {
             return bot.getResponse(input);
         }
+
+        // Reveal Sections
+        window.addEventListener('scroll', () => {
+            const reveals = document.querySelectorAll('.reveal');
+            for (let i = 0; i < reveals.length; i++) {
+                const windowHeight = window.innerHeight;
+                const elementTop = reveals[i].getBoundingClientRect().top;
+                const elementVisible = 100;
+                if (elementTop < windowHeight - elementVisible) {
+                    reveals[i].classList.add('active');
+                }
+            }
+        });
+        
+        // Trigger reveal once on load
+        window.dispatchEvent(new Event('scroll'));
     </script>
 </body>
 </html>

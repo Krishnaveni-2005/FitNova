@@ -645,7 +645,16 @@ if ($stmt) {
         <div class="welcome-banner">
             <div>
                 <h2>Hello, Coach <?php echo htmlspecialchars(explode(' ', $trainerName)[0]); ?>! 👋</h2>
-                <p>You have 4 training sessions scheduled for today.</p>
+                <p>
+                    <?php 
+                        $sessCountToday = count($dashboardSchedules);
+                        if ($sessCountToday > 0) {
+                            echo "You have " . $sessCountToday . " training session(s) scheduled for today.";
+                        } else {
+                            echo "You have no sessions scheduled for today. Take some time to review your clients!";
+                        }
+                    ?>
+                </p>
             </div>
             <i class="fas fa-dumbbell" style="font-size: 40px; opacity: 0.3;"></i>
         </div>

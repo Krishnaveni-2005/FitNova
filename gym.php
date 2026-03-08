@@ -217,6 +217,29 @@ require 'db_connect.php';
         }
         .tc-status-badge.active { background: #ECFDF5; color: #10B981; }
 
+        .tc-view-profile {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            background: #EFF6FF;
+            color: #3B82F6;
+            padding: 4px 10px;
+            border-radius: 6px;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .tc-view-profile:hover {
+            background: #DBEAFE;
+            color: #1D4ED8;
+        }
+
         .tc-img-wrapper {
             position: relative;
             width: 100px; height: 100px;
@@ -361,14 +384,18 @@ require 'db_connect.php';
                             $badgeText = "MAINTENANCE";
                             $badgeClass = "full";
                             $barColor = "#EF4444";
-                        } elseif ($percent > 60) {
+                        } elseif ($percent > 50) {
                             $badgeText = "HIGH AVAILABILITY";
                             $badgeClass = "avail";
                             $barColor = "#10B981"; // Green
-                        } elseif ($percent > 20) {
+                        } elseif ($percent >= 20) {
                             $badgeText = "BUSY SESSION";
                             $badgeClass = "busy";
                             $barColor = "#F59E0B"; // Yellow
+                        } elseif ($percent > 0) {
+                            $badgeText = "ALMOST FULL";
+                            $badgeClass = "full";
+                            $barColor = "#EF4444"; // Red
                         } else {
                             $badgeText = "FULL CAPACITY";
                             $badgeClass = "full";
@@ -438,6 +465,9 @@ require 'db_connect.php';
                         // Keep simple image check or default
              ?>
             <div class="trainer-card">
+                <a href="trainer_profile.php?id=<?php echo $row['user_id']; ?>" class="tc-view-profile">
+                    <i class="fas fa-user-circle"></i> Profile
+                </a>
                 <span class="tc-status-badge <?php echo $badgeClass; ?>">
                     <?php if($isAvailable): ?><i class="fas fa-circle" style="font-size:6px; margin-right:4px;"></i><?php endif; ?>
                     <?php echo $badgeText; ?>
