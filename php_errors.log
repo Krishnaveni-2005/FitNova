@@ -1882,3 +1882,4 @@ Stack trace:
 [07-Mar-2026 11:02:22 Asia/Kolkata] ✅ WhatsApp sent successfully: Lite User Paulin has requested a trainer match.
 Goal: Muscle Building
 Style: HIIT
+[08-Mar-2026 10:28:51 Europe/Berlin] PHP Warning:  Undefined variable $backLink in C:\xampppp\htdocs\fitnova\subscription_plans.php on line 482

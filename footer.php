@@ -210,9 +210,8 @@
             <div>
                 <h4 style="margin-bottom: 30px; font-size: 1.2rem; font-weight: 700; color: white;">Support</h4>
                 <ul class="f-links" style="list-style: none;">
-                    <li style="margin-bottom: 18px;"><a href="#" style="color: #999;">Contact Us</a></li>
-                    <li style="margin-bottom: 18px;"><a href="#" style="color: #999;">Privacy Policy</a></li>
-                    <li style="margin-bottom: 18px;"><a href="admin_login.php" style="color: #999;">Admin Portal</a></li>
+                    <li style="margin-bottom: 18px;"><a href="#" onclick="if(typeof handleTalkToExperts === 'function') handleTalkToExperts(event); else { event.preventDefault(); alert('Please open Talk with Experts from the navigation menu.'); }" style="color: #999;">Contact Us</a></li>
+                    <li style="margin-bottom: 18px;"><a href="privacy_policy.php" style="color: #999;">Privacy Policy</a></li>
                 </ul>
             </div>
         </div>

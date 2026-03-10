@@ -70,6 +70,17 @@ $gStmt->execute();
 $gymResult = $gStmt->get_result()->fetch_assoc();
 $gymStatus = $gymResult ? $gymResult['gym_membership_status'] : 'inactive';
 $gStmt->close();
+
+// Fetch User Orders
+$myOrders = [];
+$orderSql = "SELECT o.*, (SELECT COUNT(*) FROM shop_order_items WHERE order_id = o.order_id) as item_count FROM shop_orders o WHERE o.user_id = ? ORDER BY o.created_at DESC LIMIT 5";
+$oStmt = $conn->prepare($orderSql);
+if ($oStmt) {
+    $oStmt->bind_param("i", $userId);
+    $oStmt->execute();
+    $myOrders = $oStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $oStmt->close();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -722,60 +733,20 @@ $gStmt->close();
                         Premium</button>
                 </div>
 
-                <?php
-                // Fetch Upcoming live sessions aimed at this user
-                $scheduleSql = "SELECT ts.*, t.first_name as trainer_first, t.last_name as trainer_last 
-                                FROM trainer_schedules ts
-                                JOIN users t ON ts.trainer_id = t.user_id
-                                WHERE (
-                                    ts.client_name = ? 
-                                    OR ts.client_name = ? 
-                                    OR ts.client_name LIKE CONCAT(?, '%')
-                                    OR ? LIKE CONCAT(ts.client_name, '%')
-                                )
-                                AND ts.status = 'upcoming'
-                                AND ts.session_date >= CURDATE()
-                                ORDER BY ts.session_date ASC, ts.session_time ASC
-                                LIMIT 3";
-                $stmt = $conn->prepare($scheduleSql);
-                $mySchedules = [];
-                if ($stmt) {
-                    $stmt->bind_param("ssss", $dbFullName, $userName, $firstNameOnly, $dbFullName);
-                    $stmt->execute();
-                    $mySchedules = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-                    $stmt->close();
-                }
-                ?>
-                
-                <?php if (!empty($mySchedules)): ?>
+                <!-- Live Sessions Teaser -->
                 <div class="section-card">
                     <div class="section-header">
-                        <h3 class="section-title">Upcoming Sessions</h3>
+                        <h3 class="section-title">Live Zoom Classes</h3>
                     </div>
-                    <?php foreach ($mySchedules as $session): 
-                        $sDate = date('M d', strtotime($session['session_date']));
-                        $dayName = date('D', strtotime($session['session_date']));
-                        $sTime = date('h:i A', strtotime($session['session_time']));
-                    ?>
-                    <div class="workout-item">
-                         <div class="workout-img" style="background: var(--primary-color); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; flex-direction: column; width: 60px; height: 60px;">
-                            <span style="font-size: 10px; opacity: 0.8;"><?php echo $dayName; ?></span>
-                            <span style="font-size: 16px;"><?php echo date('d', strtotime($session['session_date'])); ?></span>
-                         </div>
-                         <div class="workout-info">
-                             <h4 class="workout-name">
-                                 <?php echo htmlspecialchars($session['session_type']); ?>
-                             </h4>
-                             <div class="workout-meta">
-                                 <span><i class="far fa-clock"></i> <?php echo $sTime; ?></span>
-                                 <span><i class="fas fa-user-tie"></i> <?php echo htmlspecialchars($session['trainer_first']); ?></span>
-                             </div>
-                         </div>
-                         <button class="btn-action" onclick='showSessionDetails(<?php echo json_encode($session); ?>)'>Details</button>
+                    <div style="text-align: center; padding: 25px; border: 2px dashed #eee; border-radius: 10px; background: #fafafa;">
+                        <div style="width: 50px; height: 50px; background: rgba(15, 44, 89, 0.05); color: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 20px;">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <h4 style="margin-bottom: 5px; color: var(--text-color);">Pro Feature Only</h4>
+                        <p style="color: var(--text-light); font-size: 14px; margin-bottom: 15px;">Upgrade your plan to join interactive live Zoom classes guided by our expert trainers.</p>
+                        <a href="subscription_plans.php" class="btn-action" style="text-decoration: none; padding: 8px 15px; border: 1px solid var(--primary-color); display: inline-block;">View Plans</a>
                     </div>
-                    <?php endforeach; ?>
                 </div>
-                <?php endif; ?>
 
                 <div id="offline-gym-section" class="section-card" style="border-left: 5px solid var(--accent-color);">
                     <div class="section-header">
@@ -921,9 +892,101 @@ $gStmt->close();
                         regular workout schedule, even if it's just 20 minutes a day. Small steps lead to big changes.
                     </p>
                 </div>
+
+                <!-- Recent Orders Section -->
+                <div class="section-card">
+                    <div class="section-header" style="align-items:center; margin-bottom:20px;">
+                        <h3 class="section-title" style="margin:0;">My Orders</h3>
+                        <a href="fitshop.php" style="background:var(--bg-color); color:var(--primary-color); padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600; text-decoration:none;">Shop <i class="fas fa-arrow-right" style="font-size:10px;"></i></a>
+                    </div>
+                    <?php if (empty($myOrders)): ?>
+                        <p style="color: var(--text-light); text-align: center; font-size:14px;">No orders placed yet. <a href="fitshop.php" style="color:var(--accent-color); font-weight:600;">Shop Now</a></p>
+                    <?php else: ?>
+                        <?php foreach($myOrders as $order): ?>
+                        <div style="display:flex; align-items:center; padding:12px 0; border-bottom:1px solid var(--border-color);">
+                            <div style="background:var(--bg-color); color:var(--primary-color); width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; margin-right:12px; flex-shrink:0;">
+                                <i class="fas fa-box"></i>
+                            </div>
+                            <div style="flex:1;">
+                                <h4 style="margin:0; font-size:0.9rem; font-weight:600;">Order #<?php echo $order['order_id']; ?></h4>
+                                <div style="font-size:0.78rem; color:var(--text-light); margin-top:2px;">
+                                    <?php echo $order['item_count']; ?> item(s) &bull; ₹<?php echo number_format($order['total_amount'],2); ?>
+                                    &bull; <span style="color:<?php echo $order['order_status']=='Delivered'?'var(--success-color)':'#f59e0b'; ?>; font-weight:600;"><?php echo htmlspecialchars($order['order_status']); ?></span>
+                                </div>
+                            </div>
+                            <button class="btn-action" onclick="openTrackModal('<?php echo $order['order_status']; ?>', <?php echo $order['order_id']; ?>)" style="font-size:12px; padding:6px 12px;">Track</button>
+                        </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
     </main>
+
+    <!-- Track Order Modal -->
+    <div id="trackOrderModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">
+        <div style="background:white; padding:30px; border-radius:16px; width:90%; max-width:460px; box-shadow:0 10px 30px rgba(0,0,0,0.2);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:15px;">
+                <h3 style="color:var(--primary-color); margin:0;"><i class="fas fa-truck" style="margin-right:8px;"></i>Order Tracking</h3>
+                <button onclick="closeTrackModal()" style="border:none; background:none; font-size:22px; color:#999; cursor:pointer;">&times;</button>
+            </div>
+            <div style="position:relative; margin: 30px 0;">
+                <!-- Track Line -->
+                <div style="position:absolute; top:22px; left:10%; width:80%; height:4px; background:#e9ecef; border-radius:2px; z-index:0;">
+                    <div id="free-track-line" style="height:100%; width:0%; background:linear-gradient(to right,#10b981,#f59e0b); border-radius:2px; transition:width 0.6s ease;"></div>
+                </div>
+                <!-- Steps -->
+                <div style="display:flex; justify-content:space-around; position:relative; z-index:1;">
+                    <div style="text-align:center;">
+                        <div id="free-step-placed" style="width:46px; height:46px; border-radius:50%; background:#cbd5e1; color:white; display:flex; align-items:center; justify-content:center; margin:0 auto 8px; font-size:18px; transition:all 0.4s;"><i class="fas fa-shopping-basket"></i></div>
+                        <div style="font-size:12px; font-weight:600; color:var(--text-light);">Placed</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div id="free-step-shipped" style="width:46px; height:46px; border-radius:50%; background:#cbd5e1; color:white; display:flex; align-items:center; justify-content:center; margin:0 auto 8px; font-size:18px; transition:all 0.4s;"><i class="fas fa-shipping-fast"></i></div>
+                        <div style="font-size:12px; font-weight:600; color:var(--text-light);">Shipped</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div id="free-step-delivered" style="width:46px; height:46px; border-radius:50%; background:#cbd5e1; color:white; display:flex; align-items:center; justify-content:center; margin:0 auto 8px; font-size:18px; transition:all 0.4s;"><i class="fas fa-check"></i></div>
+                        <div style="font-size:12px; font-weight:600; color:var(--text-light);">Delivered</div>
+                    </div>
+                </div>
+            </div>
+            <div style="text-align:center; margin-top:10px;">
+                <p style="color:var(--text-light); font-size:14px;">Status: <strong id="free-track-status" style="color:var(--primary-color);"></strong></p>
+                <p style="font-size:12px; color:#aaa; margin-top:4px;">Order ID: #<span id="free-track-id"></span></p>
+            </div>
+            <button onclick="closeTrackModal()" style="width:100%; margin-top:20px; padding:12px; background:var(--primary-color); color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer;">Close</button>
+        </div>
+    </div>
+    <script>
+        function openTrackModal(status, orderId) {
+            document.getElementById('free-track-id').innerText = orderId;
+            document.getElementById('free-track-status').innerText = status;
+            const placed = document.getElementById('free-step-placed');
+            const shipped = document.getElementById('free-step-shipped');
+            const delivered = document.getElementById('free-step-delivered');
+            const line = document.getElementById('free-track-line');
+            [placed, shipped, delivered].forEach(el => { el.style.background = '#cbd5e1'; el.style.boxShadow = 'none'; });
+            line.style.width = '0%';
+            line.style.background = 'linear-gradient(to right,#10b981,#f59e0b)';
+            if (status === 'Cancelled' || status === 'Returned') {
+                line.style.background = '#ef4444'; line.style.width = '0%';
+            } else if (status === 'Placed' || status === 'Processing') {
+                placed.style.background = '#f59e0b'; placed.style.boxShadow = '0 0 0 3px #fef3c7';
+                line.style.width = '10%';
+            } else if (status === 'Shipped') {
+                placed.style.background = '#10b981'; shipped.style.background = '#f59e0b'; shipped.style.boxShadow = '0 0 0 3px #fef3c7';
+                line.style.width = '50%';
+            } else if (status === 'Delivered') {
+                [placed, shipped, delivered].forEach(el => el.style.background = '#10b981');
+                line.style.width = '100%';
+            }
+            document.getElementById('trackOrderModal').style.display = 'flex';
+        }
+        function closeTrackModal() {
+            document.getElementById('trackOrderModal').style.display = 'none';
+        }
+    </script>
 
     <!-- Session Details Modal -->
     <div id="sessionModal" class="modal-overlay" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
@@ -968,6 +1031,10 @@ $gStmt->close();
                      <span style="font-size: 12px; color: #777;">STATUS</span>
                      <p style="margin: 5px 0 0 0; color: var(--success-color); font-weight: 600;" id="modalSessionStatus">UPCOMING</p>
                 </div>
+
+                <div id="modalZoomContainer" style="display:none; margin-top:15px; text-align:center;">
+                     <a href="#" id="modalZoomLink" target="_blank" style="display:inline-block; width:100%; padding: 12px; background: #2D8CFF; color: white; border-radius: 8px; font-weight: 600; text-decoration: none;"><i class="fas fa-video"></i> Join Zoom Class</a>
+                </div>
             </div>
 
             <button onclick="closeSessionModal()" style="width: 100%; padding: 12px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Close</button>
@@ -994,6 +1061,13 @@ $gStmt->close();
             
             document.getElementById('modalSessionTime').innerText = timeStr;
             document.getElementById('modalSessionStatus').innerText = session.status.toUpperCase();
+            
+            if (session.meeting_link && session.meeting_link.trim() !== '') {
+                document.getElementById('modalZoomContainer').style.display = 'block';
+                document.getElementById('modalZoomLink').href = session.meeting_link;
+            } else {
+                document.getElementById('modalZoomContainer').style.display = 'none';
+            }
             
             const modal = document.getElementById('sessionModal');
             modal.style.display = 'flex';

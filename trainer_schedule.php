@@ -74,10 +74,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $clientName = $conn->real_escape_string($_POST['client_name']);
         $sessionTime = $_POST['session_time'];
         $sessionType = $conn->real_escape_string($_POST['session_type']);
+        $meetingLink = $conn->real_escape_string($_POST['meeting_link'] ?? '');
         
-        $updateSql = "UPDATE trainer_schedules SET client_name = ?, session_time = ?, session_type = ? WHERE schedule_id = ? AND trainer_id = ?";
+        $updateSql = "UPDATE trainer_schedules SET client_name = ?, session_time = ?, session_type = ?, meeting_link = ? WHERE schedule_id = ? AND trainer_id = ?";
         $stmt = $conn->prepare($updateSql);
-        $stmt->bind_param("sssii", $clientName, $sessionTime, $sessionType, $scheduleId, $trainerId);
+        $stmt->bind_param("ssssii", $clientName, $sessionTime, $sessionType, $meetingLink, $scheduleId, $trainerId);
         
         if ($stmt->execute()) {
             echo json_encode(['status' => 'success']);
@@ -93,11 +94,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $clientName = $conn->real_escape_string($_POST['client_name']);
         $sessionTime = $_POST['session_time'];
         $sessionType = $conn->real_escape_string($_POST['session_type']);
+        $meetingLink = $conn->real_escape_string($_POST['meeting_link'] ?? '');
         $today = date('Y-m-d');
         
-        $insertSql = "INSERT INTO trainer_schedules (trainer_id, client_name, session_time, session_type, session_date, status) VALUES (?, ?, ?, ?, ?, 'upcoming')";
+        $insertSql = "INSERT INTO trainer_schedules (trainer_id, client_name, session_time, session_type, session_date, meeting_link, status) VALUES (?, ?, ?, ?, ?, ?, 'upcoming')";
         $stmt = $conn->prepare($insertSql);
-        $stmt->bind_param("issss", $trainerId, $clientName, $sessionTime, $sessionType, $today);
+        $stmt->bind_param("isssss", $trainerId, $clientName, $sessionTime, $sessionType, $today, $meetingLink);
         
         if ($stmt->execute()) {
             echo json_encode(['status' => 'success', 'id' => $stmt->insert_id]);
@@ -585,6 +587,7 @@ $stmt->close();
                         <th>Time</th>
                         <th>Client</th>
                         <th>Training Type</th>
+                        <th>Meeting Link</th>
                         <th>Status</th>
                         <th class="edit-actions-col" style="display:none;">Actions</th>
                     </tr>
@@ -609,6 +612,16 @@ $stmt->close();
                         <td class="type-cell">
                             <span class="display-value"><?php echo htmlspecialchars($s['session_type']); ?></span>
                             <input type="text" class="editable-input" value="<?php echo htmlspecialchars($s['session_type']); ?>">
+                        </td>
+                        <td class="link-cell">
+                            <span class="display-value">
+                                <?php if (!empty($s['meeting_link'])): ?>
+                                    <a href="<?php echo htmlspecialchars($s['meeting_link']); ?>" target="_blank" style="color: var(--primary-color); font-weight: 600; text-decoration: none;"><i class="fas fa-video"></i> Join Link</a>
+                                <?php else: ?>
+                                    <span style="color: #999;">No Link</span>
+                                <?php endif; ?>
+                            </span>
+                            <input type="url" class="editable-input meeting-link-input" placeholder="https://zoom.us/j/..." value="<?php echo htmlspecialchars($s['meeting_link'] ?? ''); ?>">
                         </td>
                         <td>
                             <div class="status-badge status-<?php echo $s['status']; ?>">
@@ -649,6 +662,10 @@ $stmt->close();
                     <label style="display:block; margin-bottom:5px; font-weight:500; font-size:14px;">Session Type</label>
                     <input type="text" name="session_type" placeholder="e.g. HIIT, Yoga" required style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
                 </div>
+                <div style="margin-bottom:20px;">
+                    <label style="display:block; margin-bottom:5px; font-weight:500; font-size:14px;">Zoom/Meeting Link (Optional)</label>
+                    <input type="url" name="meeting_link" placeholder="https://zoom.us/j/..." style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+                </div>
                 <div style="display:flex; justify-content:flex-end; gap:10px;">
                     <button type="button" onclick="closeModal()" style="padding:10px 20px; border:1px solid #ddd; background:white; border-radius:8px; cursor:pointer;">Cancel</button>
                     <button type="submit" style="padding:10px 20px; background:var(--primary-color); color:white; border:none; border-radius:8px; cursor:pointer;">Add Session</button>
@@ -686,6 +703,7 @@ $stmt->close();
             const timeInput = row.querySelector('input[type="time"]');
             const nameInput = row.querySelectorAll('input[type="text"]')[0];
             const typeInput = row.querySelectorAll('input[type="text"]')[1];
+            const linkInput = row.querySelector('.meeting-link-input');
 
             const formData = new FormData();
             formData.append('action', 'update_schedule');
@@ -693,6 +711,7 @@ $stmt->close();
             formData.append('session_time', timeInput.value);
             formData.append('client_name', nameInput.value);
             formData.append('session_type', typeInput.value);
+            if (linkInput) formData.append('meeting_link', linkInput.value);
 
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
             btn.disabled = true;
@@ -708,6 +727,12 @@ $stmt->close();
                     row.querySelector('.time-cell .display-value').innerText = formatTime(timeInput.value);
                     row.querySelector('.client-info-text .display-value strong').innerText = nameInput.value;
                     row.querySelector('.type-cell .display-value').innerText = typeInput.value;
+                    
+                    if (linkInput && linkInput.value.trim() !== '') {
+                        row.querySelector('.link-cell .display-value').innerHTML = `<a href="${linkInput.value}" target="_blank" style="color: var(--primary-color); font-weight: 600; text-decoration: none;"><i class="fas fa-video"></i> Join Link</a>`;
+                    } else if (linkInput) {
+                        row.querySelector('.link-cell .display-value').innerHTML = `<span style="color: #999;">No Link</span>`;
+                    }
                     
                     // Visual feedback
                     btn.innerHTML = '<i class="fas fa-check"></i> Saved';

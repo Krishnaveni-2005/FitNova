@@ -194,6 +194,17 @@ $gymResult = $gStmt->get_result()->fetch_assoc();
 $gymStatus = $gymResult ? $gymResult['gym_membership_status'] : 'inactive';
 $gStmt->close();
 
+// Fetch User Orders
+$myOrders = [];
+$orderSql = "SELECT o.*, (SELECT COUNT(*) FROM shop_order_items WHERE order_id = o.order_id) as item_count FROM shop_orders o WHERE o.user_id = ? ORDER BY o.created_at DESC LIMIT 5";
+$oStmt = $conn->prepare($orderSql);
+if ($oStmt) {
+    $oStmt->bind_param("i", $userId);
+    $oStmt->execute();
+    $myOrders = $oStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $oStmt->close();
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -749,6 +760,34 @@ $gStmt->close();
                     </p>
                     <a href="subscription_plans.php" style="display: block; width: 100%; text-align: center; background: var(--accent-color); color: white; padding: 10px; border-radius: 8px; text-decoration: none; font-weight: 600;">Upgrade Now</a>
                 </div>
+
+                <!-- Recent Orders Section -->
+                <div class="section-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                        <h3 class="section-title" style="margin:0;">My Orders</h3>
+                        <a href="fitshop.php" style="background:var(--bg-color); color:var(--primary-color); padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600; text-decoration:none;">Shop <i class="fas fa-arrow-right" style="font-size:10px;"></i></a>
+                    </div>
+                    <?php if (empty($myOrders)): ?>
+                        <p style="color: var(--text-light); text-align: center; font-size:14px;">No orders placed yet. <a href="fitshop.php" style="color:var(--accent-color); font-weight:600;">Shop Now</a></p>
+                    <?php else: ?>
+                        <?php foreach($myOrders as $order): ?>
+                        <div style="display:flex; align-items:center; padding:12px 0; border-bottom:1px solid var(--border-color);">
+                            <div style="background:var(--bg-color); color:var(--primary-color); width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; margin-right:12px; flex-shrink:0;">
+                                <i class="fas fa-box"></i>
+                            </div>
+                            <div style="flex:1;">
+                                <h4 style="margin:0; font-size:0.9rem; font-weight:600;">Order #<?php echo $order['order_id']; ?></h4>
+                                <div style="font-size:0.78rem; color:var(--text-light); margin-top:2px;">
+                                    <?php echo $order['item_count']; ?> item(s) &bull; ₹<?php echo number_format($order['total_amount'],2); ?>
+                                    &bull; <span style="color:<?php echo $order['order_status']=='Delivered'?'var(--success-color)':'#f59e0b'; ?>; font-weight:600;"><?php echo htmlspecialchars($order['order_status']); ?></span>
+                                </div>
+                            </div>
+                            <button class="wi-btn" onclick="openTrackModal('<?php echo $order['order_status']; ?>', <?php echo $order['order_id']; ?>)" style="font-size:12px;">Track</button>
+                        </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+
             </div>
         </div>
     </main>
@@ -787,6 +826,68 @@ $gStmt->close();
     </div>
 </div>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <!-- Track Order Modal -->
+    <div id="trackOrderModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">
+        <div style="background:white; padding:30px; border-radius:16px; width:90%; max-width:460px; box-shadow:0 10px 30px rgba(0,0,0,0.2);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:15px;">
+                <h3 style="color:var(--primary-color); margin:0;"><i class="fas fa-truck" style="margin-right:8px;"></i>Order Tracking</h3>
+                <button onclick="closeTrackModal()" style="border:none; background:none; font-size:22px; color:#999; cursor:pointer;">&times;</button>
+            </div>
+            <div style="position:relative; margin:30px 0;">
+                <div style="position:absolute; top:22px; left:10%; width:80%; height:4px; background:#e9ecef; border-radius:2px; z-index:0;">
+                    <div id="lite-track-line" style="height:100%; width:0%; background:linear-gradient(to right,#10b981,#f59e0b); border-radius:2px; transition:width 0.6s ease;"></div>
+                </div>
+                <div style="display:flex; justify-content:space-around; position:relative; z-index:1;">
+                    <div style="text-align:center;">
+                        <div id="lite-step-placed" style="width:46px; height:46px; border-radius:50%; background:#cbd5e1; color:white; display:flex; align-items:center; justify-content:center; margin:0 auto 8px; font-size:18px; transition:all 0.4s;"><i class="fas fa-shopping-basket"></i></div>
+                        <div style="font-size:12px; font-weight:600; color:var(--text-light);">Placed</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div id="lite-step-shipped" style="width:46px; height:46px; border-radius:50%; background:#cbd5e1; color:white; display:flex; align-items:center; justify-content:center; margin:0 auto 8px; font-size:18px; transition:all 0.4s;"><i class="fas fa-shipping-fast"></i></div>
+                        <div style="font-size:12px; font-weight:600; color:var(--text-light);">Shipped</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div id="lite-step-delivered" style="width:46px; height:46px; border-radius:50%; background:#cbd5e1; color:white; display:flex; align-items:center; justify-content:center; margin:0 auto 8px; font-size:18px; transition:all 0.4s;"><i class="fas fa-check"></i></div>
+                        <div style="font-size:12px; font-weight:600; color:var(--text-light);">Delivered</div>
+                    </div>
+                </div>
+            </div>
+            <div style="text-align:center; margin-top:10px;">
+                <p style="color:var(--text-light); font-size:14px;">Status: <strong id="lite-track-status" style="color:var(--primary-color);"></strong></p>
+                <p style="font-size:12px; color:#aaa; margin-top:4px;">Order ID: #<span id="lite-track-id"></span></p>
+            </div>
+            <button onclick="closeTrackModal()" style="width:100%; margin-top:20px; padding:12px; background:var(--primary-color); color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer;">Close</button>
+        </div>
+    </div>
+    <script>
+        function openTrackModal(status, orderId) {
+            document.getElementById('lite-track-id').innerText = orderId;
+            document.getElementById('lite-track-status').innerText = status;
+            const placed = document.getElementById('lite-step-placed');
+            const shipped = document.getElementById('lite-step-shipped');
+            const delivered = document.getElementById('lite-step-delivered');
+            const line = document.getElementById('lite-track-line');
+            [placed, shipped, delivered].forEach(el => { el.style.background = '#cbd5e1'; el.style.boxShadow = 'none'; });
+            line.style.width = '0%';
+            line.style.background = 'linear-gradient(to right,#10b981,#f59e0b)';
+            if (status === 'Cancelled' || status === 'Returned') {
+                line.style.background = '#ef4444'; line.style.width = '0%';
+            } else if (status === 'Placed' || status === 'Processing') {
+                placed.style.background = '#f59e0b'; placed.style.boxShadow = '0 0 0 3px #fef3c7';
+                line.style.width = '10%';
+            } else if (status === 'Shipped') {
+                placed.style.background = '#10b981'; shipped.style.background = '#f59e0b'; shipped.style.boxShadow = '0 0 0 3px #fef3c7';
+                line.style.width = '50%';
+            } else if (status === 'Delivered') {
+                [placed, shipped, delivered].forEach(el => el.style.background = '#10b981');
+                line.style.width = '100%';
+            }
+            document.getElementById('trackOrderModal').style.display = 'flex';
+        }
+        function closeTrackModal() {
+            document.getElementById('trackOrderModal').style.display = 'none';
+        }
+    </script>
     <script>
         function subscribeGym() {
             var options = {

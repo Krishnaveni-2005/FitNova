@@ -1829,6 +1829,10 @@ if ($stmt) {
                      <span style="font-size: 12px; color: #777;">STATUS</span>
                      <p style="margin: 5px 0 0 0; color: var(--success-color); font-weight: 600;" id="modalSessionStatus">UPCOMING</p>
                 </div>
+
+                <div id="modalZoomContainer" style="display:none; margin-top:15px; text-align:center;">
+                     <a href="#" id="modalZoomLink" target="_blank" style="display:inline-block; width:100%; padding: 12px; background: #2D8CFF; color: white; border-radius: 8px; font-weight: 600; text-decoration: none;"><i class="fas fa-video"></i> Join Zoom Class</a>
+                </div>
             </div>
 
             <button onclick="closeSessionModal()" style="width: 100%; padding: 12px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Close</button>
@@ -1856,6 +1860,13 @@ if ($stmt) {
             
             document.getElementById('modalSessionTime').innerText = timeStr;
             document.getElementById('modalSessionStatus').innerText = session.status.toUpperCase();
+            
+            if (session.meeting_link && session.meeting_link.trim() !== '') {
+                document.getElementById('modalZoomContainer').style.display = 'block';
+                document.getElementById('modalZoomLink').href = session.meeting_link;
+            } else {
+                document.getElementById('modalZoomContainer').style.display = 'none';
+            }
             
             const modal = document.getElementById('sessionModal');
             modal.style.display = 'flex';

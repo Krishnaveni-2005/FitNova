@@ -47,6 +47,32 @@
         .data-info h3 { font-size: 1.1rem; margin-bottom: 10px; color: var(--primary-color); }
         .data-info p { color: #666; font-size: 0.9rem; line-height: 1.4; margin-bottom: 15px; }
         .btn-link { color: var(--accent-color); font-weight: 600; text-decoration: none; font-size: 0.9rem; }
+
+        /* Level Filter Pills */
+        .filter-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 30px; align-items: center; }
+        .filter-bar span { font-weight: 700; color: var(--primary-color); margin-right: 5px; font-size: 0.95rem; }
+        .filter-pill {
+            padding: 8px 22px; border-radius: 50px; border: 2px solid #e0e0e0;
+            background: white; font-weight: 600; font-size: 0.85rem; cursor: pointer;
+            transition: all 0.25s; color: #555;
+        }
+        .filter-pill:hover { border-color: var(--primary-color); color: var(--primary-color); }
+        .filter-pill.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .filter-pill.beginner.active  { background: #28a745; border-color: #28a745; }
+        .filter-pill.intermediate.active { background: #f59e0b; border-color: #f59e0b; }
+        .filter-pill.advanced.active  { background: #e63946; border-color: #e63946; }
+
+        /* Level Badge on Card */
+        .level-badge {
+            display: inline-block; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
+            padding: 3px 10px; border-radius: 20px; letter-spacing: 0.5px; margin-bottom: 8px;
+        }
+        .level-badge.beginner  { background: #d4edda; color: #155724; }
+        .level-badge.intermediate { background: #fff3cd; color: #856404; }
+        .level-badge.advanced  { background: #f8d7da; color: #721c24; }
+
+        .data-card { transition: all 0.35s ease; }
+        .data-card.hidden { display: none; }
     </style>
 </head>
 <body>
@@ -155,108 +181,142 @@
 
         <!-- Workouts Section -->
         <div id="workouts" class="content-section">
-            <h2 class="section-title">Workout Plans & Details</h2>
-            <div class="data-grid">
+            <h2 class="section-title">Workout Plans &amp; Details</h2>
+
+            <!-- Level Filter Bar -->
+            <div class="filter-bar">
+                <span><i class="fas fa-filter"></i> Level:</span>
+                <button class="filter-pill active" onclick="filterWorkouts('all', this)">All</button>
+                <button class="filter-pill beginner" onclick="filterWorkouts('beginner', this)">🟢 Beginner</button>
+                <button class="filter-pill intermediate" onclick="filterWorkouts('intermediate', this)">🟡 Intermediate</button>
+                <button class="filter-pill advanced" onclick="filterWorkouts('advanced', this)">🔴 Advanced</button>
+            </div>
+
+            <div class="data-grid" id="workout-grid">
                 <!-- Workout 1 -->
-                <div class="data-card">
+                <div class="data-card" data-level="intermediate">
                     <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=600');"></div>
                     <div class="data-info">
+                        <span class="level-badge intermediate">Intermediate</span>
                         <h3>Full Body HIIT</h3>
                         <p>High intensity interval training to burn fat and build endurance in 20 mins.</p>
                         <a href="workout_full_body_hiit.php" class="btn-link">Start Workout <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
                 <!-- Workout 2 -->
-                <div class="data-card">
+                <div class="data-card" data-level="beginner">
                     <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&q=80&w=600');"></div>
                     <div class="data-info">
+                        <span class="level-badge beginner">Beginner</span>
                         <h3>Strength Training 101</h3>
                         <p>Fundamental compound movements for building maximize muscle strength.</p>
                         <a href="workout_strength_training.php" class="btn-link">Start Workout <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
                 <!-- Workout 3 -->
-                <div class="data-card">
+                <div class="data-card" data-level="beginner">
                     <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1549576490-b0b4831ef60a?auto=format&fit=crop&q=80&w=600');"></div>
                     <div class="data-info">
+                        <span class="level-badge beginner">Beginner</span>
                         <h3>Yoga for Flexibility</h3>
                         <p>Relaxing flow to improve mobility, reduce stress, and prevent injury.</p>
                         <a href="workout_yoga_flexibility.php" class="btn-link">Start Workout <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
                 <!-- Workout 4 -->
-                <div class="data-card">
+                <div class="data-card" data-level="intermediate">
                     <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&q=80&w=600');"></div>
                     <div class="data-info">
+                        <span class="level-badge intermediate">Intermediate</span>
                         <h3>Core Strength Training</h3>
                         <p>Target your abs and core muscles with effective exercises for stability and power.</p>
                         <a href="workout_core_strength.php" class="btn-link">Start Workout <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
                 <!-- Workout 5 -->
-                <div class="data-card">
+                <div class="data-card" data-level="intermediate">
                     <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?auto=format&fit=crop&q=80&w=600');"></div>
                     <div class="data-info">
+                        <span class="level-badge intermediate">Intermediate</span>
                         <h3>Cardio Blast</h3>
                         <p>High-energy cardio session to boost stamina and burn maximum calories in 30 mins.</p>
                         <a href="workout_cardio_blast.php" class="btn-link">Start Workout <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
                 <!-- Workout 6 -->
-                <div class="data-card">
+                <div class="data-card" data-level="advanced">
                     <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&q=80&w=600');"></div>
                     <div class="data-info">
+                        <span class="level-badge advanced">Advanced</span>
                         <h3>Upper Body Power</h3>
                         <p>Build strength in chest, back, shoulders, and arms with targeted resistance training.</p>
                         <a href="workout_upper_body.php" class="btn-link">Start Workout <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
                 <!-- Workout 7 -->
-                <div class="data-card">
+                <div class="data-card" data-level="advanced">
                     <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&q=80&w=600');"></div>
                     <div class="data-info">
+                        <span class="level-badge advanced">Advanced</span>
                         <h3>Lower Body Sculpt</h3>
                         <p>Tone and strengthen legs, glutes, and hamstrings for powerful lower body development.</p>
                         <a href="workout_lower_body.php" class="btn-link">Start Workout <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
                 <!-- Workout 8 -->
-                <div class="data-card">
+                <div class="data-card" data-level="beginner">
                     <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&q=80&w=600');"></div>
                     <div class="data-info">
+                        <span class="level-badge beginner">Beginner</span>
                         <h3>Functional Fitness</h3>
                         <p>Real-world movements to improve daily performance, balance, and overall athleticism.</p>
                         <a href="workout_functional.php" class="btn-link">Start Workout <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
                 <!-- Workout 9 -->
-                <div class="data-card">
+                <div class="data-card" data-level="intermediate">
                     <div class="data-img" style="background-image: url('https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?auto=format&fit=crop&q=80&w=600');"></div>
                     <div class="data-info">
+                        <span class="level-badge intermediate">Intermediate</span>
                         <h3>Pilates Core Flow</h3>
                         <p>Low-impact exercises focusing on core control, posture, and muscle tone.</p>
                         <a href="workout_pilates.php" class="btn-link">Start Workout <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
             </div>
-
-
         </div>
     </div>
 
     <script>
         function switchSection(sectionId) {
-            // Hide all sections
             document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
             document.querySelectorAll('.hub-tab').forEach(tab => tab.classList.remove('active'));
-
-            // Show target
             document.getElementById(sectionId).classList.add('active');
-            
-            // Highlight button
-            // Simple logic assuming order: 0 is nutrition, 1 is workouts
             if(sectionId === 'nutrition') document.getElementsByClassName('hub-tab')[0].classList.add('active');
             else document.getElementsByClassName('hub-tab')[1].classList.add('active');
+        }
+
+        function filterWorkouts(level, btn) {
+            // Update active pill
+            document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Show/hide cards
+            document.querySelectorAll('#workout-grid .data-card').forEach(card => {
+                if (level === 'all' || card.dataset.level === level) {
+                    card.classList.remove('hidden');
+                    // Re-trigger fade animation
+                    card.style.opacity = 0;
+                    card.style.transform = 'translateY(10px)';
+                    setTimeout(() => {
+                        card.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+                        card.style.opacity = 1;
+                        card.style.transform = 'translateY(0)';
+                    }, 10);
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
         }
 
         // Check for view parameter on load
