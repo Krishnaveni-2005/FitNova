@@ -2,6 +2,15 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+if (
+    isset($_REQUEST['embed']) || 
+    strpos($_SERVER['REQUEST_URI'] ?? '', 'embed') !== false ||
+    strpos($_SERVER['QUERY_STRING'] ?? '', 'embed') !== false ||
+    (isset($_SERVER['HTTP_SEC_FETCH_DEST']) && $_SERVER['HTTP_SEC_FETCH_DEST'] === 'iframe')
+) {
+    // If we're coming from the admin dashboard content management, just stop.
+    return;
+}
 $isLoggedIn = isset($_SESSION['user_id']);
 $userRole = $_SESSION['user_role'] ?? 'guest';
 $userName = $_SESSION['user_name'] ?? 'User';
@@ -249,7 +258,32 @@ if ($isLoggedIn) {
     @keyframes fadeOut {
         to { opacity: 0; transform: translateX(50px); }
     }
+
+    /* Robust Iframe/Embed Hider */
+    [data-is-embedded="true"] .navbar, 
+    [data-is-embedded="true"] .hero, 
+    [data-is-embedded="true"] footer, 
+    [data-is-embedded="true"] header { 
+        display: none !important; 
+        visibility: hidden !important; 
+        height: 0 !important; 
+        overflow: hidden !important; 
+    }
 </style>
+
+<script>
+    // Universal detector for embedded/iframe mode
+    (function() {
+        const isEmbed = window.self !== window.top || window.location.search.includes('embed=true');
+        if (isEmbed) {
+            document.documentElement.setAttribute('data-is-embedded', 'true');
+            // Immediate style injection for speed
+            const style = document.createElement('style');
+            style.innerHTML = '.navbar, .hero, footer, header { display: none !important; visibility: hidden !important; } body { padding-top: 0 !important; }';
+            document.head.appendChild(style);
+        }
+    })();
+</script>
 
 <!-- Toast Container -->
 <div id="toastContainer" class="toast-container"></div>

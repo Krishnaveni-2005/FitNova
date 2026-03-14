@@ -1949,3 +1949,70 @@ Price: ₹649
 [14-Mar-2026 15:15:26 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added: Athletic Skort
 Category: women
 Price: ₹300
+[14-Mar-2026 16:23:08 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: mysqli_stmt::execute() expects exactly 0 arguments, 1 given in C:\xampppp\htdocs\fitnova\setup_cms.php:57
+Stack trace:
+#0 C:\xampppp\htdocs\fitnova\setup_cms.php(57): mysqli_stmt->execute(Array)
+#1 {main}
+  thrown in C:\xampppp\htdocs\fitnova\setup_cms.php on line 57
+[14-Mar-2026 16:24:32 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: mysqli_stmt::execute() expects exactly 0 arguments, 1 given in C:\xampppp\htdocs\fitnova\setup_cms.php:57
+Stack trace:
+#0 C:\xampppp\htdocs\fitnova\setup_cms.php(57): mysqli_stmt->execute(Array)
+#1 {main}
+  thrown in C:\xampppp\htdocs\fitnova\setup_cms.php on line 57
+[14-Mar-2026 16:25:44 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: mysqli_stmt::execute() expects exactly 0 arguments, 1 given in C:\xampppp\htdocs\fitnova\setup_cms.php:57
+Stack trace:
+#0 C:\xampppp\htdocs\fitnova\setup_cms.php(57): mysqli_stmt->execute(Array)
+#1 {main}
+  thrown in C:\xampppp\htdocs\fitnova\setup_cms.php on line 57
+[14-Mar-2026 16:26:40 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: mysqli_stmt::execute() expects exactly 0 arguments, 1 given in C:\xampppp\htdocs\fitnova\setup_cms.php:57
+Stack trace:
+#0 C:\xampppp\htdocs\fitnova\setup_cms.php(57): mysqli_stmt->execute(Array)
+#1 {main}
+  thrown in C:\xampppp\htdocs\fitnova\setup_cms.php on line 57
+[14-Mar-2026 16:30:18 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: mysqli_stmt::execute() expects exactly 0 arguments, 1 given in C:\xampppp\htdocs\fitnova\setup_cms.php:57
+Stack trace:
+#0 C:\xampppp\htdocs\fitnova\setup_cms.php(57): mysqli_stmt->execute(Array)
+#1 {main}
+  thrown in C:\xampppp\htdocs\fitnova\setup_cms.php on line 57
+[14-Mar-2026 16:33:00 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: mysqli_stmt::execute() expects exactly 0 arguments, 1 given in C:\xampppp\htdocs\fitnova\setup_cms.php:57
+Stack trace:
+#0 C:\xampppp\htdocs\fitnova\setup_cms.php(57): mysqli_stmt->execute(Array)
+#1 {main}
+  thrown in C:\xampppp\htdocs\fitnova\setup_cms.php on line 57
+[14-Mar-2026 16:35:37 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: mysqli_stmt::execute() expects exactly 0 arguments, 1 given in C:\xampppp\htdocs\fitnova\setup_cms.php:57
+Stack trace:
+#0 C:\xampppp\htdocs\fitnova\setup_cms.php(57): mysqli_stmt->execute(Array)
+#1 Command line code(1): require('C:\\xampppp\\htdo...')
+#2 {main}
+  thrown in C:\xampppp\htdocs\fitnova\setup_cms.php on line 57
+[14-Mar-2026 16:38:32 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: mysqli_stmt::execute() expects exactly 0 arguments, 1 given in C:\xampppp\htdocs\fitnova\setup_cms.php:57
+Stack trace:
+#0 C:\xampppp\htdocs\fitnova\setup_cms.php(57): mysqli_stmt->execute(Array)
+#1 {main}
+  thrown in C:\xampppp\htdocs\fitnova\setup_cms.php on line 57
+[14-Mar-2026 16:41:45 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: mysqli_stmt::execute() expects exactly 0 arguments, 1 given in C:\xampppp\htdocs\fitnova\setup_cms.php:57
+Stack trace:
+#0 C:\xampppp\htdocs\fitnova\setup_cms.php(57): mysqli_stmt->execute(Array)
+#1 Command line code(1): require('C:\\xampppp\\htdo...')
+#2 {main}
+  thrown in C:\xampppp\htdocs\fitnova\setup_cms.php on line 57
+[14-Mar-2026 16:42:30 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: mysqli_stmt::execute() expects exactly 0 arguments, 1 given in C:\xampppp\htdocs\fitnova\setup_cms.php:57
+Stack trace:
+#0 C:\xampppp\htdocs\fitnova\setup_cms.php(57): mysqli_stmt->execute(Array)
+#1 {main}
+  thrown in C:\xampppp\htdocs\fitnova\setup_cms.php on line 57
+[14-Mar-2026 16:43:29 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: mysqli_stmt::execute() expects exactly 0 arguments, 1 given in C:\xampppp\htdocs\fitnova\setup_cms.php:57
+Stack trace:
+#0 C:\xampppp\htdocs\fitnova\setup_cms.php(57): mysqli_stmt->execute(Array)
+#1 {main}
+  thrown in C:\xampppp\htdocs\fitnova\setup_cms.php on line 57
+[14-Mar-2026 16:50:24 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: mysqli_stmt::execute() expects exactly 0 arguments, 1 given in C:\xampppp\htdocs\fitnova\setup_cms.php:57
+Stack trace:
+#0 C:\xampppp\htdocs\fitnova\setup_cms.php(57): mysqli_stmt->execute(Array)
+#1 {main}
+  thrown in C:\xampppp\htdocs\fitnova\setup_cms.php on line 57
+[14-Mar-2026 16:51:35 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: mysqli_stmt::execute() expects exactly 0 arguments, 1 given in C:\xampppp\htdocs\fitnova\setup_cms.php:57
+Stack trace:
+#0 C:\xampppp\htdocs\fitnova\setup_cms.php(57): mysqli_stmt->execute(Array)
+#1 {main}
+  thrown in C:\xampppp\htdocs\fitnova\setup_cms.php on line 57

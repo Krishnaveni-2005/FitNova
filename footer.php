@@ -1,4 +1,12 @@
 <?php
+if (
+    isset($_REQUEST['embed']) || 
+    strpos($_SERVER['REQUEST_URI'] ?? '', 'embed') !== false ||
+    strpos($_SERVER['QUERY_STRING'] ?? '', 'embed') !== false ||
+    (isset($_SERVER['HTTP_SEC_FETCH_DEST']) && $_SERVER['HTTP_SEC_FETCH_DEST'] === 'iframe')
+) {
+    return;
+}
 // footer.php
 ?>
 <style>

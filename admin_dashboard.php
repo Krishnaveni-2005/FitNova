@@ -772,15 +772,16 @@ $conn->close();
         /* Grid Menu Hub Styles */
         .hub-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
             margin-bottom: 40px;
+            justify-content: center;
         }
 
         .hub-card {
             background: #ffffff;
-            padding: 30px;
-            border-radius: 20px;
+            padding: 24px;
+            border-radius: 16px;
             border: 1px solid #e2e8f0;
             text-align: center;
             cursor: pointer;
@@ -791,6 +792,9 @@ $conn->close();
             align-items: center;
             gap: 15px;
             text-decoration: none;
+            max-width: 380px;
+            margin: 0 auto;
+            width: 100%;
         }
 
         .hub-card:hover {
@@ -800,14 +804,14 @@ $conn->close();
         }
 
         .hub-icon {
-            width: 70px;
-            height: 70px;
-            border-radius: 18px;
+            width: 60px;
+            height: 60px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 32px;
-            margin-bottom: 10px;
+            font-size: 24px;
+            margin-bottom: 5px;
             transition: all 0.3s;
         }
 
@@ -816,13 +820,13 @@ $conn->close();
         }
 
         .hub-title {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 700;
             color: #1e293b;
         }
 
         .hub-desc {
-            font-size: 14px;
+            font-size: 13px;
             color: #64748b;
             line-height: 1.5;
         }
@@ -1057,12 +1061,13 @@ $conn->close();
             <a href="#" class="nav-item" onclick="showSection('offline')">
                 <i class="fas fa-building"></i><span>Offline Gym</span>
             </a>
+            <a href="#" class="nav-item" onclick="showSection('content_mgmt')">
+                <i class="fas fa-book-open"></i><span>Content Mgmt</span>
+            </a>
             <a href="#" class="nav-item" onclick="showSection('reports')">
                 <i class="fas fa-file-alt"></i><span>Reports</span>
             </a>
-            <a href="#" class="nav-item" onclick="showSection('settings')">
-                <i class="fas fa-cog"></i><span>Settings</span>
-            </a>
+
         </nav>
         <button class="logout-btn" onclick="logout()">
             <i class="fas fa-sign-out-alt"></i><span>Logout</span>
@@ -1169,6 +1174,14 @@ $conn->close();
                     <div class="hub-desc">Manage physical gym equipment and track on-site trainers.</div>
                 </div>
 
+                <div class="hub-card" onclick="showSection('content_mgmt')">
+                    <div class="hub-icon" style="background: #e0e7ff; color: #4338ca;">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <div class="hub-title">Content Management</div>
+                    <div class="hub-desc">Manage Learning Articles and Fitness & Nutrition contents.</div>
+                </div>
+
                 <div class="hub-card" onclick="showSection('reports')">
                     <div class="hub-icon" style="background: #f1f5f9; color: #475569;">
                         <i class="fas fa-file-alt"></i>
@@ -1272,6 +1285,47 @@ $conn->close();
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+
+        <!-- Content Management Section -->
+        <div id="content_mgmt-section" class="section">
+            <button class="btn-hub-back" onclick="showSection('hub')">
+                <i class="fas fa-arrow-left"></i> Back to Hub
+            </button>
+            <div class="top-bar">
+                <h2>Content Management</h2>
+            </div>
+            
+            <div class="management-section" id="content-mgmt-cards">
+                <div class="section-title">Manage Platform Content</div>
+                <div class="hub-grid" style="margin-top: 20px;">
+                    <div class="hub-card" onclick="loadContentIframe('learn.php?embed=true', 'Learning Articles')">
+                        <div class="hub-icon" style="background: #eef2ff; color: #4f46e5;">
+                            <i class="fas fa-book-reader"></i>
+                        </div>
+                        <div class="hub-title">Learning Articles</div>
+                        <div class="hub-desc">View and manage knowledge hub articles, wellness tips, and fitness science.</div>
+                    </div>
+
+                    <div class="hub-card" onclick="loadContentIframe('fitness_nutrition.php?embed=true', 'Fitness & Nutrition')">
+                        <div class="hub-icon" style="background: #ecfdf5; color: #10b981;">
+                            <i class="fas fa-apple-alt"></i>
+                        </div>
+                        <div class="hub-title">Fitness & Nutrition</div>
+                        <div class="hub-desc">View and manage healthy nutrition foods and workout plans.</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="content-iframe-container" style="display: none; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; height: 80vh; background: #fff; margin-bottom: 30px;">
+                <div style="padding: 15px; border-bottom: 1px solid #e2e8f0; background: #f8fafc; display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="font-size: 16px; margin: 0; color: #1e293b;" id="iframe-title">Content Viewer</h3>
+                    <button class="admin-btn btn-secondary" onclick="closeContentIframe()" style="padding: 6px 12px; font-size: 13px;">
+                        <i class="fas fa-times"></i> Close Viewer
+                    </button>
+                </div>
+                <iframe id="content-iframe" src="" style="width: 100%; height: calc(100% - 55px); border: none;"></iframe>
             </div>
         </div>
 
@@ -1395,7 +1449,6 @@ $conn->close();
             </button>
             <div class="top-bar">
                 <h2>Client Management</h2>
-                <button class="admin-btn btn-primary"><i class="fas fa-user-plus"></i> Add New Client</button>
             </div>
 
             <!-- Manual Matching Section -->
@@ -1604,7 +1657,6 @@ $conn->close();
             </button>
             <div class="top-bar">
                 <h2>Trainer Management</h2>
-                <button class="admin-btn btn-primary"><i class="fas fa-user-plus"></i> Add New Trainer</button>
             </div>
             <div class="management-section">
                 <div class="section-title">Pending Trainer Approvals</div>
@@ -2205,22 +2257,7 @@ $conn->close();
         </div>
 
         <!-- Settings Section -->
-        <div id="settings-section" class="section">
-            <button class="btn-hub-back" onclick="showSection('hub')">
-                <i class="fas fa-arrow-left"></i> Back to Hub
-            </button>
-            <div class="top-bar">
-                <h2>System Settings</h2>
-                <button class="admin-btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
-            </div>
-            <div class="management-section">
-                <div class="section-title">Configuration & Preferences</div>
-                <p style="color: #64748b; padding: 40px; text-align: center;">
-                    <i class="fas fa-cog" style="font-size: 48px; margin-bottom: 16px; display: block;"></i>
-                    System configuration panel coming soon.
-                </p>
-            </div>
-        </div>
+
     </div>
 
     <!-- Client Detail Modal -->
@@ -3207,6 +3244,23 @@ $conn->close();
                 showCustomAlert('Request failed', 'error');
             });
         });
+    }
+
+    // Content Management Iframe Functions
+    function loadContentIframe(url, title = 'Content Viewer') {
+        document.getElementById('content-mgmt-cards').style.display = 'none';
+        document.getElementById('content-iframe-container').style.display = 'block';
+        document.getElementById('iframe-title').textContent = title;
+        // Add cache breaker
+        const separator = url.includes('?') ? '&' : '?';
+        const finalUrl = url + separator + 't=' + Date.now();
+        document.getElementById('content-iframe').src = finalUrl;
+    }
+
+    function closeContentIframe() {
+        document.getElementById('content-iframe-container').style.display = 'none';
+        document.getElementById('content-mgmt-cards').style.display = 'block';
+        document.getElementById('content-iframe').src = '';
     }
     </script>
 </body>
