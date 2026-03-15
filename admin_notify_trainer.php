@@ -13,6 +13,15 @@ $clientId = $input['client_id'] ?? 0;
 $trainerId = $input['trainer_id'] ?? 0;
 
 if ($clientId && $trainerId) {
+    // Check if trainer is already at capacity (Limit to 6)
+    $checkSql = "SELECT COUNT(*) as current_clients FROM users WHERE assigned_trainer_id = $trainerId";
+    $checkRes = $conn->query($checkSql);
+    $currentClients = ($r = $checkRes->fetch_assoc()) ? $r['current_clients'] : 0;
+    
+    if ($currentClients >= 6) {
+        echo json_encode(['success' => false, 'message' => 'This trainer is at maximum capacity (6 clients max).']);
+        exit();
+    }
     // Ensure ENUM has 'admin_suggested'
     $conn->query("ALTER TABLE trainer_applications MODIFY COLUMN status ENUM('pending', 'approved', 'rejected', 'admin_suggested') DEFAULT 'pending'");
 

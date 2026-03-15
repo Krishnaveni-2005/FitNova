@@ -20,6 +20,16 @@ if ($client_id <= 0 || !in_array($action, ['approve', 'reject'])) {
     exit();
 }
 
+// Hard Limit Check (Max 6 Clients)
+if ($action === 'approve') {
+    $countRes = $conn->query("SELECT COUNT(*) as count FROM users WHERE assigned_trainer_id = $trainer_id");
+    $rowCount = $countRes->fetch_assoc();
+    if ($rowCount['count'] >= 6) {
+        echo json_encode(['success' => false, 'message' => 'You have reached your maximum limit of 6 clients.']);
+        exit();
+    }
+}
+
 // Update status
 $new_status = ($action === 'approve') ? 'approved' : 'rejected';
 // If rejected, maybe we should set assigned_trainer_id to NULL? 
