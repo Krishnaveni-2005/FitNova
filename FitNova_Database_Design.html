@@ -1,0 +1,2718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitNova - Database Specification</title>
+    <style>
+        body { 
+            font-family: 'Times New Roman', Times, serif; 
+            background-color: #fff; 
+            color: #000; 
+            margin: 0; 
+            padding: 40px; 
+            font-size: 11pt;
+            line-height: 1.4;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .header { text-align: left; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        .header h1 { font-size: 18pt; margin: 0; font-weight: bold; }
+        .header p { font-size: 11pt; margin-top: 5px; }
+        .card { background: white; padding: 0; margin-bottom: 40px; page-break-inside: avoid; }
+        .card-header { margin-bottom: 10px; }
+        .card-title { font-size: 14pt; font-weight: bold; margin: 0 0 5px 0; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+        .key-info { font-size: 11pt; margin-bottom: 2px; }
+        .key-info strong { width: 100px; display: inline-block; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-top: 5px; border: 1px solid #000; table-layout: fixed; }
+        th, td { padding: 4px 8px; border: 1px solid #000; text-align: left; font-size: 11pt; color: #000; word-wrap: break-word; vertical-align: middle; line-height: 1.2; }
+        th { background: #fff; font-weight: bold; text-align: center; }
+        .no-col { width: 35px; text-align: center; }
+        .field-col { width: 180px; }
+        .type-col { width: 150px; }
+        .key-col { width: 130px; }
+        @media print {
+            body { padding: 0; }
+            .container { max-width: 100%; }
+            .header { border-bottom: 3px solid #000; }
+        }
+        .group-header { 
+            background: #fff; 
+            color: #000; 
+            padding: 10px 0; 
+            margin: 50px 0 20px 0; 
+            font-size: 14pt; 
+            font-weight: bold;
+            text-transform: uppercase;
+            border-bottom: 2px solid #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>FitNova Database Design Specification</h1>
+            <p>Project: FitNova | Generated: March 15, 2026</p>
+        </div><div class="group-header">1. Core Users & Security</div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">1. Users Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> user_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> auth_provider, oauth_provider_id, assigned_trainer_id</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">user_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for user</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">first_name</td>
+                        <td class="type-col">VARCHAR(50)</td>
+                        <td class="key-col"></td>
+                        <td>Full name of the user</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">last_name</td>
+                        <td class="type-col">VARCHAR(50)</td>
+                        <td class="key-col"></td>
+                        <td>Full name of the user</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">email</td>
+                        <td class="type-col">VARCHAR(100)</td>
+                        <td class="key-col">Unique</td>
+                        <td>User's email address</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">5</td>
+                        <td class="field-col">phone</td>
+                        <td class="type-col">VARCHAR(20)</td>
+                        <td class="key-col"></td>
+                        <td>Contact number</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">6</td>
+                        <td class="field-col">password_hash</td>
+                        <td class="type-col">VARCHAR(255)</td>
+                        <td class="key-col"></td>
+                        <td>Encrypted password</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">7</td>
+                        <td class="field-col">role</td>
+                        <td class="type-col">ENUM('FREE','PRO','TRAINER','ADMIN','ELITE','LITE')</td>
+                        <td class="key-col"></td>
+                        <td>Role</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">8</td>
+                        <td class="field-col">auth_provider</td>
+                        <td class="type-col">ENUM('LOCAL','GOOGLE','FACEBOOK')</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign key reference</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">9</td>
+                        <td class="field-col">oauth_provider_id</td>
+                        <td class="type-col">VARCHAR(255)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign key reference</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">10</td>
+                        <td class="field-col">is_email_verified</td>
+                        <td class="type-col">TINYINT(1)</td>
+                        <td class="key-col"></td>
+                        <td>User's email address</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">11</td>
+                        <td class="field-col">account_status</td>
+                        <td class="type-col">ENUM('ACTIVE','INACTIVE','SUSPENDED','PENDING')</td>
+                        <td class="key-col"></td>
+                        <td>Current status (e.g. Active, Pending)</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">12</td>
+                        <td class="field-col">trainer_specialization</td>
+                        <td class="type-col">VARCHAR(100)</td>
+                        <td class="key-col"></td>
+                        <td>Trainer specialization</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">13</td>
+                        <td class="field-col">trainer_experience</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col"></td>
+                        <td>Trainer experience</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">14</td>
+                        <td class="field-col">trainer_certification</td>
+                        <td class="type-col">VARCHAR(255)</td>
+                        <td class="key-col"></td>
+                        <td>Trainer certification</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">15</td>
+                        <td class="field-col">assigned_trainer_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to Trainer</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">16</td>
+                        <td class="field-col">created_at</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">17</td>
+                        <td class="field-col">updated_at</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">18</td>
+                        <td class="field-col">assignment_status</td>
+                        <td class="type-col">ENUM('NONE','PENDING','APPROVED','REJECTED','TRAINER_INVITE','LOOKING_FOR_TRAINER')</td>
+                        <td class="key-col"></td>
+                        <td>Current status (e.g. Active, Pending)</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">19</td>
+                        <td class="field-col">gym_membership_status</td>
+                        <td class="type-col">ENUM('ACTIVE','INACTIVE')</td>
+                        <td class="key-col"></td>
+                        <td>Current status (e.g. Active, Pending)</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">20</td>
+                        <td class="field-col">profile_picture</td>
+                        <td class="type-col">VARCHAR(255)</td>
+                        <td class="key-col"></td>
+                        <td>Profile picture</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">21</td>
+                        <td class="field-col">bio</td>
+                        <td class="type-col">TEXT</td>
+                        <td class="key-col"></td>
+                        <td>Bio</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">22</td>
+                        <td class="field-col">trainer_type</td>
+                        <td class="type-col">ENUM('ONLINE','OFFLINE')</td>
+                        <td class="key-col"></td>
+                        <td>Trainer type</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">2. Password resets Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> email</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> None</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">email</td>
+                        <td class="type-col">VARCHAR(100)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for password_reset</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">token</td>
+                        <td class="type-col">VARCHAR(255)</td>
+                        <td class="key-col"></td>
+                        <td>Token</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">expiry</td>
+                        <td class="type-col">DATETIME</td>
+                        <td class="key-col"></td>
+                        <td>Expiry</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">3. User activity log Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> log_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> user_id</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">log_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for user_activity_log</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">user_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to User</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">activity_type</td>
+                        <td class="type-col">VARCHAR(50)</td>
+                        <td class="key-col"></td>
+                        <td>Activity type</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">activity_name</td>
+                        <td class="type-col">VARCHAR(100)</td>
+                        <td class="key-col"></td>
+                        <td>Full name of the user_activity_log</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">5</td>
+                        <td class="field-col">duration_minutes</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col"></td>
+                        <td>Duration minutes</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">6</td>
+                        <td class="field-col">calories_burned</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col"></td>
+                        <td>Calories burned</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">7</td>
+                        <td class="field-col">activity_date</td>
+                        <td class="type-col">DATE</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">8</td>
+                        <td class="field-col">created_at</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">4. User activity logs Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> log_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> user_id</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">log_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for user_activity_log</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">user_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to User</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">activity_type</td>
+                        <td class="type-col">VARCHAR(50)</td>
+                        <td class="key-col"></td>
+                        <td>Activity type</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">duration_minutes</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col"></td>
+                        <td>Duration minutes</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">5</td>
+                        <td class="field-col">calories_burned</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col"></td>
+                        <td>Calories burned</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">6</td>
+                        <td class="field-col">log_date</td>
+                        <td class="type-col">DATE</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">7</td>
+                        <td class="field-col">created_at</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div><div class="group-header">2. Client Management</div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">5. Client profiles Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> profile_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> user_id</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">profile_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for client_profile</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">user_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to User</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">gender</td>
+                        <td class="type-col">VARCHAR(20)</td>
+                        <td class="key-col"></td>
+                        <td>Gender</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">dob</td>
+                        <td class="type-col">DATE</td>
+                        <td class="key-col"></td>
+                        <td>Dob</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">5</td>
+                        <td class="field-col">height_cm</td>
+                        <td class="type-col">DECIMAL(5,2)</td>
+                        <td class="key-col"></td>
+                        <td>Height cm</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">6</td>
+                        <td class="field-col">weight_kg</td>
+                        <td class="type-col">DECIMAL(5,2)</td>
+                        <td class="key-col"></td>
+                        <td>Weight kg</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">7</td>
+                        <td class="field-col">target_weight_kg</td>
+                        <td class="type-col">DECIMAL(5,2)</td>
+                        <td class="key-col"></td>
+                        <td>Target weight kg</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">8</td>
+                        <td class="field-col">primary_goal</td>
+                        <td class="type-col">VARCHAR(50)</td>
+                        <td class="key-col"></td>
+                        <td>Primary goal</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">9</td>
+                        <td class="field-col">activity_level</td>
+                        <td class="type-col">VARCHAR(50)</td>
+                        <td class="key-col"></td>
+                        <td>Activity level</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">10</td>
+                        <td class="field-col">injuries</td>
+                        <td class="type-col">TEXT</td>
+                        <td class="key-col"></td>
+                        <td>Injuries</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">11</td>
+                        <td class="field-col">medical_conditions</td>
+                        <td class="type-col">TEXT</td>
+                        <td class="key-col"></td>
+                        <td>Medical conditions</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">12</td>
+                        <td class="field-col">allergies</td>
+                        <td class="type-col">TEXT</td>
+                        <td class="key-col"></td>
+                        <td>Allergies</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">13</td>
+                        <td class="field-col">sleep_hours_avg</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col"></td>
+                        <td>Sleep hours avg</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">14</td>
+                        <td class="field-col">diet_preference</td>
+                        <td class="type-col">VARCHAR(50)</td>
+                        <td class="key-col"></td>
+                        <td>Diet preference</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">15</td>
+                        <td class="field-col">water_intake_liters</td>
+                        <td class="type-col">DECIMAL(3,1)</td>
+                        <td class="key-col"></td>
+                        <td>Water intake liters</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">16</td>
+                        <td class="field-col">workout_days_per_week</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col"></td>
+                        <td>Workout days per week</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">17</td>
+                        <td class="field-col">equipment_access</td>
+                        <td class="type-col">VARCHAR(50)</td>
+                        <td class="key-col"></td>
+                        <td>Equipment access</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">18</td>
+                        <td class="field-col">custom_macros_json</td>
+                        <td class="type-col">TEXT</td>
+                        <td class="key-col"></td>
+                        <td>Custom macros json</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">6. Client progress Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> progress_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> user_id</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">progress_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for client_progre</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">user_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to User</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">log_date</td>
+                        <td class="type-col">DATE</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">current_weight</td>
+                        <td class="type-col">DECIMAL(5,2)</td>
+                        <td class="key-col"></td>
+                        <td>Current weight</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">5</td>
+                        <td class="field-col">status_update</td>
+                        <td class="type-col">VARCHAR(50)</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">6</td>
+                        <td class="field-col">notes</td>
+                        <td class="type-col">TEXT</td>
+                        <td class="key-col"></td>
+                        <td>Notes</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">7</td>
+                        <td class="field-col">created_at</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div><div class="group-header">3. Subscriptions & Finance</div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">7. Subscription plans Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> plan_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> None</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">plan_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for subscription_plan</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">name</td>
+                        <td class="type-col">VARCHAR(50)</td>
+                        <td class="key-col"></td>
+                        <td>Full name of the subscription_plan</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">price_monthly</td>
+                        <td class="type-col">DECIMAL(10,2)</td>
+                        <td class="key-col"></td>
+                        <td>Price monthly</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">price_yearly</td>
+                        <td class="type-col">DECIMAL(10,2)</td>
+                        <td class="key-col"></td>
+                        <td>Price yearly</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">5</td>
+                        <td class="field-col">description</td>
+                        <td class="type-col">VARCHAR(255)</td>
+                        <td class="key-col"></td>
+                        <td>Description</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">6</td>
+                        <td class="field-col">features</td>
+                        <td class="type-col">TEXT</td>
+                        <td class="key-col"></td>
+                        <td>Features</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">7</td>
+                        <td class="field-col">created_at</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">8. User subscriptions Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> subscription_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> user_id, last_payment_id</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">subscription_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for user_subscription</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">user_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Unique, Foreign Key</td>
+                        <td>Foreign Key linking to User</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">current_plan</td>
+                        <td class="type-col">VARCHAR(50)</td>
+                        <td class="key-col"></td>
+                        <td>Current plan</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">billing_cycle</td>
+                        <td class="type-col">VARCHAR(20)</td>
+                        <td class="key-col"></td>
+                        <td>Billing cycle</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">5</td>
+                        <td class="field-col">subscription_start</td>
+                        <td class="type-col">DATE</td>
+                        <td class="key-col"></td>
+                        <td>Subscription start</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">6</td>
+                        <td class="field-col">subscription_end</td>
+                        <td class="type-col">DATE</td>
+                        <td class="key-col"></td>
+                        <td>Subscription end</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">7</td>
+                        <td class="field-col">can_switch_after</td>
+                        <td class="type-col">DATE</td>
+                        <td class="key-col"></td>
+                        <td>Can switch after</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">8</td>
+                        <td class="field-col">last_payment_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign key reference</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">9</td>
+                        <td class="field-col">created_at</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">10</td>
+                        <td class="field-col">updated_at</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">9. Payments Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> payment_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> trainer_id, user_id</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">payment_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for payment</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">trainer_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to Trainer</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">user_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to User</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">amount</td>
+                        <td class="type-col">DECIMAL(10,2)</td>
+                        <td class="key-col"></td>
+                        <td>Amount</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">5</td>
+                        <td class="field-col">payment_date</td>
+                        <td class="type-col">DATE</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">6</td>
+                        <td class="field-col">currency</td>
+                        <td class="type-col">VARCHAR(3)</td>
+                        <td class="key-col"></td>
+                        <td>Currency</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">10. Payment receipts Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> receipt_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> user_id, razorpay_payment_id, razorpay_order_id</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">receipt_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for payment_receipt</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">user_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to User</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">plan_name</td>
+                        <td class="type-col">VARCHAR(50)</td>
+                        <td class="key-col"></td>
+                        <td>Full name of the payment_receipt</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">billing_cycle</td>
+                        <td class="type-col">VARCHAR(20)</td>
+                        <td class="key-col"></td>
+                        <td>Billing cycle</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">5</td>
+                        <td class="field-col">base_amount</td>
+                        <td class="type-col">DECIMAL(10,2)</td>
+                        <td class="key-col"></td>
+                        <td>Base amount</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">6</td>
+                        <td class="field-col">tax_amount</td>
+                        <td class="type-col">DECIMAL(10,2)</td>
+                        <td class="key-col"></td>
+                        <td>Tax amount</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">7</td>
+                        <td class="field-col">total_amount</td>
+                        <td class="type-col">DECIMAL(10,2)</td>
+                        <td class="key-col"></td>
+                        <td>Total amount</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">8</td>
+                        <td class="field-col">currency</td>
+                        <td class="type-col">VARCHAR(3)</td>
+                        <td class="key-col"></td>
+                        <td>Currency</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">9</td>
+                        <td class="field-col">razorpay_payment_id</td>
+                        <td class="type-col">VARCHAR(255)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign key reference</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">10</td>
+                        <td class="field-col">razorpay_order_id</td>
+                        <td class="type-col">VARCHAR(255)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign key reference</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">11</td>
+                        <td class="field-col">payment_method</td>
+                        <td class="type-col">VARCHAR(50)</td>
+                        <td class="key-col"></td>
+                        <td>Payment method</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">12</td>
+                        <td class="field-col">payment_status</td>
+                        <td class="type-col">VARCHAR(20)</td>
+                        <td class="key-col"></td>
+                        <td>Current status (e.g. Active, Pending)</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">13</td>
+                        <td class="field-col">transaction_date</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">14</td>
+                        <td class="field-col">receipt_number</td>
+                        <td class="type-col">VARCHAR(50)</td>
+                        <td class="key-col">Unique</td>
+                        <td>Receipt number</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">15</td>
+                        <td class="field-col">subscription_start</td>
+                        <td class="type-col">DATE</td>
+                        <td class="key-col"></td>
+                        <td>Subscription start</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">16</td>
+                        <td class="field-col">subscription_end</td>
+                        <td class="type-col">DATE</td>
+                        <td class="key-col"></td>
+                        <td>Subscription end</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div><div class="group-header">4. Gamification & Rewards</div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">11. Gamification badges Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> badge_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> None</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">badge_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for gamification_badge</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">name</td>
+                        <td class="type-col">VARCHAR(50)</td>
+                        <td class="key-col"></td>
+                        <td>Full name of the gamification_badge</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">description</td>
+                        <td class="type-col">VARCHAR(255)</td>
+                        <td class="key-col"></td>
+                        <td>Description</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">icon_class</td>
+                        <td class="type-col">VARCHAR(50)</td>
+                        <td class="key-col"></td>
+                        <td>Icon class</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">5</td>
+                        <td class="field-col">color</td>
+                        <td class="type-col">VARCHAR(20)</td>
+                        <td class="key-col"></td>
+                        <td>Color</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">6</td>
+                        <td class="field-col">criteria_type</td>
+                        <td class="type-col">VARCHAR(50)</td>
+                        <td class="key-col"></td>
+                        <td>Criteria type</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">7</td>
+                        <td class="field-col">criteria_value</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col"></td>
+                        <td>Criteria value</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">8</td>
+                        <td class="field-col">created_at</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">9</td>
+                        <td class="field-col">target_role</td>
+                        <td class="type-col">ENUM('CLIENT','TRAINER','ALL')</td>
+                        <td class="key-col"></td>
+                        <td>Target role</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">12. User badges Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> user_id, badge_id</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for user_badge</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">user_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to User</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">badge_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign key reference</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">earned_at</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">13. User gamification stats Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> user_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> None</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">user_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for user_gamification_stat</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">total_points</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col"></td>
+                        <td>Total points</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">current_streak</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col"></td>
+                        <td>Current streak</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">last_login_date</td>
+                        <td class="type-col">DATE</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">5</td>
+                        <td class="field-col">updated_at</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">6</td>
+                        <td class="field-col">completed_workouts</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col"></td>
+                        <td>Completed workouts</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">7</td>
+                        <td class="field-col">total_calories</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col"></td>
+                        <td>Total calories</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div><div class="group-header">5. Trainer Lifecycle</div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">14. Trainer applications Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> application_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> client_id, trainer_id</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">application_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for trainer_application</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">client_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to User</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">trainer_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to Trainer</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">status</td>
+                        <td class="type-col">ENUM('PENDING','APPROVED','REJECTED','ADMIN_SUGGESTED')</td>
+                        <td class="key-col"></td>
+                        <td>Current status (e.g. Active, Pending)</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">5</td>
+                        <td class="field-col">created_at</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">15. Trainer achievements Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> trainer_id</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for trainer_achievement</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">trainer_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to Trainer</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">title</td>
+                        <td class="type-col">VARCHAR(255)</td>
+                        <td class="key-col"></td>
+                        <td>Title</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">issuer</td>
+                        <td class="type-col">VARCHAR(255)</td>
+                        <td class="key-col"></td>
+                        <td>Issuer</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">5</td>
+                        <td class="field-col">date_earned</td>
+                        <td class="type-col">DATE</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">6</td>
+                        <td class="field-col">image_url</td>
+                        <td class="type-col">VARCHAR(255)</td>
+                        <td class="key-col"></td>
+                        <td>Image url</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">7</td>
+                        <td class="field-col">created_at</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">16. Trainer attendance Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> trainer_id</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for trainer_attendance</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">trainer_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to Trainer</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">check_in_time</td>
+                        <td class="type-col">DATETIME</td>
+                        <td class="key-col"></td>
+                        <td>Check in time</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">check_out_time</td>
+                        <td class="type-col">DATETIME</td>
+                        <td class="key-col"></td>
+                        <td>Check out time</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">5</td>
+                        <td class="field-col">zone</td>
+                        <td class="type-col">VARCHAR(100)</td>
+                        <td class="key-col"></td>
+                        <td>Zone</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">6</td>
+                        <td class="field-col">status</td>
+                        <td class="type-col">ENUM('CHECKED_IN','CHECKED_OUT')</td>
+                        <td class="key-col"></td>
+                        <td>Current status (e.g. Active, Pending)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">17. Trainer ratings Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> rating_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> trainer_id, client_id</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">rating_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for trainer_rating</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">trainer_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to Trainer</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">client_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to User</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">rating</td>
+                        <td class="type-col">DECIMAL(2,1)</td>
+                        <td class="key-col"></td>
+                        <td>Rating</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">5</td>
+                        <td class="field-col">review</td>
+                        <td class="type-col">TEXT</td>
+                        <td class="key-col"></td>
+                        <td>Review</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">6</td>
+                        <td class="field-col">created_at</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">18. Trainer reviews Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> review_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> trainer_id, client_id</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">review_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for trainer_review</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">trainer_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to Trainer</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">client_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to User</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">rating</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col"></td>
+                        <td>Rating</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">5</td>
+                        <td class="field-col">review_text</td>
+                        <td class="type-col">TEXT</td>
+                        <td class="key-col"></td>
+                        <td>Review text</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">6</td>
+                        <td class="field-col">created_at</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div><div class="group-header">6. Coaching & Workout Operations</div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">19. Client trainer requests Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> request_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> client_id</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">request_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for client_trainer_request</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">client_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to User</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">goal</td>
+                        <td class="type-col">VARCHAR(100)</td>
+                        <td class="key-col"></td>
+                        <td>Goal</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">training_style</td>
+                        <td class="type-col">VARCHAR(100)</td>
+                        <td class="key-col"></td>
+                        <td>Training style</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">5</td>
+                        <td class="field-col">notes</td>
+                        <td class="type-col">TEXT</td>
+                        <td class="key-col"></td>
+                        <td>Notes</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">6</td>
+                        <td class="field-col">created_at</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">20. Session requests Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> request_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> user_id, trainer_id</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">request_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for session_request</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">user_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to User</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">trainer_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to Trainer</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">status</td>
+                        <td class="type-col">ENUM('PENDING','APPROVED','REJECTED')</td>
+                        <td class="key-col"></td>
+                        <td>Current status (e.g. Active, Pending)</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">5</td>
+                        <td class="field-col">created_at</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">21. Trainer schedules Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> schedule_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> trainer_id</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">schedule_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for trainer_schedule</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">trainer_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to Trainer</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">client_name</td>
+                        <td class="type-col">VARCHAR(255)</td>
+                        <td class="key-col"></td>
+                        <td>Full name of the trainer_schedule</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">session_time</td>
+                        <td class="type-col">TIME</td>
+                        <td class="key-col"></td>
+                        <td>Session time</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">5</td>
+                        <td class="field-col">session_date</td>
+                        <td class="type-col">DATE</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">6</td>
+                        <td class="field-col">session_type</td>
+                        <td class="type-col">VARCHAR(100)</td>
+                        <td class="key-col"></td>
+                        <td>Session type</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">7</td>
+                        <td class="field-col">status</td>
+                        <td class="type-col">VARCHAR(50)</td>
+                        <td class="key-col"></td>
+                        <td>Current status (e.g. Active, Pending)</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">8</td>
+                        <td class="field-col">meeting_link</td>
+                        <td class="type-col">VARCHAR(500)</td>
+                        <td class="key-col"></td>
+                        <td>Meeting link</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">22. Trainer workouts Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> workout_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> trainer_id, user_id</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">workout_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for trainer_workout</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">trainer_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to Trainer</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">user_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to User</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">plan_name</td>
+                        <td class="type-col">VARCHAR(255)</td>
+                        <td class="key-col"></td>
+                        <td>Full name of the trainer_workout</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">5</td>
+                        <td class="field-col">client_name</td>
+                        <td class="type-col">VARCHAR(255)</td>
+                        <td class="key-col"></td>
+                        <td>Full name of the trainer_workout</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">6</td>
+                        <td class="field-col">duration_weeks</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col"></td>
+                        <td>Duration weeks</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">7</td>
+                        <td class="field-col">exercises</td>
+                        <td class="type-col">TEXT</td>
+                        <td class="key-col"></td>
+                        <td>Exercises</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">8</td>
+                        <td class="field-col">difficulty</td>
+                        <td class="type-col">VARCHAR(50)</td>
+                        <td class="key-col"></td>
+                        <td>Difficulty</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">9</td>
+                        <td class="field-col">created_at</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">10</td>
+                        <td class="field-col">days_per_week</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col"></td>
+                        <td>Days per week</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">23. Trainer diet plans Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> diet_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> trainer_id, user_id</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">diet_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for trainer_diet_plan</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">trainer_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to Trainer</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">user_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to User</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">plan_name</td>
+                        <td class="type-col">VARCHAR(255)</td>
+                        <td class="key-col"></td>
+                        <td>Full name of the trainer_diet_plan</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">5</td>
+                        <td class="field-col">client_name</td>
+                        <td class="type-col">VARCHAR(255)</td>
+                        <td class="key-col"></td>
+                        <td>Full name of the trainer_diet_plan</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">6</td>
+                        <td class="field-col">target_calories</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col"></td>
+                        <td>Target calories</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">7</td>
+                        <td class="field-col">diet_type</td>
+                        <td class="type-col">VARCHAR(100)</td>
+                        <td class="key-col"></td>
+                        <td>Diet type</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">8</td>
+                        <td class="field-col">meal_details</td>
+                        <td class="type-col">TEXT</td>
+                        <td class="key-col"></td>
+                        <td>Meal details</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">9</td>
+                        <td class="field-col">created_at</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div><div class="group-header">7. E-Commerce / Store</div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">24. Products Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> product_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> None</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">product_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for product</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">name</td>
+                        <td class="type-col">VARCHAR(255)</td>
+                        <td class="key-col"></td>
+                        <td>Full name of the product</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">category</td>
+                        <td class="type-col">ENUM('MEN','WOMEN','EQUIPMENT','SUPPLEMENTS')</td>
+                        <td class="key-col"></td>
+                        <td>Category</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">price</td>
+                        <td class="type-col">DECIMAL(10,2)</td>
+                        <td class="key-col"></td>
+                        <td>Price</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">5</td>
+                        <td class="field-col">image_url</td>
+                        <td class="type-col">VARCHAR(255)</td>
+                        <td class="key-col"></td>
+                        <td>Image url</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">6</td>
+                        <td class="field-col">description</td>
+                        <td class="type-col">TEXT</td>
+                        <td class="key-col"></td>
+                        <td>Description</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">7</td>
+                        <td class="field-col">is_new</td>
+                        <td class="type-col">TINYINT(1)</td>
+                        <td class="key-col"></td>
+                        <td>Is new</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">8</td>
+                        <td class="field-col">is_sale</td>
+                        <td class="type-col">TINYINT(1)</td>
+                        <td class="key-col"></td>
+                        <td>Is sale</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">9</td>
+                        <td class="field-col">is_bestseller</td>
+                        <td class="type-col">TINYINT(1)</td>
+                        <td class="key-col"></td>
+                        <td>Is bestseller</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">10</td>
+                        <td class="field-col">has_sizes</td>
+                        <td class="type-col">TINYINT(1)</td>
+                        <td class="key-col"></td>
+                        <td>Has sizes</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">11</td>
+                        <td class="field-col">created_at</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">12</td>
+                        <td class="field-col">rating</td>
+                        <td class="type-col">DECIMAL(2,1)</td>
+                        <td class="key-col"></td>
+                        <td>Rating</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">13</td>
+                        <td class="field-col">review_count</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col"></td>
+                        <td>Review count</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">14</td>
+                        <td class="field-col">stock_quantity</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col"></td>
+                        <td>Stock quantity</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">15</td>
+                        <td class="field-col">stock</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col"></td>
+                        <td>Stock</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">25. Product reviews Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> review_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> product_id, user_id</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">review_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for product_review</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">product_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to Product</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">user_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to User</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">rating</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col"></td>
+                        <td>Rating</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">5</td>
+                        <td class="field-col">review_title</td>
+                        <td class="type-col">VARCHAR(200)</td>
+                        <td class="key-col"></td>
+                        <td>Review title</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">6</td>
+                        <td class="field-col">review_text</td>
+                        <td class="type-col">TEXT</td>
+                        <td class="key-col"></td>
+                        <td>Review text</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">7</td>
+                        <td class="field-col">verified_purchase</td>
+                        <td class="type-col">TINYINT(1)</td>
+                        <td class="key-col"></td>
+                        <td>Verified purchase</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">8</td>
+                        <td class="field-col">helpful_count</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col"></td>
+                        <td>Helpful count</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">9</td>
+                        <td class="field-col">review_images</td>
+                        <td class="type-col">TEXT</td>
+                        <td class="key-col"></td>
+                        <td>Review images</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">10</td>
+                        <td class="field-col">created_at</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">11</td>
+                        <td class="field-col">updated_at</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">26. Review helpful Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> review_id, user_id</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for review_helpful</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">review_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign key reference</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">user_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to User</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">created_at</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">27. Shop orders Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> order_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> user_id</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">order_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for shop_order</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">user_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to User</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">total_amount</td>
+                        <td class="type-col">DECIMAL(10,2)</td>
+                        <td class="key-col"></td>
+                        <td>Total amount</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">address</td>
+                        <td class="type-col">TEXT</td>
+                        <td class="key-col"></td>
+                        <td>Address</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">5</td>
+                        <td class="field-col">city</td>
+                        <td class="type-col">VARCHAR(100)</td>
+                        <td class="key-col"></td>
+                        <td>City</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">6</td>
+                        <td class="field-col">zip</td>
+                        <td class="type-col">VARCHAR(20)</td>
+                        <td class="key-col"></td>
+                        <td>Zip</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">7</td>
+                        <td class="field-col">payment_method</td>
+                        <td class="type-col">VARCHAR(50)</td>
+                        <td class="key-col"></td>
+                        <td>Payment method</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">8</td>
+                        <td class="field-col">order_status</td>
+                        <td class="type-col">VARCHAR(50)</td>
+                        <td class="key-col"></td>
+                        <td>Current status (e.g. Active, Pending)</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">9</td>
+                        <td class="field-col">order_date</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">10</td>
+                        <td class="field-col">delivery_date</td>
+                        <td class="type-col">VARCHAR(50)</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">11</td>
+                        <td class="field-col">return_reason</td>
+                        <td class="type-col">TEXT</td>
+                        <td class="key-col"></td>
+                        <td>Return reason</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">12</td>
+                        <td class="field-col">admin_message</td>
+                        <td class="type-col">TEXT</td>
+                        <td class="key-col"></td>
+                        <td>Admin message</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">28. Shop order items Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> item_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> order_id, product_id</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">item_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for shop_order_item</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">order_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign key reference</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">product_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to Product</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">product_name</td>
+                        <td class="type-col">VARCHAR(255)</td>
+                        <td class="key-col"></td>
+                        <td>Full name of the shop_order_item</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">5</td>
+                        <td class="field-col">quantity</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col"></td>
+                        <td>Quantity</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">6</td>
+                        <td class="field-col">price</td>
+                        <td class="type-col">DECIMAL(10,2)</td>
+                        <td class="key-col"></td>
+                        <td>Price</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">7</td>
+                        <td class="field-col">size</td>
+                        <td class="type-col">VARCHAR(20)</td>
+                        <td class="key-col"></td>
+                        <td>Size</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">8</td>
+                        <td class="field-col">image_url</td>
+                        <td class="type-col">VARCHAR(255)</td>
+                        <td class="key-col"></td>
+                        <td>Image url</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div><div class="group-header">8. System Operations & Gym Management</div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">29. Messages Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> message_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> sender_id, receiver_id</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">message_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for message</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">sender_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign key reference</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">receiver_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign key reference</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">message_text</td>
+                        <td class="type-col">TEXT</td>
+                        <td class="key-col"></td>
+                        <td>Message text</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">5</td>
+                        <td class="field-col">is_read</td>
+                        <td class="type-col">TINYINT(1)</td>
+                        <td class="key-col"></td>
+                        <td>Is read</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">6</td>
+                        <td class="field-col">created_at</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">30. User notifications Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> notification_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> user_id</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">notification_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for user_notification</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">user_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to User</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">notification_type</td>
+                        <td class="type-col">VARCHAR(50)</td>
+                        <td class="key-col"></td>
+                        <td>Notification type</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">message</td>
+                        <td class="type-col">TEXT</td>
+                        <td class="key-col"></td>
+                        <td>Message</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">5</td>
+                        <td class="field-col">created_at</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">6</td>
+                        <td class="field-col">is_read</td>
+                        <td class="type-col">TINYINT(1)</td>
+                        <td class="key-col"></td>
+                        <td>Is read</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">31. Email sent log Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> user_id</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for email_sent_log</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">user_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to User</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">email_type</td>
+                        <td class="type-col">VARCHAR(50)</td>
+                        <td class="key-col"></td>
+                        <td>User's email address</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">sent_at</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">32. Expert enquiries Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> enquiry_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> None</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">enquiry_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for expert_enquirie</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">name</td>
+                        <td class="type-col">VARCHAR(100)</td>
+                        <td class="key-col"></td>
+                        <td>Full name of the expert_enquirie</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">phone</td>
+                        <td class="type-col">VARCHAR(20)</td>
+                        <td class="key-col"></td>
+                        <td>Contact number</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">email</td>
+                        <td class="type-col">VARCHAR(100)</td>
+                        <td class="key-col"></td>
+                        <td>User's email address</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">5</td>
+                        <td class="field-col">reason</td>
+                        <td class="type-col">TEXT</td>
+                        <td class="key-col"></td>
+                        <td>Reason</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">6</td>
+                        <td class="field-col">created_at</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">7</td>
+                        <td class="field-col">status</td>
+                        <td class="type-col">ENUM('PENDING','CONTACTED','RESOLVED')</td>
+                        <td class="key-col"></td>
+                        <td>Current status (e.g. Active, Pending)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">33. Gym equipment Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> None</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for gym_equipment</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">name</td>
+                        <td class="type-col">VARCHAR(100)</td>
+                        <td class="key-col"></td>
+                        <td>Full name of the gym_equipment</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">total_units</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col"></td>
+                        <td>Total units</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">available_units</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col"></td>
+                        <td>Available units</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">5</td>
+                        <td class="field-col">status</td>
+                        <td class="type-col">VARCHAR(50)</td>
+                        <td class="key-col"></td>
+                        <td>Current status (e.g. Active, Pending)</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">6</td>
+                        <td class="field-col">icon</td>
+                        <td class="type-col">VARCHAR(50)</td>
+                        <td class="key-col"></td>
+                        <td>Icon</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">7</td>
+                        <td class="field-col">color_class</td>
+                        <td class="type-col">VARCHAR(20)</td>
+                        <td class="key-col"></td>
+                        <td>Color class</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">8</td>
+                        <td class="field-col">last_updated</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">34. Gym check ins Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> checkin_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> user_id</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">checkin_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for gym_check_in</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">user_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Foreign Key</td>
+                        <td>Foreign Key linking to User</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">check_in_time</td>
+                        <td class="type-col">DATETIME</td>
+                        <td class="key-col"></td>
+                        <td>Check in time</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">35. Gym settings Table</h2>
+                <div class="key-info"><strong>Primary Key:</strong> setting_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> None</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="no-col">No</th>
+                        <th class="field-col">Field Name</th>
+                        <th class="type-col">Data Type (Size)</th>
+                        <th class="key-col">Key Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="no-col">1</td>
+                        <td class="field-col">setting_id</td>
+                        <td class="type-col">INT(11)</td>
+                        <td class="key-col">Primary Key</td>
+                        <td>Unique ID for gym_setting</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">2</td>
+                        <td class="field-col">setting_key</td>
+                        <td class="type-col">VARCHAR(50)</td>
+                        <td class="key-col">Unique</td>
+                        <td>Setting key</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">3</td>
+                        <td class="field-col">setting_value</td>
+                        <td class="type-col">VARCHAR(255)</td>
+                        <td class="key-col"></td>
+                        <td>Setting value</td>
+                    </tr>
+                    <tr>
+                        <td class="no-col">4</td>
+                        <td class="field-col">updated_at</td>
+                        <td class="type-col">TIMESTAMP</td>
+                        <td class="key-col"></td>
+                        <td>Timestamp / Date of action</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
