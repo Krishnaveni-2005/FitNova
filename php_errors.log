@@ -2016,3 +2016,6 @@ Stack trace:
 #0 C:\xampppp\htdocs\fitnova\setup_cms.php(57): mysqli_stmt->execute(Array)
 #1 {main}
   thrown in C:\xampppp\htdocs\fitnova\setup_cms.php on line 57
+[19-Mar-2026 11:39:27 Europe/Berlin] ✅ WhatsApp sent successfully: New Product Added: dz
+Category: men
+Price: ₹3424
