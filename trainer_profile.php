@@ -624,7 +624,11 @@ if (!$trainer) {
                     <?php else: ?>
                         <form method="POST">
                              <?php if (isset($user_role) && $user_role === 'free'): ?>
-                                <button type="button" onclick="window.location.href='?id=<?php echo $trainer_id; ?>&msg=upgrade_required'" class="btn-book" style="background: #E63946; border: none; cursor: pointer;">Send Hire Request</button>
+                                <div style="color: #ef4444; background: #fef2f2; padding: 12px; border-radius: 8px; border: 1px solid #fee2e2; font-size: 0.9em; text-align: left; margin-bottom: 15px;">
+                                    <i class="fas fa-crown"></i> <strong>Premium Feature</strong><br>
+                                    Hiring personal trainers is a Pro feature. Upgrade your plan to start your personalized journey.
+                                </div>
+                                <a href="subscription_plans.php" class="btn-book" style="background: #E63946;">Upgrade to Pro</a>
                              <?php elseif (isset($user_role) && $user_role === 'lite'): ?>
                                 <div style="color: #b45309; background: #fffbeb; padding: 10px; border-radius: 8px; border: 1px solid #fcd34d; font-size: 0.9em; text-align: left;">
                                     <i class="fas fa-info-circle"></i> <strong>Lite Member</strong><br>

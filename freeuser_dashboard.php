@@ -602,6 +602,9 @@ if ($oStmt) {
             <a href="client_profile_setup.php" class="menu-item">
                 <i class="fas fa-user-circle"></i> Profile
             </a>
+            <a href="trainers.php" class="menu-item">
+                <i class="fas fa-users"></i> Trainers
+            </a>
 
             <a href="fitshop.php" class="menu-item">
                 <i class="fas fa-store"></i> FitShop
