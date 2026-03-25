@@ -1,63 +1,157 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FitNova - Database Specification</title>
     <style>
-        body { 
-            font-family: 'Times New Roman', Times, serif; 
-            background-color: #fff; 
-            color: #000; 
-            margin: 0; 
-            padding: 40px; 
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background-color: #fff;
+            color: #000;
+            margin: 0;
+            padding: 40px;
             font-size: 11pt;
             line-height: 1.4;
         }
-        .container { max-width: 1000px; margin: 0 auto; }
-        .header { text-align: left; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 10px; }
-        .header h1 { font-size: 18pt; margin: 0; font-weight: bold; }
-        .header p { font-size: 11pt; margin-top: 5px; }
-        .card { background: white; padding: 0; margin-bottom: 40px; page-break-inside: avoid; }
-        .card-header { margin-bottom: 10px; }
-        .card-title { font-size: 14pt; font-weight: bold; margin: 0 0 5px 0; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
-        .key-info { font-size: 11pt; margin-bottom: 2px; }
-        .key-info strong { width: 100px; display: inline-block; font-weight: bold; }
-        table { width: 100%; border-collapse: collapse; margin-top: 5px; border: 1px solid #000; table-layout: fixed; }
-        th, td { padding: 4px 8px; border: 1px solid #000; text-align: left; font-size: 11pt; color: #000; word-wrap: break-word; vertical-align: middle; line-height: 1.2; }
-        th { background: #fff; font-weight: bold; text-align: center; }
-        .no-col { width: 35px; text-align: center; }
-        .field-col { width: 180px; }
-        .type-col { width: 150px; }
-        .key-col { width: 130px; }
-        @media print {
-            body { padding: 0; }
-            .container { max-width: 100%; }
-            .header { border-bottom: 3px solid #000; }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
         }
-        .group-header { 
-            background: #fff; 
-            color: #000; 
-            padding: 10px 0; 
-            margin: 50px 0 20px 0; 
-            font-size: 14pt; 
+
+        .header {
+            text-align: left;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+        }
+
+        .header h1 {
+            font-size: 18pt;
+            margin: 0;
+            font-weight: bold;
+        }
+
+        .header p {
+            font-size: 11pt;
+            margin-top: 5px;
+        }
+
+        .card {
+            background: white;
+            padding: 0;
+            margin-bottom: 40px;
+            page-break-inside: avoid;
+        }
+
+        .card-header {
+            margin-bottom: 10px;
+        }
+
+        .card-title {
+            font-size: 14pt;
+            font-weight: bold;
+            margin: 0 0 5px 0;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+
+        .key-info {
+            font-size: 11pt;
+            margin-bottom: 2px;
+        }
+
+        .key-info strong {
+            width: 100px;
+            display: inline-block;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 5px;
+            border: 1px solid #000;
+            table-layout: fixed;
+        }
+
+        th,
+        td {
+            padding: 4px 8px;
+            border: 1px solid #000;
+            text-align: left;
+            font-size: 11pt;
+            color: #000;
+            word-wrap: break-word;
+            vertical-align: middle;
+            line-height: 1.2;
+        }
+
+        th {
+            background: #fff;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .no-col {
+            width: 35px;
+            text-align: center;
+        }
+
+        .field-col {
+            width: 180px;
+        }
+
+        .type-col {
+            width: 150px;
+        }
+
+        .key-col {
+            width: 130px;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+            }
+
+            .container {
+                max-width: 100%;
+            }
+
+            .header {
+                border-bottom: 3px solid #000;
+            }
+        }
+
+        .group-header {
+            background: #fff;
+            color: #000;
+            padding: 10px 0;
+            margin: 50px 0 20px 0;
+            font-size: 14pt;
             font-weight: bold;
             text-transform: uppercase;
             border-bottom: 2px solid #000;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
             <h1>FitNova Database Design Specification</h1>
             <p>Project: FitNova | Generated: March 15, 2026</p>
-        </div><div class="group-header">1. Core Users & Security</div>
+        </div>
+        <div class="group-header">1. Core Users & Security</div>
         <div class="card">
             <div class="card-header">
                 <h2 class="card-title">1. Users Table</h2>
                 <div class="key-info"><strong>Primary Key:</strong> user_id</div>
-                <div class="key-info"><strong>Foreign Keys:</strong> auth_provider, oauth_provider_id, assigned_trainer_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong><br>
+                    assigned_trainer_id refers to table Users</div>
             </div>
             <table>
                 <thead>
@@ -81,21 +175,21 @@
                         <td class="no-col">2</td>
                         <td class="field-col">first_name</td>
                         <td class="type-col">VARCHAR(50)</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Full name of the user</td>
                     </tr>
                     <tr>
                         <td class="no-col">3</td>
                         <td class="field-col">last_name</td>
                         <td class="type-col">VARCHAR(50)</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Full name of the user</td>
                     </tr>
                     <tr>
                         <td class="no-col">4</td>
                         <td class="field-col">email</td>
                         <td class="type-col">VARCHAR(100)</td>
-                        <td class="key-col">Unique</td>
+                        <td class="key-col">Unique, Not Null</td>
                         <td>User's email address</td>
                     </tr>
                     <tr>
@@ -109,29 +203,29 @@
                         <td class="no-col">6</td>
                         <td class="field-col">password_hash</td>
                         <td class="type-col">VARCHAR(255)</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Encrypted password</td>
                     </tr>
                     <tr>
                         <td class="no-col">7</td>
                         <td class="field-col">role</td>
                         <td class="type-col">ENUM('FREE','PRO','TRAINER','ADMIN','ELITE','LITE')</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Role</td>
                     </tr>
                     <tr>
                         <td class="no-col">8</td>
                         <td class="field-col">auth_provider</td>
                         <td class="type-col">ENUM('LOCAL','GOOGLE','FACEBOOK')</td>
-                        <td class="key-col">Foreign Key</td>
-                        <td>Foreign key reference</td>
+                        <td class="key-col">Not Null</td>
+                        <td>Login provider (LOCAL, GOOGLE, etc.)</td>
                     </tr>
                     <tr>
                         <td class="no-col">9</td>
                         <td class="field-col">oauth_provider_id</td>
                         <td class="type-col">VARCHAR(255)</td>
-                        <td class="key-col">Foreign Key</td>
-                        <td>Foreign key reference</td>
+                        <td class="key-col"></td>
+                        <td>External provider unique ID</td>
                     </tr>
                     <tr>
                         <td class="no-col">10</td>
@@ -179,20 +273,21 @@
                         <td class="no-col">16</td>
                         <td class="field-col">created_at</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                     <tr>
                         <td class="no-col">17</td>
                         <td class="field-col">updated_at</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                     <tr>
                         <td class="no-col">18</td>
                         <td class="field-col">assignment_status</td>
-                        <td class="type-col">ENUM('NONE','PENDING','APPROVED','REJECTED','TRAINER_INVITE','LOOKING_FOR_TRAINER')</td>
+                        <td class="type-col">
+                            ENUM('NONE','PENDING','APPROVED','REJECTED','TRAINER_INVITE','LOOKING_FOR_TRAINER')</td>
                         <td class="key-col"></td>
                         <td>Current status (e.g. Active, Pending)</td>
                     </tr>
@@ -272,7 +367,7 @@
             <div class="card-header">
                 <h2 class="card-title">3. User activity log Table</h2>
                 <div class="key-info"><strong>Primary Key:</strong> log_id</div>
-                <div class="key-info"><strong>Foreign Keys:</strong> user_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> user_id refers to table Users</div>
             </div>
             <table>
                 <thead>
@@ -331,14 +426,14 @@
                         <td class="no-col">7</td>
                         <td class="field-col">activity_date</td>
                         <td class="type-col">DATE</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                     <tr>
                         <td class="no-col">8</td>
                         <td class="field-col">created_at</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                 </tbody>
@@ -348,7 +443,7 @@
             <div class="card-header">
                 <h2 class="card-title">4. User activity logs Table</h2>
                 <div class="key-info"><strong>Primary Key:</strong> log_id</div>
-                <div class="key-info"><strong>Foreign Keys:</strong> user_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> user_id refers to table Users</div>
             </div>
             <table>
                 <thead>
@@ -400,24 +495,25 @@
                         <td class="no-col">6</td>
                         <td class="field-col">log_date</td>
                         <td class="type-col">DATE</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                     <tr>
                         <td class="no-col">7</td>
                         <td class="field-col">created_at</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                 </tbody>
             </table>
-        </div><div class="group-header">2. Client Management</div>
+        </div>
+        <div class="group-header">2. Client Management</div>
         <div class="card">
             <div class="card-header">
                 <h2 class="card-title">5. Client profiles Table</h2>
                 <div class="key-info"><strong>Primary Key:</strong> profile_id</div>
-                <div class="key-info"><strong>Foreign Keys:</strong> user_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> user_id refers to table Users</div>
             </div>
             <table>
                 <thead>
@@ -563,7 +659,7 @@
             <div class="card-header">
                 <h2 class="card-title">6. Client progress Table</h2>
                 <div class="key-info"><strong>Primary Key:</strong> progress_id</div>
-                <div class="key-info"><strong>Foreign Keys:</strong> user_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> user_id refers to table Users</div>
             </div>
             <table>
                 <thead>
@@ -594,7 +690,7 @@
                         <td class="no-col">3</td>
                         <td class="field-col">log_date</td>
                         <td class="type-col">DATE</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                     <tr>
@@ -608,7 +704,7 @@
                         <td class="no-col">5</td>
                         <td class="field-col">status_update</td>
                         <td class="type-col">VARCHAR(50)</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                     <tr>
@@ -622,12 +718,13 @@
                         <td class="no-col">7</td>
                         <td class="field-col">created_at</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                 </tbody>
             </table>
-        </div><div class="group-header">3. Subscriptions & Finance</div>
+        </div>
+        <div class="group-header">3. Subscriptions & Finance</div>
         <div class="card">
             <div class="card-header">
                 <h2 class="card-title">7. Subscription plans Table</h2>
@@ -691,7 +788,7 @@
                         <td class="no-col">7</td>
                         <td class="field-col">created_at</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                 </tbody>
@@ -701,7 +798,7 @@
             <div class="card-header">
                 <h2 class="card-title">8. User subscriptions Table</h2>
                 <div class="key-info"><strong>Primary Key:</strong> subscription_id</div>
-                <div class="key-info"><strong>Foreign Keys:</strong> user_id, last_payment_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> user_id refers to table Users<br>last_payment_id refers to table Payments</div>
             </div>
             <table>
                 <thead>
@@ -774,14 +871,14 @@
                         <td class="no-col">9</td>
                         <td class="field-col">created_at</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                     <tr>
                         <td class="no-col">10</td>
                         <td class="field-col">updated_at</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                 </tbody>
@@ -791,7 +888,7 @@
             <div class="card-header">
                 <h2 class="card-title">9. Payments Table</h2>
                 <div class="key-info"><strong>Primary Key:</strong> payment_id</div>
-                <div class="key-info"><strong>Foreign Keys:</strong> trainer_id, user_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> trainer_id refers to table Users<br>user_id refers to table Users</div>
             </div>
             <table>
                 <thead>
@@ -836,7 +933,7 @@
                         <td class="no-col">5</td>
                         <td class="field-col">payment_date</td>
                         <td class="type-col">DATE</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                     <tr>
@@ -853,7 +950,7 @@
             <div class="card-header">
                 <h2 class="card-title">10. Payment receipts Table</h2>
                 <div class="key-info"><strong>Primary Key:</strong> receipt_id</div>
-                <div class="key-info"><strong>Foreign Keys:</strong> user_id, razorpay_payment_id, razorpay_order_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> user_id refers to table Users</div>
             </div>
             <table>
                 <thead>
@@ -926,14 +1023,14 @@
                         <td class="no-col">9</td>
                         <td class="field-col">razorpay_payment_id</td>
                         <td class="type-col">VARCHAR(255)</td>
-                        <td class="key-col">Foreign Key</td>
+                        <td class="key-col"></td>
                         <td>Foreign key reference</td>
                     </tr>
                     <tr>
                         <td class="no-col">10</td>
                         <td class="field-col">razorpay_order_id</td>
                         <td class="type-col">VARCHAR(255)</td>
-                        <td class="key-col">Foreign Key</td>
+                        <td class="key-col"></td>
                         <td>Foreign key reference</td>
                     </tr>
                     <tr>
@@ -954,7 +1051,7 @@
                         <td class="no-col">13</td>
                         <td class="field-col">transaction_date</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                     <tr>
@@ -980,7 +1077,8 @@
                     </tr>
                 </tbody>
             </table>
-        </div><div class="group-header">4. Gamification & Rewards</div>
+        </div>
+        <div class="group-header">4. Gamification & Rewards</div>
         <div class="card">
             <div class="card-header">
                 <h2 class="card-title">11. Gamification badges Table</h2>
@@ -1051,7 +1149,7 @@
                         <td class="no-col">8</td>
                         <td class="field-col">created_at</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                     <tr>
@@ -1068,7 +1166,7 @@
             <div class="card-header">
                 <h2 class="card-title">12. User badges Table</h2>
                 <div class="key-info"><strong>Primary Key:</strong> id</div>
-                <div class="key-info"><strong>Foreign Keys:</strong> user_id, badge_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> user_id refers to table Users<br>badge_id refers to table Gamification_badges</div>
             </div>
             <table>
                 <thead>
@@ -1106,7 +1204,7 @@
                         <td class="no-col">4</td>
                         <td class="field-col">earned_at</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                 </tbody>
@@ -1116,7 +1214,7 @@
             <div class="card-header">
                 <h2 class="card-title">13. User gamification stats Table</h2>
                 <div class="key-info"><strong>Primary Key:</strong> user_id</div>
-                <div class="key-info"><strong>Foreign Keys:</strong> None</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> user_id refers to table Users</div>
             </div>
             <table>
                 <thead>
@@ -1154,14 +1252,14 @@
                         <td class="no-col">4</td>
                         <td class="field-col">last_login_date</td>
                         <td class="type-col">DATE</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                     <tr>
                         <td class="no-col">5</td>
                         <td class="field-col">updated_at</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                     <tr>
@@ -1180,12 +1278,13 @@
                     </tr>
                 </tbody>
             </table>
-        </div><div class="group-header">5. Trainer Lifecycle</div>
+        </div>
+        <div class="group-header">5. Trainer Lifecycle</div>
         <div class="card">
             <div class="card-header">
                 <h2 class="card-title">14. Trainer applications Table</h2>
                 <div class="key-info"><strong>Primary Key:</strong> application_id</div>
-                <div class="key-info"><strong>Foreign Keys:</strong> client_id, trainer_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> client_id refers to table Users<br>trainer_id refers to table Users</div>
             </div>
             <table>
                 <thead>
@@ -1230,7 +1329,7 @@
                         <td class="no-col">5</td>
                         <td class="field-col">created_at</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                 </tbody>
@@ -1240,7 +1339,7 @@
             <div class="card-header">
                 <h2 class="card-title">15. Trainer achievements Table</h2>
                 <div class="key-info"><strong>Primary Key:</strong> id</div>
-                <div class="key-info"><strong>Foreign Keys:</strong> trainer_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> trainer_id refers to table Users</div>
             </div>
             <table>
                 <thead>
@@ -1285,7 +1384,7 @@
                         <td class="no-col">5</td>
                         <td class="field-col">date_earned</td>
                         <td class="type-col">DATE</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                     <tr>
@@ -1299,7 +1398,7 @@
                         <td class="no-col">7</td>
                         <td class="field-col">created_at</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                 </tbody>
@@ -1309,7 +1408,7 @@
             <div class="card-header">
                 <h2 class="card-title">16. Trainer attendance Table</h2>
                 <div class="key-info"><strong>Primary Key:</strong> id</div>
-                <div class="key-info"><strong>Foreign Keys:</strong> trainer_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> trainer_id refers to table Users</div>
             </div>
             <table>
                 <thead>
@@ -1371,7 +1470,7 @@
             <div class="card-header">
                 <h2 class="card-title">17. Trainer ratings Table</h2>
                 <div class="key-info"><strong>Primary Key:</strong> rating_id</div>
-                <div class="key-info"><strong>Foreign Keys:</strong> trainer_id, client_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> trainer_id refers to table Users<br>client_id refers to table Users</div>
             </div>
             <table>
                 <thead>
@@ -1423,7 +1522,7 @@
                         <td class="no-col">6</td>
                         <td class="field-col">created_at</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                 </tbody>
@@ -1433,7 +1532,7 @@
             <div class="card-header">
                 <h2 class="card-title">18. Trainer reviews Table</h2>
                 <div class="key-info"><strong>Primary Key:</strong> review_id</div>
-                <div class="key-info"><strong>Foreign Keys:</strong> trainer_id, client_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> trainer_id refers to table Users<br>client_id refers to table Users</div>
             </div>
             <table>
                 <thead>
@@ -1485,17 +1584,18 @@
                         <td class="no-col">6</td>
                         <td class="field-col">created_at</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                 </tbody>
             </table>
-        </div><div class="group-header">6. Coaching & Workout Operations</div>
+        </div>
+        <div class="group-header">6. Coaching & Workout Operations</div>
         <div class="card">
             <div class="card-header">
                 <h2 class="card-title">19. Client trainer requests Table</h2>
                 <div class="key-info"><strong>Primary Key:</strong> request_id</div>
-                <div class="key-info"><strong>Foreign Keys:</strong> client_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> client_id refers to table Users</div>
             </div>
             <table>
                 <thead>
@@ -1547,7 +1647,7 @@
                         <td class="no-col">6</td>
                         <td class="field-col">created_at</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                 </tbody>
@@ -1557,7 +1657,7 @@
             <div class="card-header">
                 <h2 class="card-title">20. Session requests Table</h2>
                 <div class="key-info"><strong>Primary Key:</strong> request_id</div>
-                <div class="key-info"><strong>Foreign Keys:</strong> user_id, trainer_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> user_id refers to table Users<br>trainer_id refers to table Users</div>
             </div>
             <table>
                 <thead>
@@ -1602,7 +1702,7 @@
                         <td class="no-col">5</td>
                         <td class="field-col">created_at</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                 </tbody>
@@ -1612,7 +1712,7 @@
             <div class="card-header">
                 <h2 class="card-title">21. Trainer schedules Table</h2>
                 <div class="key-info"><strong>Primary Key:</strong> schedule_id</div>
-                <div class="key-info"><strong>Foreign Keys:</strong> trainer_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> trainer_id refers to table Users</div>
             </div>
             <table>
                 <thead>
@@ -1657,7 +1757,7 @@
                         <td class="no-col">5</td>
                         <td class="field-col">session_date</td>
                         <td class="type-col">DATE</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                     <tr>
@@ -1688,7 +1788,7 @@
             <div class="card-header">
                 <h2 class="card-title">22. Trainer workouts Table</h2>
                 <div class="key-info"><strong>Primary Key:</strong> workout_id</div>
-                <div class="key-info"><strong>Foreign Keys:</strong> trainer_id, user_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> trainer_id refers to table Users<br>user_id refers to table Users</div>
             </div>
             <table>
                 <thead>
@@ -1761,7 +1861,7 @@
                         <td class="no-col">9</td>
                         <td class="field-col">created_at</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                     <tr>
@@ -1778,7 +1878,7 @@
             <div class="card-header">
                 <h2 class="card-title">23. Trainer diet plans Table</h2>
                 <div class="key-info"><strong>Primary Key:</strong> diet_id</div>
-                <div class="key-info"><strong>Foreign Keys:</strong> trainer_id, user_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> trainer_id refers to table Users<br>user_id refers to table Users</div>
             </div>
             <table>
                 <thead>
@@ -1851,12 +1951,13 @@
                         <td class="no-col">9</td>
                         <td class="field-col">created_at</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                 </tbody>
             </table>
-        </div><div class="group-header">7. E-Commerce / Store</div>
+        </div>
+        <div class="group-header">7. E-Commerce / Store</div>
         <div class="card">
             <div class="card-header">
                 <h2 class="card-title">24. Products Table</h2>
@@ -1885,7 +1986,7 @@
                         <td class="no-col">2</td>
                         <td class="field-col">name</td>
                         <td class="type-col">VARCHAR(255)</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Full name of the product</td>
                     </tr>
                     <tr>
@@ -1948,7 +2049,7 @@
                         <td class="no-col">11</td>
                         <td class="field-col">created_at</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                     <tr>
@@ -1986,7 +2087,7 @@
             <div class="card-header">
                 <h2 class="card-title">25. Product reviews Table</h2>
                 <div class="key-info"><strong>Primary Key:</strong> review_id</div>
-                <div class="key-info"><strong>Foreign Keys:</strong> product_id, user_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> product_id refers to table Products<br>user_id refers to table Users</div>
             </div>
             <table>
                 <thead>
@@ -2066,14 +2167,14 @@
                         <td class="no-col">10</td>
                         <td class="field-col">created_at</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                     <tr>
                         <td class="no-col">11</td>
                         <td class="field-col">updated_at</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                 </tbody>
@@ -2083,7 +2184,7 @@
             <div class="card-header">
                 <h2 class="card-title">26. Review helpful Table</h2>
                 <div class="key-info"><strong>Primary Key:</strong> id</div>
-                <div class="key-info"><strong>Foreign Keys:</strong> review_id, user_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> review_id refers to table Product_reviews<br>user_id refers to table Users</div>
             </div>
             <table>
                 <thead>
@@ -2121,7 +2222,7 @@
                         <td class="no-col">4</td>
                         <td class="field-col">created_at</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                 </tbody>
@@ -2131,7 +2232,7 @@
             <div class="card-header">
                 <h2 class="card-title">27. Shop orders Table</h2>
                 <div class="key-info"><strong>Primary Key:</strong> order_id</div>
-                <div class="key-info"><strong>Foreign Keys:</strong> user_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> user_id refers to table Users</div>
             </div>
             <table>
                 <thead>
@@ -2204,14 +2305,14 @@
                         <td class="no-col">9</td>
                         <td class="field-col">order_date</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                     <tr>
                         <td class="no-col">10</td>
                         <td class="field-col">delivery_date</td>
                         <td class="type-col">VARCHAR(50)</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                     <tr>
@@ -2235,7 +2336,7 @@
             <div class="card-header">
                 <h2 class="card-title">28. Shop order items Table</h2>
                 <div class="key-info"><strong>Primary Key:</strong> item_id</div>
-                <div class="key-info"><strong>Foreign Keys:</strong> order_id, product_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> order_id refers to table Shop_orders<br>product_id refers to table Products</div>
             </div>
             <table>
                 <thead>
@@ -2306,12 +2407,13 @@
                     </tr>
                 </tbody>
             </table>
-        </div><div class="group-header">8. System Operations & Gym Management</div>
+        </div>
+        <div class="group-header">8. System Operations & Gym Management</div>
         <div class="card">
             <div class="card-header">
                 <h2 class="card-title">29. Messages Table</h2>
                 <div class="key-info"><strong>Primary Key:</strong> message_id</div>
-                <div class="key-info"><strong>Foreign Keys:</strong> sender_id, receiver_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> sender_id refers to table Users<br>receiver_id refers to table Users</div>
             </div>
             <table>
                 <thead>
@@ -2363,7 +2465,7 @@
                         <td class="no-col">6</td>
                         <td class="field-col">created_at</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                 </tbody>
@@ -2373,7 +2475,7 @@
             <div class="card-header">
                 <h2 class="card-title">30. User notifications Table</h2>
                 <div class="key-info"><strong>Primary Key:</strong> notification_id</div>
-                <div class="key-info"><strong>Foreign Keys:</strong> user_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> user_id refers to table Users</div>
             </div>
             <table>
                 <thead>
@@ -2418,7 +2520,7 @@
                         <td class="no-col">5</td>
                         <td class="field-col">created_at</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                     <tr>
@@ -2435,7 +2537,7 @@
             <div class="card-header">
                 <h2 class="card-title">31. Email sent log Table</h2>
                 <div class="key-info"><strong>Primary Key:</strong> id</div>
-                <div class="key-info"><strong>Foreign Keys:</strong> user_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> user_id refers to table Users</div>
             </div>
             <table>
                 <thead>
@@ -2473,7 +2575,7 @@
                         <td class="no-col">4</td>
                         <td class="field-col">sent_at</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                 </tbody>
@@ -2535,7 +2637,7 @@
                         <td class="no-col">6</td>
                         <td class="field-col">created_at</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                     <tr>
@@ -2618,7 +2720,7 @@
                         <td class="no-col">8</td>
                         <td class="field-col">last_updated</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                 </tbody>
@@ -2628,7 +2730,7 @@
             <div class="card-header">
                 <h2 class="card-title">34. Gym check ins Table</h2>
                 <div class="key-info"><strong>Primary Key:</strong> checkin_id</div>
-                <div class="key-info"><strong>Foreign Keys:</strong> user_id</div>
+                <div class="key-info"><strong>Foreign Keys:</strong> user_id refers to table Users</div>
             </div>
             <table>
                 <thead>
@@ -2707,7 +2809,7 @@
                         <td class="no-col">4</td>
                         <td class="field-col">updated_at</td>
                         <td class="type-col">TIMESTAMP</td>
-                        <td class="key-col"></td>
+                        <td class="key-col">Not Null</td>
                         <td>Timestamp / Date of action</td>
                     </tr>
                 </tbody>
@@ -2715,4 +2817,5 @@
         </div>
     </div>
 </body>
+
 </html>
